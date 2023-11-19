@@ -13,6 +13,7 @@ class Pesanan extends CI_Controller
         if ($this->session->userdata('log_in') != "login") {
             redirect(base_url("auth/login"));
         }
+        $this->load->model("M_pesanan");
     }
 
     public function index()

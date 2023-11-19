@@ -53,6 +53,7 @@
                                     <th>Kategori</th>
                                     <th>Nama Makanan</th>
                                     <th>Harga Jual</th>
+                                    <th>File Image</th>
                                     <th>Owner</th>
                                     <th>Action</th>
                                 </tr>
@@ -61,8 +62,13 @@
                                 <tr ng-repeat="dt in Makanan" ng-if="Makanan.length > 0">
                                     <td>{{$index + 1}}</td>
                                     <td>{{dt.kategori}}</td>
-                                    <td>{{dt.nama}}</td>s
+                                    <td>{{dt.nama}}</td>
                                     <td>{{dt.harga}}</td>
+                                    <td style="text-align: center;">
+                                        <img style="height: 80px;width: 100px;"
+                                            ng-src="{{dt.img ? '<?= base_url("public/upload/") ?>' + dt.img : '<?= base_url("public/assets/images/foodbar.png") ?>'}}"
+                                            alt="">
+                                    </td>
                                     <td>{{dt.owner}}</td>
                                     <td>
                                         <div class="input-group">
@@ -85,6 +91,7 @@
                                     <th>Kategori</th>
                                     <th>Nama Makanan</th>
                                     <th>Harga Jual</th>
+                                    <th>File Image</th>
                                     <th>Owner</th>
                                     <th>Action</th>
                                 </tr>
@@ -213,7 +220,7 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <label for="">Kategori Makanan</label>
+                                    <label for="">Kategori</label>
                                     <select name="cmb_kategori" id="cmb_kategori" class="form-control mt-1">
                                         <option value="">Pilih Kategori</option>
                                     </select>
@@ -224,9 +231,15 @@
                                         placeholder="Masukkan Nama Makanan">
                                 </div>
                                 <div class="form-group pt-2">
-                                    <label for="">Harga Makanan</label>
+                                    <label for="">Harga Jual</label>
                                     <input type="number" name="harga" id="harga" class="form-control mt-1"
                                         placeholder="Masukkan Harga Makanan">
+                                </div>
+                                <div class="form-group pt-2">
+                                    <label for="">Ambil Gambar :</label>
+                                    <input type="file" class="form-control" id="file_img" name="file_img"
+                                        onchange="displayImage()">
+                                    <div class="pt-2" id="display_img"></div>
                                 </div>
                                 <div class="form-group pt-2">
                                     <label for="">Owner</label>
@@ -273,7 +286,7 @@
                                     <input type="hidden" name="id_update" id="id_update" class="form-control">
                                 </div>
                                 <div class="form-group">
-                                    <label for="">Kategori Makanan</label>
+                                    <label for="">Kategori</label>
                                     <select name="cmb_kategori_update" id="cmb_kategori_update"
                                         class="form-control mt-1">
                                         <option value="">Pilih Kategori</option>
@@ -285,9 +298,15 @@
                                         placeholder="Masukkan Nama Makanan">
                                 </div>
                                 <div class="form-group pt-2">
-                                    <label for="">Harga Makanan</label>
+                                    <label for="">Harga Jual</label>
                                     <input type="number" name="harga_update" id="harga_update" class="form-control mt-1"
                                         placeholder="Masukkan Harga Makanan">
+                                </div>
+                                <div class="form-group pt-2">
+                                    <label for="">Edit Gambar (Jika Diperlukan) :</label>
+                                    <input type="file" class="form-control" id="file_img_update" name="file_img_update"
+                                        onchange="displayImageUpdate()">
+                                    <div class="pt-2" id="display_img_edit"></div>
                                 </div>
                                 <div class="form-group pt-2">
                                     <label for="">Owner</label>

@@ -8,87 +8,51 @@ function base_url(string_url) {
     return url;
 }
 
-// Kategori
-var app = angular.module('makanan', ['datatables']);
-app.controller('ControllerCategoryMakanan', function ($scope, $http) {
-    function loadDataKategori() {
-        $http.get(base_url('master/makanan/get_kategori_makanan'))
+var appminuman = angular.module('appminuman', ['datatables']);
+appminuman.controller('ControllerMinuman', function ($scope, $http) {
+    $scope.LoadDataMinuman = function () {
+        $http.get(base_url('master/minuman/data_minuman'))
             .then(function (response) {
-                $scope.post = response.data;
-                // console.log(response.data);
+                $scope.MinumanData = response.data;
+
+                // Log the data
+                console.log($scope.MinumanData);
+
+                // Initialize DataTable after data is loaded
+                $timeout(function () {
+                    $('#dtMinumanTable').DataTable({
+                        searching: true
+                    });
+                });
             })
             .catch(function (error) {
-                console.error('Terjadi kesalahan:', error);
+                console.error('Error loading data:', error);
             });
     }
+    $scope.LoadDataMinuman();
 
-    loadDataKategori();
-
-    $scope.insertKategori = function () {
-        var newKategoriData = {
-            kategori: $scope.newKategori
-        };
-        $http.post(base_url('master/makanan/insert_kategori_makanan'), newKategoriData)
-            .then(function (response) {
-
-                loadDataKategori();
-                $("#kategori").val('')
-                ComboKategoriMakanan();
-                ComboKategoriMakananUpdate();
-            }).catch(function (error) {
-                console.error('Terjadi kesalahan saat menyimpan data:', error);
-            });
-    };
-
-    $scope.delete = function (kategori) {
-        var kategoriId = kategori.id; // Menggunakan properti id dari objek kategoriMakanan (sesuaikan dengan properti yang sesuai)
-
-        $http.delete(base_url('master/makanan/delete_kategori_makanan/' + kategoriId))
-            .then(function (response) {
-                loadDataKategori();
-            })
-            .catch(function (error) {
-                // Proses hapus gagal
-                console.error('Terjadi kesalahan saat menghapus data:', error);
-                // Tampilkan pesan kesalahan kepada pengguna atau lakukan penanganan kesalahan yang sesuai.
-            });
-    };
-    ComboKategoriMakanan();
-    ComboKategoriMakananUpdate();
-});
-
-
-var appmakanan = angular.module('appmakanan', ['datatables']);
-appmakanan.controller('ControllerMakanan', function ($scope, $http) {
-    function LoadDataMakanan() {
-        $http.get(base_url('master/makanan/data_makanan'))
-            .then(function (response) {
-                $scope.Makanan = response.data;
-            })
-            .catch(function (error) {
-                console.error('Terjadi kesalahan:', error);
-            });
-    }
-    LoadDataMakanan();
-
-    $scope.ShowEditMakanan = function (dt) {
-        $scope.data = angular.copy(dt);
+    $scope.ShowEditMinuman = function (da) {
+        $scope.data = angular.copy(da);
         $("#id_update").val($scope.data.id)
         $("#cmb_kategori_update").val($scope.data.kategori_id)
         $("#nama_update").val($scope.data.nama)
         $("#harga_update").val($scope.data.harga)
-        $("#cmb_owner_update").val($scope.data.owner)
-        var displayArea = document.getElementById("display_img_edit");
-        if ($scope.data.img != null || $scope.data.img != '') {
-            displayArea.innerHTML = '<img src="' + base_url('public/upload/' + $scope.data.img) + '" alt="Selected Image" style="display:block;max-width: 100%; max-height: 200px;">';
-            // $("#file_img_update").val($scope.data.img);
+        var AreaImg = document.getElementById("display_img_edit");
+        if ($scope.data.img != '' || $scope.data.img != null) {
+            AreaImg.innerHTML = '<img src="' + base_url('public/upload/' + $scope.data.img) + '" alt="Selected Image" style="max-width: 100%; max-height: 200px;">';
+        } else if ($scope.data.img == '' || $scope.data.img == null) {
+            AreaImg.innerHTML = '<img src="' + base_url("public/assets/images/refreshments.png") + '" alt="Selected Image" style="max-width: 100%; max-height: 200px;">';
         }
+        $("#cmb_owner_update").val($scope.data.owner)
         $("#my-modal-show-edit").modal('show');
     }
 
+    $scope.add_minuman = function () {
+        $("#my-modal-add").modal('show');
+    }
 
-    $scope.DeleteMakanan = function (dt) {
-        $scope.data = angular.copy(dt);
+    $scope.DeleteMinuman = function (da) {
+        $scope.data = angular.copy(da);
         Swal.fire({
             title: 'Konfirmasi',
             text: 'Anda yakin ingin menghapus data Makanan dengan Nama ' + $scope.data.nama + ' ?',
@@ -101,17 +65,16 @@ appmakanan.controller('ControllerMakanan', function ($scope, $http) {
             if (result.isConfirmed) {
                 // Jika pengguna mengkonfirmasi penghapusan
                 // Lakukan permintaan DELETE ke backend
-                $http.delete(base_url('master/makanan/delete_makanan/' + dt.id))
+                $http.delete(base_url('master/meja/delete_meja/' + meja.id))
                     .then(function (response) {
-                        var data = response.data;
-                        if (data.status === true) {
-                            Swal.fire({
-                                icon: 'success',
-                                title: 'Berhasil',
-                                text: 'Data meja telah dihapus!'
-                            });
-                            LoadDataMakanan();
-                        }
+                        // Handler ketika permintaan berhasil
+                        // Tampilkan SweetAlert sukses
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Berhasil',
+                            text: 'Data meja telah dihapus!'
+                        });
+                        document.location.reload();
                     })
                     .catch(function (error) {
                         // Handler ketika terjadi kesalahan pada permintaan
@@ -129,9 +92,67 @@ appmakanan.controller('ControllerMakanan', function ($scope, $http) {
         });
     }
 
+
+    $scope.show_kategori_minuman = function () {
+        $("#my-modal-kategori").modal("show");
+    }
 });
 
-var app = angular.module('CombineMakanan', ['makanan', 'appmakanan']);
+
+
+// Kategori
+var appkategori = angular.module('KategoriMinuman', ['datatables']);
+appkategori.controller('ControllerKategoriMinuman', function ($scope, $http) {
+    function loadDataKategori() {
+        $http.get(base_url('master/minuman/get_kategori_minuman'))
+            .then(function (response) {
+                $scope.post = response.data;
+            })
+            .catch(function (error) {
+                console.error('Terjadi kesalahan:', error);
+            });
+    }
+
+    loadDataKategori();
+
+    $scope.insertKategori = function () {
+        var newKategoriData = {
+            kategori: $scope.newKategori
+        };
+        $http.post(base_url('master/minuman/insert_kategori_minuman'), newKategoriData)
+            .then(function (response) {
+
+                loadDataKategori();
+                $("#kategori").val('')
+                ComboKategoriMinuman();
+                ComboKategoriMinumanUpdate();
+            }).catch(function (error) {
+                console.error('Terjadi kesalahan saat menyimpan data:', error);
+            });
+    };
+
+    $scope.delete = function (kategori) {
+        var kategoriId = kategori.id; // Menggunakan properti id dari objek kategoriMakanan (sesuaikan dengan properti yang sesuai)
+
+        $http.delete(base_url('master/minuman/delete_kategori_minuman/' + kategoriId))
+            .then(function (response) {
+                loadDataKategori();
+                ComboKategoriMinuman();
+                ComboKategoriMinumanUpdate();
+            })
+            .catch(function (error) {
+                // Proses hapus gagal
+                console.error('Terjadi kesalahan saat menghapus data:', error);
+                // Tampilkan pesan kesalahan kepada pengguna atau lakukan penanganan kesalahan yang sesuai.
+            });
+    };
+    ComboKategoriMinuman();
+    ComboKategoriMinumanUpdate();
+});
+
+
+
+var combineMinuman = angular.module('CombineMinuman', ['appminuman', 'KategoriMinuman', 'datatables']);
 
 function displayImage() {
     var input = document.getElementById('file_img');
@@ -153,32 +174,8 @@ function displayImage() {
     }
 }
 
-function displayImageUpdate() {
-    var input = document.getElementById('file_img_update');
-    var displayArea = document.getElementById('display_img_edit');
-    // Pastikan ada file yang dipilih
-    if (input.files && input.files[0]) {
-        var reader = new FileReader();
-
-        reader.onload = function (e) {
-            // Tampilkan gambar yang dipilih di area display
-            displayArea.innerHTML = '<img src="' + e.target.result + '" alt="Selected Image" style="max-width: 100%; max-height: 200px;">';
-        };
-
-        // Baca file sebagai URL data
-        reader.readAsDataURL(input.files[0]);
-    } else {
-        // Bersihkan area display jika tidak ada file yang dipilih
-        displayArea.innerHTML = '';
-    }
-}
-
-function show_kategori() {
-    $("#my-modal-kategori").modal("show");
-}
-
-function ComboKategoriMakanan() {
-    fetch(base_url('master/makanan/get_kategori_makanan'))
+function ComboKategoriMinuman() {
+    fetch(base_url('master/minuman/get_kategori_minuman'))
         .then(response => response.json())
         .then(data => {
             const optionsData = data;
@@ -200,8 +197,8 @@ function ComboKategoriMakanan() {
         .catch(error => console.error(error));
 }
 
-function ComboKategoriMakananUpdate() {
-    fetch(base_url('master/makanan/get_kategori_makanan'))
+function ComboKategoriMinumanUpdate() {
+    fetch(base_url('master/minuman/get_kategori_minuman'))
         .then(response => response.json())
         .then(data => {
             const optionsData = data;
@@ -226,12 +223,9 @@ function ComboKategoriMakananUpdate() {
 ComboKategoriMakanan();
 ComboKategoriMakananUpdate();
 
-function add_makanan() {
-    $("#my-modal-add").modal('show');
-}
 
-function insert_makanan() {
-    var formupload = document.getElementById("form_insert_makanan");
+function insert_minuman() {
+    var formupload = document.getElementById("form_insert_minuman");
     var formdata = new FormData(formupload);
     var kategori = $("#cmb_kategori").val();
     var nama = $("#nama").val();
@@ -245,7 +239,7 @@ function insert_makanan() {
             text: 'Wajib Mengisi Field - Field yang Tersedia !'
         });
     } else {
-        fetch(base_url('master/makanan/insert_makanan'), {
+        fetch(base_url('master/minuman/insert_minuman'), {
             method: 'POST',
             body: formdata
         })
@@ -264,10 +258,10 @@ function insert_makanan() {
     }
 }
 
-function update_makanan() {
-    var formupload = document.getElementById("form_update_makanan");
+function updateMinuman() {
+    var formupload = document.getElementById("form_update_minuman");
     var formdata = new FormData(formupload);
-    fetch(base_url('master/makanan/update_makanan'), {
+    fetch(base_url('master/minuman/update_minuman'), {
         method: 'POST',
         body: formdata
     })

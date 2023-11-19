@@ -49,7 +49,7 @@
         <!--end header wrapper-->
         <!--start page wrapper -->
         <?php if ($content) { ?>
-            <?php $this->load->view($content); ?>
+        <?php $this->load->view($content); ?>
         <?php } ?>
         <!--end page wrapper -->
         <!--start overlay-->
@@ -144,6 +144,12 @@
     <script src="<?= base_url() ?>public/assets/plugins/sparkline-charts/jquery.sparkline.min.js"></script>
     <script src="<?= base_url() ?>public/assets/plugins/jquery-knob/excanvas.js"></script>
     <script src="<?= base_url() ?>public/assets/plugins/jquery-knob/jquery.knob.js"></script>
+
+    <!-- SweetAlert -->
+    <script src="<?= base_url() ?>public/assets/sweetalert/sweetalert2.js"></script>
+    <script src="<?= base_url() ?>public/assets/sweetalert/sweetalert2.min.js"></script>
+    <script src="<?= base_url() ?>public/assets/sweetalert/sweetalert2.all.js"></script>
+    <script src="<?= base_url() ?>public/assets/sweetalert/sweetalert2.all.min.js"></script>
     <!-- datatable -->
     <script src="<?= base_url() ?>public/assets/plugins/datatable/js/jquery.dataTables.min.js"></script>
     <script src="<?= base_url() ?>public/assets/plugins/datatable/js/dataTables.bootstrap5.min.js"></script>
@@ -151,38 +157,33 @@
     <script src="<?= base_url() ?>public/assets/angular/angular.js"></script>
     <script src="<?= base_url() ?>public/assets/angular/angular.min.js"></script>
     <script src="<?= base_url() ?>public/assets/angular/angular-datatables.min.js"></script>
-    <!-- SweetAlert -->
-    <script src="<?= base_url() ?>public/assets/sweetalert/sweetalert2.js"></script>
-    <script src="<?= base_url() ?>public/assets/sweetalert/sweetalert2.min.js"></script>
-    <script src="<?= base_url() ?>public/assets/sweetalert/sweetalert2.all.js"></script>
-    <script src="<?= base_url() ?>public/assets/sweetalert/sweetalert2.all.min.js"></script>
-
-    <!-- csutom -->
-    <script src="<?= base_url() ?>public/assets/custom/makanan.js"></script>
-    <script src="<?= base_url() ?>public/assets/custom/meja.js"></script>
-    <script src="<?= base_url() ?>public/assets/custom/sdm.js"></script>
-    <script src="<?= base_url() ?>public/assets/custom/kasir.js"></script>
-
-    <script>
-        $(function() {
-            $(".knob").knob();
+    <!-- <script>
+    $(function() {
+        $(".knob").knob();
+    });
+    $(document).ready(function() {
+        var table = $('#example2').DataTable({
+            lengthChange: false,
+            buttons: ['copy', 'excel', 'pdf', 'print']
         });
-        $(document).ready(function() {
-            var table = $('#example2').DataTable({
-                lengthChange: false,
-                buttons: ['copy', 'excel', 'pdf', 'print']
-            });
 
-            table.buttons().container()
-                .appendTo('#example2_wrapper .col-md-6:eq(0)');
-        });
-        $(document).ready(function() {
-            $('#example').DataTable();
-        });
-    </script>
+        table.buttons().container()
+            .appendTo('#example2_wrapper .col-md-6:eq(0)');
+    });
+    $(document).ready(function() {
+        $('#example').DataTable();
+    });
+    </script> -->
+
     <script src="<?= base_url() ?>public/assets/js/index.js"></script>
     <!--app JS-->
     <script src="<?= base_url() ?>public/assets/js/app.js"></script>
+    <!-- csutom -->
+    <script src="<?= base_url() ?>public/assets/custom/makanan.js"></script>
+    <script src="<?= base_url() ?>public/assets/custom/minuman.js"></script>
+    <script src="<?= base_url() ?>public/assets/custom/meja.js"></script>
+    <script src="<?= base_url() ?>public/assets/custom/sdm.js"></script>
+    <script src="<?= base_url() ?>public/assets/custom/kasir.js"></script>
 </body>
 
 </html>

@@ -12,7 +12,8 @@
     <nav class="navbar navbar-expand-xl w-100">
         <ul class="navbar-nav justify-content-start flex-grow-1 gap-1">
             <li class="nav-item">
-                <a class="nav-link <?= uri_string() == 'home' ? 'active text-white' : '' ?>" href="<?= base_url('home') ?>">
+                <a class="nav-link <?= uri_string() == 'home' ? 'active text-white' : '' ?>"
+                    href="<?= base_url('home') ?>">
                     <div class="parent-icon">
                         <i class='bx bx-home-circle'></i>
                     </div>
@@ -20,14 +21,17 @@
                 </a>
             </li>
             <li class="nav-item dropdown">
-                <a href="javascript:;" class="nav-link dropdown-toggle dropdown-toggle-nocaret <?= uri_string() == 'master/makanan' || uri_string() == 'master/minuman' || uri_string() == 'master/meja' ? 'active text-white' : '' ?>" data-bs-toggle="dropdown">
+                <a href="javascript:;"
+                    class="nav-link dropdown-toggle dropdown-toggle-nocaret <?= uri_string() == 'master/makanan' || uri_string() == 'master/minuman' || uri_string() == 'master/meja' ? 'active text-white' : '' ?>"
+                    data-bs-toggle="dropdown">
                     <div class="parent-icon"><i class="bx bx-category"></i>
                     </div>
                     <div class="menu-title">Master Data</div>
                 </a>
                 <ul class="dropdown-menu">
                     <li>
-                        <a class="dropdown-item" href="<?= base_url('master/meja') ?>"><i class="bx bx-right-arrow-alt"></i>
+                        <a class="dropdown-item" href="<?= base_url('master/meja') ?>"><i
+                                class="bx bx-right-arrow-alt"></i>
                             Data Meja
                         </a>
                     </li>
@@ -38,34 +42,37 @@
                         </a>
                     </li>
                     <li>
-                        <a class="dropdown-item" href="a<?= base_url('master/minuman') ?>"><i class="bx bx-right-arrow-alt"></i>
+                        <a class="dropdown-item" href="<?= base_url('master/minuman') ?>"><i
+                                class="bx bx-right-arrow-alt"></i>
                             Data Minuman
                         </a>
                     </li>
                     <?php if ($this->session->userdata('level') != 'Kasir') { ?>
-                        <li>
-                            <a class="dropdown-item" href="<?= base_url('master/sdm') ?>">
-                                <i class="bx bx-right-arrow-alt"></i>
-                                Data SDM
-                            </a>
-                        </li>
+                    <li>
+                        <a class="dropdown-item" href="<?= base_url('master/sdm') ?>">
+                            <i class="bx bx-right-arrow-alt"></i>
+                            Data SDM
+                        </a>
+                    </li>
                     <?php } ?>
                 </ul>
             </li>
             <li class="nav-item dropdown">
-                <a href="javascript:;" class="nav-link dropdown-toggle dropdown-toggle-nocaret <?= uri_string() == 'transaksi/pesanan'  ? 'active text-white' : '' ?>" data-bs-toggle="dropdown">
+                <a href="javascript:;"
+                    class="nav-link dropdown-toggle dropdown-toggle-nocaret <?= uri_string() == 'transaksi/pesanan'  ? 'active text-white' : '' ?>"
+                    data-bs-toggle="dropdown">
                     <div class="parent-icon"><i class='bx bx-cart'></i>
                     </div>
                     <div class="menu-title">Transaksi</div>
                 </a>
                 <ul class="dropdown-menu">
                     <?php if ($this->session->userdata('level') == 'Kasir') { ?>
-                        <li>
-                            <a class="dropdown-item" href="<?= base_url('transaksi/pesanan') ?>">
-                                <i class="bx bx-right-arrow-alt"></i>
-                                Pesanan
-                            </a>
-                        </li>
+                    <li>
+                        <a class="dropdown-item" href="<?= base_url('transaksi/pesanan') ?>">
+                            <i class="bx bx-right-arrow-alt"></i>
+                            Pesanan
+                        </a>
+                    </li>
                     <?php } ?>
                     <li>
                         <a class="dropdown-item" href="ecommerce-products.html">
@@ -83,17 +90,21 @@
                 </ul>
             </li>
             <li class="nav-item dropdown">
-                <a class="nav-link dropdown-toggle dropdown-toggle-nocaret" href="javascript:;" data-bs-toggle="dropdown">
+                <a class="nav-link dropdown-toggle dropdown-toggle-nocaret" href="javascript:;"
+                    data-bs-toggle="dropdown">
                     <div class="parent-icon"><i class="bx bx-line-chart"></i>
                     </div>
                     <div class="menu-title">Report</div>
                 </a>
                 <ul class="dropdown-menu">
-                    <li> <a class="dropdown-item" href="charts-apex-chart.html"><i class="bx bx-right-arrow-alt"></i>Apex</a>
+                    <li> <a class="dropdown-item" href="charts-apex-chart.html"><i
+                                class="bx bx-right-arrow-alt"></i>Apex</a>
                     </li>
-                    <li> <a class="dropdown-item" href="charts-chartjs.html"><i class="bx bx-right-arrow-alt"></i>Chartjs</a>
+                    <li> <a class="dropdown-item" href="charts-chartjs.html"><i
+                                class="bx bx-right-arrow-alt"></i>Chartjs</a>
                     </li>
-                    <li> <a class="dropdown-item" href="charts-highcharts.html"><i class="bx bx-right-arrow-alt"></i>Highcharts</a>
+                    <li> <a class="dropdown-item" href="charts-highcharts.html"><i
+                                class="bx bx-right-arrow-alt"></i>Highcharts</a>
                     </li>
                 </ul>
             </li>
