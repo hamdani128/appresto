@@ -1,6 +1,15 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
+/**
+ * @property CI_DB $db
+ * @property CI_Session $session
+ * @property CI_Output $output
+ * @property CI_Input $input
+ * @property CI_Form_validation $form_validation
+ * @property CI_Upload $upload
+ * @property M_pesanan $M_pesanan
+ */
 class Kasir extends CI_Controller
 {
     public function __construct()
@@ -19,7 +28,8 @@ class Kasir extends CI_Controller
 
     public function get_nomor_meja($no_meja)
     {
-        $SQL = "SELECT MAX(RIGHT(kode_transaksi,5)) as KD_MAX FROM transaksi";
+        date_default_timezone_set("Asia/Jakarta");
+        $SQL = "SELECT MAX(RIGHT(no_order,5)) as KD_MAX FROM `order` WHERE tanggal = '" . date('Y-m-d') . "' AND no_meja='" . $no_meja . "'";
         $query = $this->db->query($SQL);
         if ($query->num_rows() > 0) {
             $row = $query->row();
@@ -29,7 +39,6 @@ class Kasir extends CI_Controller
             $no = "00001";
         }
         $kode = '#BK' . date('ymd') . $no_meja . $no;
-        // return $kode;
         $this->output
             ->set_content_type('application/json')
             ->set_output(json_encode($kode));
@@ -84,6 +93,7 @@ class Kasir extends CI_Controller
         $data1 = [
             'status' => 1,
             'no_order' => $no_booking,
+            'updated_at' => date('Y-m-d H:i:s'),
         ];
 
         $query3 = $this->db->where('no_meja', $no_meja)->update("daftar_meja", $data1);
@@ -91,17 +101,51 @@ class Kasir extends CI_Controller
         if ($query2 && $query3) {
             $response = [
                 'status' => true,
-                'message' => 'Successfully Insert Order'
+                'message' => 'Successfully Insert Order',
             ];
         } else {
             $response = [
                 'status' => false,
-                'message' => ''
+                'message' => '',
             ];
         }
 
         $this->output
             ->set_content_type('application/json')
             ->set_output(json_encode($response));
+    }
+
+    public function list_pesanan()
+    {
+        $input = json_decode(file_get_contents("php://input"), true);
+        $no_meja = $input['no_meja'];
+        $value = $this->db->where('no_meja', $no_meja)->get('daftar_meja')->row();
+        $no_order = $value->no_order;
+
+        $result = $this->M_pesanan->ListDataMenuByNoOrder($no_order);
+        $countMakanan = $this->M_pesanan->CountMakanan($no_order);
+        $countMinuman = $this->M_pesanan->CountMinuman($no_order);
+
+        $data = [
+            'no_meja' => $no_meja,
+            'no_order' => $no_order,
+            'created_at' => $value->updated_at,
+            'detail' => $result,
+            'count_makanan' => $countMakanan,
+            'count_minuman' => $countMinuman,
+        ];
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($data));
+    }
+
+    public function cek_subtotal_transaksi()
+    {
+        $input = json_decode(file_get_contents("php://input"), true);
+        $no_booking = $input['no_booking'];
+        $total = $this->M_pesanan->TotalTransaksiByOrder($no_booking);
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($total));
     }
 }

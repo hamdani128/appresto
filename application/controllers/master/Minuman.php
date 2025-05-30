@@ -1,6 +1,14 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
+/**
+ * @property CI_DB $db
+ * @property CI_Session $session
+ * @property CI_Output $output
+ * @property CI_Input $input
+ * @property CI_Form_validation $form_validation
+ * @property CI_Upload $upload
+ */
 class Minuman extends CI_Controller
 {
 
@@ -18,7 +26,7 @@ class Minuman extends CI_Controller
     public function index()
     {
         $data = [
-            'content' => 'pages/minuman'
+            'content' => 'pages/minuman',
         ];
         $this->load->view('layout/index', $data);
     }
@@ -78,28 +86,28 @@ class Minuman extends CI_Controller
                 'owner' => $owner,
                 'user_id' => $userid,
                 'created_at' => $now,
-                'updated_at' => $now
+                'updated_at' => $now,
             );
             $query = $this->db->insert("minuman", $data);
 
             if ($query) {
                 $response = array(
                     'status' => 'success',
-                    'message' => 'Success Created !'
+                    'message' => 'Success Created !',
                 );
             } else {
                 $response = array(
                     'status' => 'error',
-                    'message' => 'Failed to insert data'
+                    'message' => 'Failed to insert data',
                 );
             }
         } else {
             // Jika ada file diunggah
             $new_name = time() . "-" . date('Ymd');
-            $config['upload_path']   = './public/upload/';
+            $config['upload_path'] = './public/upload/';
             $config['allowed_types'] = 'gif|jpg|png|jpeg';
-            $config['max_size']      = 2048;
-            $config['file_name']     = $new_name;
+            $config['max_size'] = 2048;
+            $config['file_name'] = $new_name;
 
             $this->load->library('upload', $config);
 
@@ -118,19 +126,19 @@ class Minuman extends CI_Controller
                     'owner' => $owner,
                     'user_id' => $userid,
                     'created_at' => $now,
-                    'updated_at' => $now
+                    'updated_at' => $now,
                 );
                 $query = $this->db->insert("minuman", $data);
 
                 if ($query) {
                     $response = array(
                         'status' => 'success',
-                        'message' => 'Success Created !'
+                        'message' => 'Success Created !',
                     );
                 } else {
                     $response = array(
                         'status' => 'error',
-                        'message' => 'Failed to insert data'
+                        'message' => 'Failed to insert data',
                     );
                 }
             }
@@ -177,13 +185,13 @@ class Minuman extends CI_Controller
                 'harga' => $harga,
                 'owner' => $owner,
                 'user_id' => $userid,
-                'updated_at' => $now
+                'updated_at' => $now,
             );
             $query = $this->db->where('id', $id)->update("minuman", $data);
             if ($query) {
                 $response = array(
                     'status' => 'success',
-                    'message' => 'Success Updated !'
+                    'message' => 'Success Updated !',
                 );
             }
         } else {
@@ -194,10 +202,10 @@ class Minuman extends CI_Controller
                 unlink($path);
             }
             $new_name = time() . "-" . date('Ymd');
-            $config['upload_path']   = './public/upload/';
+            $config['upload_path'] = './public/upload/';
             $config['allowed_types'] = 'gif|jpg|png|jpeg';
-            $config['max_size']      = 2048;
-            $config['file_name']     = $new_name;
+            $config['max_size'] = 2048;
+            $config['file_name'] = $new_name;
 
             $this->load->library('upload', $config);
 
@@ -216,19 +224,19 @@ class Minuman extends CI_Controller
                     'owner' => $owner,
                     'user_id' => $userid,
                     'created_at' => $now,
-                    'updated_at' => $now
+                    'updated_at' => $now,
                 );
                 $query = $this->db->where('id', $id)->update("minuman", $data);
 
                 if ($query) {
                     $response = array(
                         'status' => 'success',
-                        'message' => 'Success Created !'
+                        'message' => 'Success Created !',
                     );
                 } else {
                     $response = array(
                         'status' => 'error',
-                        'message' => 'Failed to insert data'
+                        'message' => 'Failed to insert data',
                     );
                 }
             }

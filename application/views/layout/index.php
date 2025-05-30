@@ -49,7 +49,7 @@
         <!--end header wrapper-->
         <!--start page wrapper -->
         <?php if ($content) { ?>
-        <?php $this->load->view($content); ?>
+            <?php $this->load->view($content); ?>
         <?php } ?>
         <!--end page wrapper -->
         <!--start overlay-->

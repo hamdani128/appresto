@@ -33,4 +33,49 @@ class M_pesanan extends CI_Model
         $query = $this->db->query($SQL)->result();
         return $query;
     }
+
+    public function ListDataMenuByNoOrder($no_order)
+    {
+        $SQL = "SELECT
+                a.kategori as kategori,
+                a.nama as nama,
+                a.harga as harga,
+                a.jenis as jenis,
+                SUM(a.qty) as qty
+                FROM order_detail a
+                WHERE a.no_order='" . $no_order . "' 
+                GROUP BY 1,2,3,4";
+        $query = $this->db->query($SQL)->result();
+        return $query;
+    }
+
+    public function CountMakanan($no_order)
+    {
+        $SQL = "SELECT
+                SUM(a.qty) as qty   
+                FROM order_detail a
+                WHERE a.no_order='" . $no_order . "' 
+                AND a.jenis = 'Makanan'";
+        $query = $this->db->query($SQL)->row()->qty;
+        return $query;
+    }
+
+    public function CountMinuman($no_order)
+    {
+        $SQL = "SELECT
+                SUM(a.qty) as qty
+                FROM order_detail a
+                WHERE a.no_order='" . $no_order . "' 
+                AND a.jenis = 'Minuman'";
+        $query = $this->db->query($SQL)->row()->qty;
+        return $query;
+    }
+
+
+    public function TotalTransaksiByOrder($orderan)
+    {
+        $SQL = "SELECT SUM(harga * qty) as total FROM order_detail WHERE no_order='" . $orderan . "'";
+        $query = $this->db->query($SQL)->row()->total;
+        return $query;
+    }
 }

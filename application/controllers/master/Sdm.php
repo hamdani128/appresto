@@ -1,6 +1,14 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
+/**
+ * @property CI_DB $db
+ * @property CI_Session $session
+ * @property CI_Output $output
+ * @property CI_Input $input
+ * @property CI_Form_validation $form_validation
+ * @property CI_Upload $upload
+ */
 class Sdm extends CI_Controller
 {
 
@@ -19,7 +27,7 @@ class Sdm extends CI_Controller
     {
 
         $data = [
-            'content' => 'pages/sdm'
+            'content' => 'pages/sdm',
         ];
         $this->load->view('layout/index', $data);
     }
@@ -30,7 +38,7 @@ class Sdm extends CI_Controller
         $kd = "";
         if ($cd->num_rows() > 0) {
             foreach ($cd->result() as $k) {
-                $tmp = ((int)$k->kd_max) + 1;
+                $tmp = ((int) $k->kd_max) + 1;
                 $kd = sprintf("%03s", $tmp);
             }
         } else {
@@ -38,7 +46,7 @@ class Sdm extends CI_Controller
         }
         date_default_timezone_set('Asia/Jakarta');
         $newDate = date('ymd', strtotime(date('Y-m-d')));
-        $kodesdm = "SDM" . "-"  . $kd;
+        $kodesdm = "SDM" . "-" . $kd;
         $this->output
             ->set_content_type('application/json')
             ->set_output(json_encode($kodesdm));
@@ -75,12 +83,12 @@ class Sdm extends CI_Controller
         if ($query) {
             $response = [
                 'status' => 'success',
-                'message' => 'Successfully created'
+                'message' => 'Successfully created',
             ];
         } else {
             $response = [
                 'status' => 'error',
-                'message' => 'Error creating'
+                'message' => 'Error creating',
             ];
         }
         $this->output
@@ -118,7 +126,7 @@ class Sdm extends CI_Controller
         if ($query1 && $uqery2) {
             $response = [
                 'status' => 'success',
-                'message' => 'Success Processing'
+                'message' => 'Success Processing',
             ];
         } else {
             $response = [

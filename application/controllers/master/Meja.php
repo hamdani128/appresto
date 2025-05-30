@@ -1,6 +1,14 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
+/**
+ * @property CI_DB $db
+ * @property CI_Session $session
+ * @property CI_Output $output
+ * @property CI_Input $input
+ * @property CI_Form_validation $form_validation
+ * @property CI_Upload $upload
+ */
 class Meja extends CI_Controller
 {
 
@@ -43,7 +51,7 @@ class Meja extends CI_Controller
             'status' => '0',
             'user_id' => $user_id,
             'created_at' => $now,
-            'updated_at' => $now
+            'updated_at' => $now,
         );
         $query = $this->db->insert('daftar_meja', $data);
         if ($query) {
@@ -54,7 +62,7 @@ class Meja extends CI_Controller
         } else {
             $response = array(
                 'status' => 'error',
-                'message' => 'Error creating'
+                'message' => 'Error creating',
             );
         }
         echo json_encode($response);
@@ -74,7 +82,7 @@ class Meja extends CI_Controller
             'status' => '0',
             'user_id' => $user_id,
             'created_at' => $now,
-            'updated_at' => $now
+            'updated_at' => $now,
         );
         $query = $this->db->where('id', $id)->update('daftar_meja', $data);
         if ($query) {
@@ -85,7 +93,7 @@ class Meja extends CI_Controller
         } else {
             $response = array(
                 'status' => 'error',
-                'message' => 'Error Updated'
+                'message' => 'Error Updated',
             );
         }
         echo json_encode($response);
@@ -96,7 +104,7 @@ class Meja extends CI_Controller
         $this->db->delete('daftar_meja', array('id' => $id));
         $response = array(
             'status' => 'success',
-            'message' => 'Data meja berhasil dihapus'
+            'message' => 'Data meja berhasil dihapus',
         );
         // Ubah respon menjadi format JSON dan kirim kembali ke frontend
         header('Content-Type: application/json');

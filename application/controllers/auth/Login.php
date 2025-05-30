@@ -1,10 +1,18 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
+/**
+ * @property CI_DB $db
+ * @property CI_Session $session
+ * @property CI_Output $output
+ * @property CI_Input $input
+ * @property CI_Form_validation $form_validation
+ * @property CI_Upload $upload
+ */
 class Login extends CI_Controller
 {
 
-    function __construct()
+    public function __construct()
     {
         parent::__construct();
     }
@@ -19,7 +27,7 @@ class Login extends CI_Controller
         $password = $_POST['password'];
         $where = array(
             'username' => $username,
-            'password' => md5($password)
+            'password' => md5($password),
         );
         $cek = $this->db->where($where)->get("users")->row();
         // $cek = $this->m_login->cek_login("cdpm_users", $where)->num_rows();
