@@ -33,6 +33,20 @@ app.controller("KasirAppController", function ($scope, $http) {
 
 	$scope.SelectedMeja = function (elementId, dt) {
 		$scope.data = angular.copy(dt);
+		var btn1 = document.getElementById("btn_booking");
+		var btn2 = document.getElementById("btn_pindah_meja");
+		var btn3 = document.getElementById("btn_tambah_pesanan");
+		var show1 = document.getElementById("row_no_meja");
+		var show2 = document.getElementById("row_count_pesanan");
+		var show3 = document.getElementById("row_list_pesanan");
+
+		btn1.style.display = "block";
+		btn2.style.display = "none";
+		btn3.style.display = "none";
+		show1.style.display = "block";
+		show2.style.display = "none";
+		show3.style.display = "none";
+
 		var x = document.getElementById(elementId);
 		if (x.classList.contains("bg-success")) {
 			x.classList.remove("bg-success");
@@ -168,9 +182,21 @@ app.controller("KasirAppController", function ($scope, $http) {
 	};
 
 	$scope.ShowListBelanja = function (dt) {
-		var card_list = document.getElementById("card_info_list");
-		if (card_list.style.display == "none") {
-			card_list.style.display = "block";
+		var btn1 = document.getElementById("btn_booking");
+		var btn2 = document.getElementById("btn_pindah_meja");
+		var btn3 = document.getElementById("btn_tambah_pesanan");
+		var show1 = document.getElementById("row_no_meja");
+		var show2 = document.getElementById("row_count_pesanan");
+		var show3 = document.getElementById("row_list_pesanan");
+
+		if (show3.style.display == "none") {
+			btn1.style.display = "none";
+			btn2.style.display = "block";
+			btn3.style.display = "block";
+			show1.style.display = "none";
+			show2.style.display = "block";
+			show3.style.display = "block";
+
 			// masuk cek
 			var formdata = {
 				no_meja: dt.no_meja,
@@ -185,20 +211,81 @@ app.controller("KasirAppController", function ($scope, $http) {
 					document.getElementById("lb_tambahan_created_at").innerHTML =
 						response.data.created_at;
 					$scope.LoadDataPesananList = response.data.detail;
-					document.getElementById("lb_makanan_list_pesanan").innerHTML =
-						response.data.count_makanan;
-					document.getElementById("lb_minuman_list_pesanan").innerHTML =
-						response.data.count_minuman;
+					setTimeout(function () {
+						$scope.CalculateTotal();
+					}, 100); // beri delay sedikit agar ng-repeat selesai render
+
+					if (
+						response.data.count_makanan == 0 ||
+						response.data.count_makanan == null
+					) {
+						document.getElementById("lb_makanan_list_pesanan").innerHTML = 0;
+					} else {
+						document.getElementById("lb_makanan_list_pesanan").innerHTML =
+							response.data.count_makanan;
+					}
+
+					if (
+						response.data.count_minuman == 0 ||
+						response.data.count_minuman == null
+					) {
+						document.getElementById("lb_minuman_list_pesanan").innerHTML = 0;
+					} else {
+						document.getElementById("lb_minuman_list_pesanan").innerHTML =
+							response.data.count_minuman;
+					}
 				})
 				.catch(function (error) {
 					console.error("Terjadi kesalahan saat proses data:", error);
 				});
 			$scope.LoadDataMenu();
 		} else {
-			card_list.style.display = "none";
+			show3.style.display = "none";
 		}
 	};
 
+	$scope.CalculateTotal = function () {
+		var tbody = document.getElementById("tb_pesanan_list_body_menu");
+		var rows = tbody.getElementsByTagName("tr");
+		var total_harga = 0;
+		var qty_total = 0;
+
+		for (var i = 0; i < rows.length; i++) {
+			var tds = rows[i].getElementsByTagName("td");
+			if (tds.length < 6) continue; // skip jika row bukan data
+
+			var harga = parseInt(tds[3].textContent.trim()) || 0;
+			var qty = parseInt(tds[4].textContent.trim()) || 0;
+			var subtotal = harga * qty;
+
+			qty_total += qty;
+			total_harga += subtotal;
+		}
+
+		// Update qty dan subtotal
+		document.getElementById("qty-total").value = formatRupiah(qty_total);
+		document.getElementById("amount-total").value = formatRupiah(total_harga);
+
+		// Hitung PPN
+		var ppn_select = document
+			.getElementById("amount-ppn")
+			.parentElement.parentElement.querySelector("select");
+		var ppn_percent = parseFloat(ppn_select.value) || 0;
+		var ppn_amount = Math.floor(total_harga * (ppn_percent / 100));
+		document.getElementById("amount-ppn").value = formatRupiah(ppn_amount);
+
+		// Hitung Grand Total
+		var grand_total = total_harga + ppn_amount;
+		document.getElementById("grand-total").value = formatRupiah(grand_total);
+	};
+
+	$scope.TambahPesanan = function () {
+		document.getElementById("lb_no_booking_tambahan").innerHTML =
+			document.getElementById("lb_tambahan_no_order").innerHTML;
+		document.getElementById("lb_no_meja_tambah_pesanan").innerHTML =
+			document.getElementById("lb_tambahan_no_meja").innerHTML;
+		$("#my-modal-tambah-pesanan").modal("show");
+	};
 	// Tambahan Menu
 	$scope.PilihMenuTambahan = function (dt) {
 		var tbody = document.getElementById("tb_pesanan_body_tambahan");
@@ -285,10 +372,10 @@ app.controller("KasirAppController", function ($scope, $http) {
 	$scope.CetakBill = function () {
 		Swal.fire({
 			title: "Konfirmasi",
-			text: "Apakah Anda Yakin Ingin Menyimpan Data Tambahan Pesanan ini ?",
+			text: "Mau Cetak Bill ini ?",
 			icon: "question",
 			showCancelButton: true,
-			confirmButtonText: "Ya, Simpan",
+			confirmButtonText: "Ya, Cetak",
 			cancelButtonText: "Batal",
 			reverseButtons: true,
 		}).then((result) => {
@@ -329,6 +416,40 @@ app.controller("KasirAppController", function ($scope, $http) {
 								icon: "success",
 								title: "Berhasil",
 								text: "Data Order Berhasil !",
+							});
+							document.location.reload();
+						}
+					})
+					.catch(function (error) {
+						console.error("Terjadi kesalahan saat proses data:", error);
+					});
+			}
+		});
+	};
+
+	$scope.HapusPesananList = function (dt) {
+		Swal.fire({
+			title: "Konfirmasi",
+			text: "Mau List Pesanan " + dt.nama + " ?",
+			icon: "question",
+			showCancelButton: true,
+			confirmButtonText: "Ya, Hapus",
+			cancelButtonText: "Batal",
+			reverseButtons: true,
+		}).then((result) => {
+			if (result.isConfirmed) {
+				var formdata = {
+					id: dt.id,
+				};
+				$http
+					.post(base_url("opr/kasir/delete_pesanan_list"), formdata)
+					.then(function (response) {
+						var data = response.data;
+						if (data.status == true) {
+							Swal.fire({
+								icon: "success",
+								title: "Berhasil",
+								text: "Data Order Berhasil Dihapus !",
 							});
 							document.location.reload();
 						}
@@ -600,4 +721,8 @@ function updateRowNumbers_tambahan() {
 		var cellNumber = rows[i].getElementsByTagName("td")[0]; // Kolom pertama berisi nomor urut
 		cellNumber.textContent = i + 1;
 	}
+}
+
+function formatRupiah(angka) {
+	return angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 }

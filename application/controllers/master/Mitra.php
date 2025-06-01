@@ -9,7 +9,8 @@ defined('BASEPATH') or exit('No direct script access allowed');
  * @property CI_Form_validation $form_validation
  * @property CI_Upload $upload
  */
-class Pesanan extends CI_Controller
+
+class Mitra extends CI_Controller
 {
 
     public function __construct()
@@ -21,14 +22,34 @@ class Pesanan extends CI_Controller
         if ($this->session->userdata('log_in') != "login") {
             redirect(base_url("auth/login"));
         }
-        $this->load->model("M_pesanan");
     }
 
     public function index()
     {
         $data = [
-            'content' => 'pages/kasir/kasir',
+            'content' => 'pages/mitra',
         ];
         $this->load->view('layout/index', $data);
+    }
+
+    public function getdata()
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $data = $this->db->get("mitra")->result();
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($data));
+    }
+
+    public function kodemitra()
+    {
+
+    }
+
+    public function insert()
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $input = json_decode(file_get_contents('php://input'), true);
+
     }
 }

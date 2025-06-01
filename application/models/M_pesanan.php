@@ -15,9 +15,9 @@ class M_pesanan extends CI_Model
                 'Makanan' as jenis
                 FROM makanan a
                 LEFT JOIN kategori_makanan b ON a.kategori_id = b.id
-                
+
                 UNION ALL
-                
+
                 SELECT
                 a.id as id,
                 b.id as kategori_id,
@@ -43,7 +43,7 @@ class M_pesanan extends CI_Model
                 a.jenis as jenis,
                 SUM(a.qty) as qty
                 FROM order_detail a
-                WHERE a.no_order='" . $no_order . "' 
+                WHERE a.no_order='" . $no_order . "'
                 GROUP BY 1,2,3,4";
         $query = $this->db->query($SQL)->result();
         return $query;
@@ -52,9 +52,9 @@ class M_pesanan extends CI_Model
     public function CountMakanan($no_order)
     {
         $SQL = "SELECT
-                SUM(a.qty) as qty   
+                SUM(a.qty) as qty
                 FROM order_detail a
-                WHERE a.no_order='" . $no_order . "' 
+                WHERE a.no_order='" . $no_order . "'
                 AND a.jenis = 'Makanan'";
         $query = $this->db->query($SQL)->row()->qty;
         return $query;
@@ -65,12 +65,11 @@ class M_pesanan extends CI_Model
         $SQL = "SELECT
                 SUM(a.qty) as qty
                 FROM order_detail a
-                WHERE a.no_order='" . $no_order . "' 
+                WHERE a.no_order='" . $no_order . "'
                 AND a.jenis = 'Minuman'";
         $query = $this->db->query($SQL)->row()->qty;
         return $query;
     }
-
 
     public function TotalTransaksiByOrder($orderan)
     {

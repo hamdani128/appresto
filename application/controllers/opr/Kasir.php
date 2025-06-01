@@ -139,6 +139,13 @@ class Kasir extends CI_Controller
             ->set_output(json_encode($data));
     }
 
+    public function delete_pesanan_list()
+    {
+        $input = json_decode(file_get_contents("php://input"), true);
+        $id = $input['id'];
+        echo $id;
+    }
+
     public function cek_subtotal_transaksi()
     {
         $input = json_decode(file_get_contents("php://input"), true);
