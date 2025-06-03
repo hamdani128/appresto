@@ -152,15 +152,18 @@ class Minuman extends CI_Controller
     public function data_minuman()
     {
         $SQL = "SELECT
-                a.id as id,
-                b.id as kategori_id,
-                b.kategori as kategori,
-                a.nama as nama,
-                a.harga as harga,
-                a.img as img,
-                a.owner as owner
-                FROM minuman a
-                LEFT JOIN kategori_minuman b ON a.kategori_id = b.id";
+                a.id AS id,
+                b.id AS kategori_id,
+                b.kategori AS kategori,
+                a.nama AS nama,
+                a.harga AS harga,
+                a.img AS img,
+                a.owner AS owner,
+                IF(c.nama IS NULL, 'Owner', c.nama) AS 'name_owner',
+                a.status AS status
+            FROM minuman a
+            LEFT JOIN kategori_minuman b ON a.kategori_id = b.id
+            LEFT JOIN mitra c ON a.owner = c.kode";
         $query = $this->db->query($SQL)->result();
         $this->output
             ->set_content_type('application/json')

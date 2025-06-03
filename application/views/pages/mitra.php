@@ -56,7 +56,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr ng-repeat="dt in Makanan" ng-if="Makanan.length > 0">
+                                <tr ng-repeat="dt in LoadDataRow" ng-if="LoadDataRow.length > 0">
                                     <td>{{$index + 1}}</td>
                                     <td>{{dt.kode}}</td>
                                     <td>{{dt.nama}}</td>
@@ -66,6 +66,24 @@
                                     <td>
                                         <span class="badge bg-success" ng-if="dt.status_account == 1">Aktif</span>
                                         <span class="badge bg-warning" ng-if="dt.status_account == 0">Non Aktif</span>
+                                    </td>
+                                    <td>
+                                        <div class="button-group">
+                                            <button type="button" class="btn btn-sm btn-warning"
+                                                ng-click="EditShow(dt)">
+                                                <i class="bx bx-edit"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-danger" ng-click="Delete(dt)">
+                                                <i class="bx bx-trash"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-dark" ng-click="ActivateAccount(dt)">
+                                                <i class="bx bx-key"></i>
+                                            </button>
+                                            <button class="btn btn-sm btn-info" ng-click="DeActivateAccount(dt)"
+                                                ng-if="dt.status_account == 1">
+                                                <i class="bx bx-user-x"></i>
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                                 <tr ng-if="Makanan.length === 0">

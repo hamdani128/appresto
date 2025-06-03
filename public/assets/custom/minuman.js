@@ -36,6 +36,42 @@ appminuman.controller("ControllerMinuman", function ($scope, $http) {
 	};
 	$scope.LoadDataMinuman();
 
+	$scope.DataMitra = function (combo) {
+		$http
+			.get(base_url("master/mitra/getdata"))
+			.then(function (response) {
+				const optionsData = response.data;
+				const select = document.getElementById(combo);
+				select.innerHTML = "";
+
+				// Tambah opsi default manual
+				const ownerOption = document.createElement("option");
+				ownerOption.value = "";
+				ownerOption.text = "Pilih Owner :";
+				select.appendChild(ownerOption);
+
+				// Tambahkan opsi statis "Owner"
+				const staticOwner = document.createElement("option");
+				staticOwner.value = "Owner";
+				staticOwner.text = "Owner";
+				select.appendChild(staticOwner);
+
+				// Tambah opsi berdasarkan response dari server
+				optionsData.forEach((option) => {
+					const newOption = document.createElement("option");
+					newOption.value = option.kode;
+					newOption.text = option.kode + " - " + option.nama;
+					select.appendChild(newOption);
+				});
+			})
+			.catch(function (error) {
+				console.error("Terjadi kesalahan:", error);
+			});
+	};
+
+	$scope.DataMitra("cmb_owner");
+	$scope.DataMitra("cmb_owner_update");
+
 	$scope.ShowEditMinuman = function (da) {
 		$scope.data = angular.copy(da);
 		$("#id_update").val($scope.data.id);

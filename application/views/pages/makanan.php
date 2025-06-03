@@ -38,8 +38,8 @@
                                 </button>
                                 <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
                                     <a class="dropdown-item" onclick="add_makanan()">Tambah Data</a>
-                                    <a class="dropdown-item" href="javascript:;">Import Data</a>
-                                    <a class="dropdown-item" href="javascript:;">Download Data</a>
+                                    <a class="dropdown-item" href="javascript:;">Ready All Status Food</a>
+                                    <a class="dropdown-item" href="javascript:;">Not Ready All Status Food</a>
                                 </div>
                             </div>
                         </div>
@@ -47,14 +47,15 @@
                     <div class="table-responsive">
                         <table datatable="ng" dt-options="vm.dtOptions" class="table table-striped table-bordered"
                             style="width:100%">
-                            <thead>
+                            <thead class="bg-dark text-white">
                                 <tr>
                                     <th>#</th>
                                     <th>Kategori</th>
                                     <th>Nama Makanan</th>
                                     <th>Harga Jual</th>
                                     <th>File Image</th>
-                                    <th>Owner</th>
+                                    <th>Owner/Mitra</th>
+                                    <th>Status Food</th>
                                     <th>Action</th>
                                 </tr>
                             </thead>
@@ -66,10 +67,30 @@
                                     <td>{{dt.harga}}</td>
                                     <td style="text-align: center;">
                                         <img style="height: 80px;width: 100px;"
-                                            ng-src="{{dt.img ? '<?= base_url("public/upload/") ?>' + dt.img : '<?= base_url("public/assets/images/foodbar.png") ?>'}}"
+                                            ng-src="{{dt.img ? '<?=base_url("public/upload/")?>' + dt.img : '<?=base_url("public/assets/images/foodbar.png")?>'}}"
                                             alt="">
                                     </td>
-                                    <td>{{dt.owner}}</td>
+                                    <td>
+                                        <div ng-if="dt.name_owner == 'Owner'">
+                                            <p>Owner</p>
+                                        </div>
+                                        <div ng-if="dt.name_owner !== 'Owner'">
+                                            <p>{{dt.owner}}</p>
+                                            <p>{{dt.name_owner}}</p>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div ng-if="dt.status == '1'">
+                                            <span class="badge bg-success">
+                                                Ready
+                                            </span>
+                                        </div>
+                                        <div ng-if="dt.status == '0'">
+                                            <span class="badge bg-danger">
+                                                Not Ready
+                                            </span>
+                                        </div>
+                                    </td>
                                     <td>
                                         <div class="input-group">
                                             <button class="btn btn-md btn-danger" ng-click="DeleteMakanan(dt)">
@@ -85,17 +106,6 @@
                                     <td colspan="6">No data available</td>
                                 </tr>
                             </tbody>
-                            <tfoot>
-                                <tr>
-                                    <th>#</th>
-                                    <th>Kategori</th>
-                                    <th>Nama Makanan</th>
-                                    <th>Harga Jual</th>
-                                    <th>File Image</th>
-                                    <th>Owner</th>
-                                    <th>Action</th>
-                                </tr>
-                            </tfoot>
                         </table>
                     </div>
                 </div>
@@ -242,13 +252,11 @@
                                     <div class="pt-2" id="display_img"></div>
                                 </div>
                                 <div class="form-group pt-2">
-                                    <label for="">Owner</label>
+                                    <label for="">Owner Food</label>
                                     <select class="form-control mt-1" name="cmb_owner" id="cmb_owner">
-                                        <option value="">Pilih Owner</option>
-                                        <option value="Owner">Owner</option>
-                                        <option value="Mitra">Mitra</option>
                                     </select>
                                 </div>
+
                             </div>
                         </div>
                     </form>
@@ -311,9 +319,6 @@
                                 <div class="form-group pt-2">
                                     <label for="">Owner</label>
                                     <select class="form-control mt-1" name="cmb_owner_update" id="cmb_owner_update">
-                                        <option value="">Pilih Owner</option>
-                                        <option value="Owner">Owner</option>
-                                        <option value="Mitra">Mitra</option>
                                     </select>
                                 </div>
                             </div>

@@ -3,25 +3,29 @@
         <nav class="navbar navbar-expand">
             <div class="topbar-logo-header">
                 <div class="">
-                    <img src="<?= base_url() ?>public/assets/images/logo-icon.png" class="logo-icon" alt="logo icon">
+                    <img src="<?=base_url()?>public/assets/images/millennialpos-white.png" alt="logo icon">
                 </div>
                 <div class="">
-                    <h4 class="logo-text">App The'Coffe</h4>
+                    <!-- <h4 class="logo-text">App The'Coffe</h4> -->
                 </div>
             </div>
             <div class="mobile-toggle-menu"><i class='bx bx-menu'></i></div>
             <div class="search-bar flex-grow-1" style="display: none;">
                 <div class="position-relative search-bar-box">
                     <input type="text" class="form-control search-control" placeholder="Type to search...">
-                    <span class="position-absolute top-50 search-show translate-middle-y"><i class='bx bx-search'></i></span>
-                    <span class="position-absolute top-50 search-close translate-middle-y"><i class='bx bx-x'></i></span>
+                    <span class="position-absolute top-50 search-show translate-middle-y"><i
+                            class='bx bx-search'></i></span>
+                    <span class="position-absolute top-50 search-close translate-middle-y"><i
+                            class='bx bx-x'></i></span>
                 </div>
             </div>
             <div class="top-menu ms-auto">
                 <ul class="navbar-nav align-items-center">
 
                     <li class="nav-item dropdown dropdown-large">
-                        <a class="nav-link dropdown-toggle dropdown-toggle-nocaret position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"> <span class="alert-count">7</span>
+                        <a class="nav-link dropdown-toggle dropdown-toggle-nocaret position-relative" href="#"
+                            role="button" data-bs-toggle="dropdown" aria-expanded="false"> <span
+                                class="alert-count">7</span>
                             <i class='bx bx-bell'></i>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end">
@@ -89,7 +93,8 @@
                                 </a>
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
-                                        <div class="notify bg-light-danger text-danger"><i class="bx bx-message-detail"></i>
+                                        <div class="notify bg-light-danger text-danger"><i
+                                                class="bx bx-message-detail"></i>
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">New Comments <span class="msg-time float-end">4 hrs
@@ -100,7 +105,8 @@
                                 </a>
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
-                                        <div class="notify bg-light-success text-success"><i class='bx bx-check-square'></i>
+                                        <div class="notify bg-light-success text-success"><i
+                                                class='bx bx-check-square'></i>
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">Your item is shipped <span class="msg-time float-end">5
@@ -123,7 +129,8 @@
                                 </a>
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
-                                        <div class="notify bg-light-warning text-warning"><i class='bx bx-door-open'></i>
+                                        <div class="notify bg-light-warning text-warning"><i
+                                                class='bx bx-door-open'></i>
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">Defense Alerts <span class="msg-time float-end">2 weeks
@@ -139,7 +146,9 @@
                         </div>
                     </li>
                     <li class="nav-item dropdown dropdown-large" style="display: none;">
-                        <a class="nav-link dropdown-toggle dropdown-toggle-nocaret position-relative" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"> <span class="alert-count">8</span>
+                        <a class="nav-link dropdown-toggle dropdown-toggle-nocaret position-relative" href="#"
+                            role="button" data-bs-toggle="dropdown" aria-expanded="false"> <span
+                                class="alert-count">8</span>
                             <i class='bx bx-comment'></i>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end">
@@ -153,7 +162,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?= base_url() ?>public/assets/images/avatars/avatar-1.png" class="msg-avatar" alt="user avatar">
+                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-1.png"
+                                                class="msg-avatar" alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">Daisy Anderson <span class="msg-time float-end">5 sec
@@ -165,7 +175,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?= base_url() ?>public/assets/images/avatars/avatar-2.png" class="msg-avatar" alt="user avatar">
+                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-2.png"
+                                                class="msg-avatar" alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">Althea Cabardo <span class="msg-time float-end">14
@@ -177,7 +188,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?= base_url() ?>public/assets/images/avatars/avatar-3.png" class="msg-avatar" alt="user avatar">
+                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-3.png"
+                                                class="msg-avatar" alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">Oscar Garner <span class="msg-time float-end">8 min
@@ -189,7 +201,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?= base_url() ?>public/assets/images/avatars/avatar-4.png" class="msg-avatar" alt="user avatar">
+                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-4.png"
+                                                class="msg-avatar" alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">Katherine Pechon <span class="msg-time float-end">15
@@ -201,7 +214,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?= base_url() ?>public/assets/images/avatars/avatar-5.png" class="msg-avatar" alt="user avatar">
+                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-5.png"
+                                                class="msg-avatar" alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">Amelia Doe <span class="msg-time float-end">22 min
@@ -213,7 +227,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?= base_url() ?>public/assets/images/avatars/avatar-6.png" class="msg-avatar" alt="user avatar">
+                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-6.png"
+                                                class="msg-avatar" alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">Cristina Jhons <span class="msg-time float-end">2 hrs
@@ -225,7 +240,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?= base_url() ?>public/assets/images/avatars/avatar-7.png" class="msg-avatar" alt="user avatar">
+                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-7.png"
+                                                class="msg-avatar" alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">James Caviness <span class="msg-time float-end">4 hrs
@@ -237,7 +253,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?= base_url() ?>public/assets/images/avatars/avatar-8.png" class="msg-avatar" alt="user avatar">
+                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-8.png"
+                                                class="msg-avatar" alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">Peter Costanzo <span class="msg-time float-end">6 hrs
@@ -249,7 +266,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?= base_url() ?>public/assets/images/avatars/avatar-9.png" class="msg-avatar" alt="user avatar">
+                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-9.png"
+                                                class="msg-avatar" alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">David Buckley <span class="msg-time float-end">2 hrs
@@ -261,7 +279,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?= base_url() ?>public/assets/images/avatars/avatar-10.png" class="msg-avatar" alt="user avatar">
+                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-10.png"
+                                                class="msg-avatar" alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">Thomas Wheeler <span class="msg-time float-end">2 days
@@ -273,7 +292,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?= base_url() ?>public/assets/images/avatars/avatar-11.png" class="msg-avatar" alt="user avatar">
+                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-11.png"
+                                                class="msg-avatar" alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">Johnny Seitz <span class="msg-time float-end">5 days
@@ -291,11 +311,13 @@
                 </ul>
             </div>
             <div class="user-box dropdown">
-                <a class="d-flex align-items-center nav-link dropdown-toggle dropdown-toggle-nocaret" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="<?= base_url() ?>public/assets/images/avatars/avatar-2.png" class="user-img" alt="user avatar">
+                <a class="d-flex align-items-center nav-link dropdown-toggle dropdown-toggle-nocaret" href="#"
+                    role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    <img src="<?=base_url()?>public/assets/images/avatars/avatar-2.png" class="user-img"
+                        alt="user avatar">
                     <div class="user-info ps-3">
-                        <p class="user-name mb-0"><?= $this->session->userdata('fullname'); ?></p>
-                        <p class="designattion mb-0"><?= $this->session->userdata('level'); ?></p>
+                        <p class="user-name mb-0"><?=$this->session->userdata('fullname');?></p>
+                        <p class="designattion mb-0"><?=$this->session->userdata('level');?></p>
                     </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
@@ -303,12 +325,14 @@
                     </li>
                     <li><a class="dropdown-item" href="javascript:;"><i class="bx bx-cog"></i><span>Settings</span></a>
                     </li>
-                    <li><a class="dropdown-item" href="javascript:;"><i class='bx bx-home-circle'></i><span>Dashboard</span></a>
+                    <li><a class="dropdown-item" href="javascript:;"><i
+                                class='bx bx-home-circle'></i><span>Dashboard</span></a>
                     </li>
                     <li>
                         <div class="dropdown-divider mb-0"></div>
                     </li>
-                    <li><a class="dropdown-item" href="<?= base_url('auth/login/logout') ?>"><i class='bx bx-log-out-circle'></i><span>Logout</span></a>
+                    <li><a class="dropdown-item" href="<?=base_url('auth/login/logout')?>"><i
+                                class='bx bx-log-out-circle'></i><span>Logout</span></a>
                     </li>
                 </ul>
             </div>
