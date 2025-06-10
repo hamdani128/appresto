@@ -6,7 +6,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!--favicon-->
-    <link rel="icon" href="<?=base_url()?>public/assets/images/favicon-32x32.png" type="image/png" />
+    <link rel="icon" href="<?=base_url()?>public/assets/images/coffe.png" type="image/png" />
     <!--plugins-->
     <link href="<?=base_url()?>public/assets/plugins/vectormap/jquery-jvectormap-2.0.2.css" rel="stylesheet" />
     <link href="<?=base_url()?>public/assets/plugins/simplebar/css/simplebar.css" rel="stylesheet" />
@@ -31,7 +31,7 @@
     <link rel="stylesheet" href="<?=base_url()?>public/assets/css/dark-theme.css" />
     <link rel="stylesheet" href="<?=base_url()?>public/assets/css/semi-dark.css" />
     <link rel="stylesheet" href="<?=base_url()?>public/assets/css/header-colors.css" />
-    <title>Rukada - Responsive Bootstrap 5 Admin Template</title>
+    <title>Coffe App</title>
 </head>
 
 <body>
@@ -59,7 +59,9 @@
         <a href="javaScript:;" class="back-to-top"><i class='bx bxs-up-arrow-alt'></i></a>
         <!--End Back To Top Button-->
         <footer class="page-footer">
-            <p class="mb-0">Copyright © 2021. All right reserved.</p>
+            <p class="mb-0">Copyright © <?php date_default_timezone_set('Asia/Jakarta');
+echo date('Y')?>. All right
+                reserved.</p>
         </footer>
     </div>
     <!--end wrapper-->

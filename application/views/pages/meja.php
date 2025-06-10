@@ -34,7 +34,7 @@
             <div class="card-body">
                 <div class="row pb-5">
                     <div class="col-md-12 text-justify-right" style="text-align: right;">
-                        <div class="btn-group">
+                        <div class="button-group">
                             <button type="button"
                                 class="btn btn-primary split-bg-primary dropdown-toggle dropdown-toggle-split"
                                 data-bs-toggle="dropdown">
@@ -51,7 +51,7 @@
                 </div>
                 <div class="table-responsive">
                     <table id="tb_meja" class="table table-striped table-bordered" style="width:100%">
-                        <thead>
+                        <thead class="bg-dark text-white">
                             <tr>
                                 <th>#</th>
                                 <th>No Meja</th>
@@ -79,14 +79,6 @@
                                 <td colspan="4">No data available</td>
                             </tr>
                         </tbody>
-                        <tfoot>
-                            <tr>
-                                <th>#</th>
-                                <th>No Meja</th>
-                                <th>Nama Meja</th>
-                                <th>Action</th>
-                            </tr>
-                        </tfoot>
                     </table>
                 </div>
             </div>

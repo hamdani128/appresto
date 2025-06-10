@@ -6,20 +6,20 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <!--favicon-->
-    <link rel="icon" href="<?= base_url() ?>public/assets/images/favicon-32x32.png" type="image/png" />
+    <link rel="icon" href="<?=base_url()?>public/assets/images/coffe.png" type="image/png" />
     <!-- loader-->
-    <link href="<?= base_url() ?>public/assets/css/pace.min.css" rel="stylesheet" />
-    <script src="<?= base_url() ?>public/assets/js/pace.min.js"></script>
+    <link href="<?=base_url()?>public/assets/css/pace.min.css" rel="stylesheet" />
+    <script src="<?=base_url()?>public/assets/js/pace.min.js"></script>
     <!-- Bootstrap CSS -->
-    <link href="<?= base_url() ?>public/assets/css/bootstrap.min.css" rel="stylesheet">
-    <link href="<?= base_url() ?>public/assets/css/bootstrap-extended.css" rel="stylesheet">
+    <link href="<?=base_url()?>public/assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="<?=base_url()?>public/assets/css/bootstrap-extended.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-    <link href="<?= base_url() ?>public/assets/css/app.css" rel="stylesheet">
-    <link href="<?= base_url() ?>public/assets/css/icons.css" rel="stylesheet">
+    <link href="<?=base_url()?>public/assets/css/app.css" rel="stylesheet">
+    <link href="<?=base_url()?>public/assets/css/icons.css" rel="stylesheet">
     <!-- SweetAlert2 -->
-    <link rel="stylesheet" href="<?= base_url() ?>public/assets/sweetalert/sweetalert2.css">
-    <link rel="stylesheet" href="<?= base_url() ?>public/assets/sweetalert/sweetalert2.min.css">
-    <title>App Resto - Login Administrasi</title>
+    <link rel="stylesheet" href="<?=base_url()?>public/assets/sweetalert/sweetalert2.css">
+    <link rel="stylesheet" href="<?=base_url()?>public/assets/sweetalert/sweetalert2.min.css">
+    <title>Coffe Login App</title>
 </head>
 
 <body class="bg-lock-screen">
@@ -31,7 +31,7 @@
                     <h2 class="" id="jam">10:53 AM</h2>
                     <h5 class="" id="hari">Tuesday, January 14, 2021</h5>
                     <div class="">
-                        <img src="<?= base_url() ?>public/assets/images/icons/user.png" class="my-4" width="120"
+                        <img src="<?=base_url()?>public/assets/images/millennialpos.png" class="my-4" width="180"
                             alt="" />
                     </div>
                     <p class="mt-2">Administrator</p>
@@ -52,18 +52,18 @@
     <!-- end wrapper -->
 </body>
 <!-- Bootstrap JS -->
-<script src="<?= base_url() ?>public/assets/js/bootstrap.bundle.min.js"></script>
+<script src="<?=base_url()?>public/assets/js/bootstrap.bundle.min.js"></script>
 <!--plugins-->
-<script src="<?= base_url() ?>public/assets/js/jquery.min.js"></script>
-<script src="<?= base_url() ?>public/assets/plugins/simplebar/js/simplebar.min.js"></script>
+<script src="<?=base_url()?>public/assets/js/jquery.min.js"></script>
+<script src="<?=base_url()?>public/assets/plugins/simplebar/js/simplebar.min.js"></script>
 
-<script src="<?= base_url() ?>public/assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js"></script>
-<script src="<?= base_url() ?>public/assets/custom/login.js"></script>
+<script src="<?=base_url()?>public/assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js"></script>
+<script src="<?=base_url()?>public/assets/custom/login.js"></script>
 <!-- SweetAlert -->
-<script src="<?= base_url() ?>public/assets/sweetalert/sweetalert2.js"></script>
-<script src="<?= base_url() ?>public/assets/sweetalert/sweetalert2.min.js"></script>
-<script src="<?= base_url() ?>public/assets/sweetalert/sweetalert2.all.js"></script>
-<script src="<?= base_url() ?>public/assets/sweetalert/sweetalert2.all.min.js"></script>
+<script src="<?=base_url()?>public/assets/sweetalert/sweetalert2.js"></script>
+<script src="<?=base_url()?>public/assets/sweetalert/sweetalert2.min.js"></script>
+<script src="<?=base_url()?>public/assets/sweetalert/sweetalert2.all.js"></script>
+<script src="<?=base_url()?>public/assets/sweetalert/sweetalert2.all.min.js"></script>
 <script>
 function showTime() {
     var a_p = "";

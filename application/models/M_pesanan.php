@@ -12,7 +12,8 @@ class M_pesanan extends CI_Model
                 a.harga as harga,
                 a.img as img,
                 a.owner as owner,
-                'Makanan' as jenis
+                'Makanan' as jenis,
+                a.status as status_food
                 FROM makanan a
                 LEFT JOIN kategori_makanan b ON a.kategori_id = b.id
 
@@ -26,7 +27,8 @@ class M_pesanan extends CI_Model
                 a.harga as harga,
                 a.img as img,
                 a.owner as owner,
-                'Minuman' as jenis
+                'Minuman' as jenis,
+                a.status as status_food
                 FROM minuman a
                 LEFT JOIN kategori_minuman b ON a.kategori_id = b.id
                 ";
@@ -45,6 +47,20 @@ class M_pesanan extends CI_Model
                 FROM order_detail a
                 WHERE a.no_order='" . $no_order . "'
                 GROUP BY 1,2,3,4";
+        $query = $this->db->query($SQL)->result();
+        return $query;
+    }
+
+    public function ListDetailPesanan($no_booking, $no_meja, $makanan)
+    {
+        $SQL = "SELECT
+                a.*,
+                b.nama as status_food
+                FROM order_detail a
+                LEFT JOIN status_food b ON a.status = b.id
+                WHERE a.no_order='" . $no_booking . "'
+                AND a.no_meja='" . $no_meja . "'
+                AND a.nama='" . $makanan . "'";
         $query = $this->db->query($SQL)->result();
         return $query;
     }

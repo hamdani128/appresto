@@ -2,7 +2,7 @@
     <div class="page-wrapper">
         <div class="page-content">
             <div class="row">
-                <div class="col-12 col-lg-7 col-xl-7 d-flex">
+                <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 d-flex">
                     <div class="card radius-10 w-100">
                         <div class="card-header bg-dark">
                             <h5 class="text-white">List Table</h5>
@@ -10,7 +10,7 @@
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-lg-2" ng-repeat="dt in LoadData" ng-if="LoadData.length > 0">
-                                    <div class="card bg-success" id="bg_{{$index}}" ng-if="dt.status === '0'"
+                                    <div class="card bg-secondary" id="bg_{{$index}}" ng-if="dt.status === '0'"
                                         ng-click="SelectedMeja('bg_' + $index, dt)">
                                         <div class="card-body">
                                             <h2 class="card-title text-white">{{dt.no_meja}}
@@ -32,13 +32,23 @@
                     </div>
                 </div>
                 <!-- Order -->
-                <div class="col-12 col-lg-5 col-xl-5 d-flex">
+                <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 d-flex">
                     <div class="card radius-10 overflow-hidden w-100">
                         <div class="card-header bg-dark">
-                            <h5 class="text-white">
-                                <i class="bx bx-slider-alt"></i>
-                                Operation Tools
-                            </h5>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <h5 class="text-white">
+                                        <i class="bx bx-slider-alt"></i>
+                                        Operation Tools
+                                    </h5>
+                                </div>
+                                <div class="col-md-6 text-end">
+                                    <button class="btn btn-md btn-light" id="btn_refresh" ng-click="Refresh()">
+                                        <i class="bx bx-home"></i>
+                                        Home
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                         <div class="card-body">
                             <div class="row">
@@ -70,21 +80,25 @@
                             </div>
                             <div class="row">
                                 <div class="col-md-12">
-                                    <div class="input-group button-group">
-                                        <button class="btn btn-md btn-danger w-50" id="btn_pindah_meja"
-                                            style="display: none;">
+                                    <div class="d-flex gap-2">
+                                        <button class="btn btn-md btn-danger flex-fill" id="btn_pindah_meja"
+                                            style="display: none;flex: 1;" ng-click="PindahMeja()">
                                             <i class="bx bx-layer"></i>
                                             Pindah
                                         </button>
-                                        <button class="btn btn-md btn-primary w-50" id="btn_tambah_pesanan"
-                                            style="display: none;" ng-click="TambahPesanan()">
+                                        <button class="btn btn-md btn-dark flex-fill" id="btn_gabung_bill"
+                                            style="display: none;flex: 1;" ng-click="GabungBill()">
+                                            <i class="bx bx-layer"></i>
+                                            Gabung Bill
+                                        </button>
+                                        <button class="btn btn-md btn-primary flex-fill" id="btn_tambah_pesanan"
+                                            style="display: none;flex: 2;" ng-click="TambahPesanan()">
                                             <i class="bx bx-edit"></i>
-                                            Tambah
+                                            Tambah Pesanan
                                         </button>
                                     </div>
                                 </div>
                             </div>
-
                             <!-- jumlah makanan -->
                             <div class="pt-2" id="row_count_pesanan" style="display: none;">
                                 <div class="row">
@@ -251,16 +265,21 @@
                                 <div class="row pt-1">
                                     <div class="col-md-12">
                                         <div class="row">
-                                            <div class="input-group button-group">
-                                                <button class="btn btn-success btn btn-md btn-block w-50 h-30"
-                                                    ng-click="CetakBill()" style="height: 100px;">
+                                            <div class="d-flex gap-2">
+                                                <button class="btn btn-success btn btn-md btn-block w-30 h-30"
+                                                    ng-click="CetakBill()" style="height: 100px;flex: 1;">
                                                     <i class="bx bx-printer"></i>
                                                     Cetak Bill
                                                 </button>
-                                                <button class="btn btn-info btn btn-md btn-block w-50 h-30"
-                                                    ng-click="payment_cash()" style="height: 100px;">
+                                                <button class="btn btn-info btn btn-md btn-block w-30 h-30"
+                                                    ng-click="pay_after_service()" style="height: 100px;flex: 1;">
                                                     <i class="bx bx-save"></i>
-                                                    Payment Cash
+                                                    Pay after service
+                                                </button>
+                                                <button class="btn btn-dark btn btn-md btn-block w-30 h-30"
+                                                    ng-click="pay_before_service()" style="height: 100px;flex: 1;">
+                                                    <i class="bx bx-save"></i>
+                                                    Pay Before Service
                                                 </button>
                                             </div>
                                         </div>
@@ -325,8 +344,15 @@
                                                                         <h5 class="mb-1 text-black">
                                                                             {{dt.jenis}}
                                                                         </h5>
-                                                                        <span
-                                                                            class="badge bg-info text-white">Ready</span>
+
+                                                                        <span class="badge bg-info text-white"
+                                                                            ng-if="dt.status_food == '1'">
+                                                                            Ready
+                                                                        </span>
+                                                                        <span class="badge bg-danger text-white"
+                                                                            ng-if="dt.status_food == '0'">
+                                                                            Close
+                                                                        </span>
 
                                                                     </div>
                                                                     <div class="row d-flex">
@@ -379,7 +405,7 @@
                                         <div class="table-responsive">
                                             <table class="table table-striped table-bordered" style="width:100%"
                                                 id="tb_pesanan">
-                                                <thead>
+                                                <thead class="bg-dark text-white">
                                                     <tr>
                                                         <th>#</th>
                                                         <th>Cat.</th>
@@ -387,6 +413,7 @@
                                                         <th>Harga</th>
                                                         <th>Qty</th>
                                                         <th>Jenis</th>
+                                                        <th>Owner</th>
                                                         <th>Action</th>
                                                     </tr>
                                                 </thead>
@@ -468,8 +495,14 @@
                                                                         <h5 class="mb-1 text-black">
                                                                             {{dt.jenis}}
                                                                         </h5>
-                                                                        <span
-                                                                            class="badge bg-info text-white">Ready</span>
+                                                                        <span class="badge bg-info text-white"
+                                                                            ng-if="dt.status_food == '1'">
+                                                                            Ready
+                                                                        </span>
+                                                                        <span class="badge bg-danger text-white"
+                                                                            ng-if="dt.status_food == '0'">
+                                                                            Close
+                                                                        </span>
 
                                                                     </div>
                                                                     <div class="row d-flex pt-2">
@@ -521,7 +554,7 @@
                                             <div class="table-responsive">
                                                 <table class="table table-striped table-bordered" style="width:100%"
                                                     id="tb_pesanan">
-                                                    <thead>
+                                                    <thead class="bg-dark text-white">
                                                         <tr>
                                                             <th>#</th>
                                                             <th>Cat.</th>
@@ -529,6 +562,7 @@
                                                             <th>Harga</th>
                                                             <th>Qty</th>
                                                             <th>Jenis</th>
+                                                            <th>Owner</th>
                                                             <th>Action</th>
                                                         </tr>
                                                     </thead>
@@ -563,35 +597,482 @@
     </div>
     <!-- End Tambah Pesanan -->
 
+    <!-- List Pesanan Detail -->
+    <div id="my-modal-list-detail" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="my-modal-title"
+        aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-info">
+                    <h5 class="modal-title text-white">No.Pesanan <label id="lb_no_booking_list"></label> | No.Meja
+                        <label id="lb_no_meja_list"></label>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row pb-2">
+                        <div class="col-md-12">
+                            <button class="btn btn-md btn-primary" ng-click="UpdateServed()">
+                                <i class="bx bx-edit"></i>
+                                Served
+                            </button>
+                            <button class="btn btn-md btn-info" ng-click="UpdateDelivered()">
+                                <i class="bx bx-edit"></i>
+                                Delivered
+                            </button>
+                            <button class="btn btn-md btn-success" ng-click="UpdateCompleted()">
+                                <i class="bx bx-edit"></i>
+                                Completed
+                            </button>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered" style="width:130%"
+                                    id="tb_pesanan_list_detail">
+                                    <thead class="bg-dark text-white">
+                                        <tr>
+                                            <th>
+                                                <input type="checkbox" ng-model="checkAll" ng-change="toggleAll()"
+                                                    class="form-check-input">
+                                            </th>
+                                            <th>#</th>
+                                            <th>Action</th>
+                                            <th>Status Food</th>
+                                            <th>No.Order</th>
+                                            <th>No.Meja</th>
+                                            <th>Category</th>
+                                            <th>List</th>
+                                            <th>Harga</th>
+                                            <th>Qty</th>
+                                            <th>Subtotal</th>
+                                            <th>Jenis</th>
+                                            <th>Owner</th>
+                                            <th>Time Request</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="td_pesanan_body_list_detail">
+                                        <tr ng-repeat="dt in LoadDataPesananDetail"
+                                            ng-if="LoadDataPesananDetail.length > 0">
+                                            <td>
+                                                <input type="checkbox" ng-model="dt.checked"
+                                                    ng-change="updateCheckedIds()" class="form-check-input">
+                                            </td>
+                                            <td>{{$index + 1}}</td>
+                                            <td>
+                                                <div class="btn-group input-group">
+                                                    <button type="button" class="btn btn-sm btn-dark"
+                                                        ng-if="dt.status=='1'"
+                                                        ng-click="TambahQtyPesananListDetail(dt)">
+                                                        <i class=" bx bx-plus"></i>
+                                                    </button>
+                                                    <button type="button" class="btn btn-sm btn-dark"
+                                                        ng-if="dt.status=='1'"
+                                                        ng-click="KurangQtyPesananListDetail(dt)">
+                                                        <i class=" bx bx-minus"></i>
+                                                    </button>
+                                                    <!-- <button type="button" class="btn btn-sm btn-danger"
+                                                        ng-click="DeleteListDetail(dt)" ng-if="dt.status=='1'">
+                                                        <i class="bx bx-trash"></i>
+                                                    </button> -->
+                                                </div>
+                                            </td>
+                                            <td>
+                                                <div ng-if="dt.status=='1'">
+                                                    <span class="badge bg-warning text-white">
+                                                        {{dt.status_food}}
+                                                    </span>
+                                                </div>
+                                                <div ng-if="dt.status=='2'">
+                                                    <span class="badge bg-info text-white">
+                                                        {{dt.status_food}}
+                                                    </span>
+                                                </div>
+                                                <div ng-if="dt.status=='3'">
+                                                    <span class="badge bg-info text-white">
+                                                        {{dt.status_food}}
+                                                    </span>
+                                                </div>
+                                                <div ng-if="dt.status=='4'">
+                                                    <span class="badge bg-success text-white">
+                                                        {{dt.status_food}}
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td>{{dt.no_order}}</td>
+                                            <td>{{dt.no_meja}}</td>
+                                            <td>{{dt.kategori}}</td>
+                                            <td>{{dt.nama}}</td>
+                                            <td>{{dt.harga}}</td>
+                                            <td class="qty-cell-list-detail">{{dt.qty}}</td>
+                                            <td class="subtotal-cell-list-detail">{{dt.qty * dt.harga}}</td>
+                                            <td>{{dt.jenis}}</td>
+                                            <td>{{dt.owner}}</td>
+                                            <td>{{dt.created_at}}</td>
+                                        </tr>
+                                        <tr ng-if="LoadDataPesananDetail.length === 0">
+                                            <td colspan="12" class="text-center">No data available</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <!-- <div class="modal-footer">
+                    Footer
+                </div> -->
+            </div>
+        </div>
+    </div>
+    <!-- End List Pesanan Detail -->
 
-    <!-- Modal Pembayaran Uang Cash -->
-    <div id="my-modal-cash" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="my-modal-title"
+    <!-- Pindah Meja -->
+    <div id="my-modal-pindah-meja" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="my-modal-title"
         aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
-                <div class="modal-header bg-info">
-                    <h5 class="modal-title text-white">No.Pesanan <label id="lb_no_booking_cash"></label> | No.Meja
-                        <label id="lb_no_meja_cash"></label>
+                <div class="modal-header bg-danger">
+                    <h5 class="modal-title text-white">No.Pesanan <label id="lb_no_booking_pindah_meja"></label> |
+                        No.Meja
+                        <label id="lb_no_meja_pindah_meja"></label>
                     </h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
                     <div class="row">
-                        <div class="col-12 text-end">
-                            <h4>Subtotal Belanja</h4>
-                            <h2 id="lb_total_belanja">Rp.0 </h2>
+                        <div class="col-md-12">
+                            <div class="form-grou">
+                                <label for="">Tujuan No.Meja Pindah :</label>
+                                <select class="form-control" id="combo_pindah_meja"></select>
+                            </div>
                         </div>
                     </div>
                 </div>
                 <div class="modal-footer">
-                    Footer
+                    <div class="row">
+                        <div class="col-md-12">
+                            <button class="btn btn-md btn-danger btn-block w-100" ng-click="PindahMejaSubmit()">
+                                <i class="bx bx-paper-plane"></i>
+                                Submit
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Pindah Meja -->
+
+    <!-- Modal Pembayaran Uang Cash -->
+    <div id="my-modal-payment-before-service" class="modal fade" tabindex="-1" role="dialog"
+        aria-labelledby="my-modal-title" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-dark">
+                    <h5 class="modal-title text-white">No.Pesanan <label
+                            id="lb_no_booking_payment_before_service"></label> | No.Meja
+                        <label id="lb_no_meja_payment_before_service"></label>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <table class="table table-striped table-bordered" style="width:100%"
+                                id="tb_payment_before_service">
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="2"
+                                            style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="">Total Qty : </label>
+                                        </td>
+                                        <td colspan="6"
+                                            style="font-size: 20px; font-weight: bold;text-align: right;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="" id="total-qty-payment-before-service">0</label>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"
+                                            style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="">Subtotal : </label>
+                                        </td>
+                                        <td colspan="6"
+                                            style="font-size: 20px; font-weight: bold;text-align: right;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="" id="subtotal-payment-before-service">0</label>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"
+                                            style="text-align: right; font-size: 20px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="">
+                                                PPN
+                                                <label for="" id="ppn-text-payment-before-service">
+                                                </label>% :
+                                            </label>
+                                        </td>
+                                        <td colspan="6"
+                                            style="font-size: 20px; font-weight: bold;text-align: right;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="" id="ppn-payment-before-service">0</label>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"
+                                            style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="">Grand Total : </label>
+                                        </td>
+                                        <td colspan="6"
+                                            style="font-size: 20px; font-weight: bold;text-align: right;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="" id="grand-total-payment-before-service">0</label>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"
+                                            style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="">Metode Payment :</label>
+                                        </td>
+                                        <td colspan="6"
+                                            style="font-size: 20px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <div
+                                                style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                                                <select id="combo-payment-before-service" class="form-control"
+                                                    style="width: 100%;font-size: 20px;"
+                                                    onchange="changePaymentBeforeService()">
+                                                    <option value="">Pilih :</option>
+                                                    <option value="Cash">Cash</option>
+                                                    <option value="QRIS">QRIS</option>
+                                                    <option value="Bank Transfer">Bank Transfer</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr id="display_jumlah_dibayar_payment_before_service" style="display: none;">
+                                        <td colspan="2"
+                                            style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="">Jumlah Dibayar :</label>
+                                        </td>
+                                        <td colspan="6"
+                                            style="font-size: 20px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <div
+                                                style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                                                <input type="text" name="jumlah-dibayar-payment-before-service"
+                                                    id="jumlah-dibayar-payment-before-service" class=" form-control"
+                                                    style="text-align: right;width:
+                                                100%;font-size: 20px;">
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr id="display_kembalian_payment_before_service" style="display: none;">
+                                        <td colspan="2"
+                                            style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="">kembalian : </label>
+                                        </td>
+                                        <td colspan="6"
+                                            style="font-size: 20px; font-weight: bold;text-align: right;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="" id="kembalian-payment-before-service">0</label>
+                                        </td>
+                                    </tr>
+                                    <tr id="display_reference_payment_before_service" style="display: none;">
+                                        <td colspan="2"
+                                            style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="">Reference Payment :</label>
+                                        </td>
+                                        <td colspan="6"
+                                            style="font-size: 20px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <div
+                                                style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                                                <select id="combo-reference-payment-before-service" class="form-control"
+                                                    style="width: 100%;font-size: 20px;">
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr id="display_reference_number_payment_before_service" style="display: none;">
+                                        <td colspan="2"
+                                            style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="">Reference Number :</label>
+                                        </td>
+                                        <td colspan="6"
+                                            style="font-size: 20px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <div
+                                                style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                                                <input type="text" name="reference-number-payment-before-service"
+                                                    id="reference-number-payment-before-service" class=" form-control"
+                                                    style="text-align: right;width:
+                                                100%;">
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-md btn-success" style="width: 100%;height: 80px;"
+                        ng-click="PaymentBeforeServiceSubmit()">
+                        <i class="bx bx-paper-plane"></i>
+                        Submit
+                    </button>
                 </div>
             </div>
         </div>
     </div>
     <!-- End Modal -->
 
+    <!-- Cetak Bill Modal -->
+    <div id="my-modal-cetak-bill" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-sm" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title">No.Pesanan <label id="lb_no_booking_payment_before_service"></label> |
+                        No.Meja
+                        <label id="lb_no_meja_payment_before_service"></label>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div id="printArea">
+
+                        <div class="text-center bold" style="font-size: 14px;margin-top: 0px;">
+                            <img src="<?=base_url()?>public/assets/images/millennialpos.png" alt="">
+                            <h5>ROEMAH PREMIUM KOPI</h5>
+                        </div>
+                        <div class="text-center">
+                            Jl. STM Jl. Sakti Lubis No.SIMPANG,
+                            Suka Maju, Kec. Medan Amplas, Kota Medan,
+                            Sumatera Utara
+                            20217<br>
+                            Telp: 0812-3456-7890<br>
+                        </div>
+                        <hr>
+                        <div style="padding-left: 18px;">
+                            <table>
+                                <tr>
+                                    <td>
+                                        Tanggal
+                                    </td>
+                                    <td>:</td>
+                                    <td><span id="bill_date"></span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        No.Invoice
+                                    </td>
+                                    <td>:</td>
+                                    <td><span id="bill_invoice"></span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        Kasir
+                                    </td>
+                                    <td>:</td>
+                                    <td><span id="bill_chasier"></span></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        No.Meja
+                                    </td>
+                                    <td>:</td>
+                                    <td><span id="bill_no_meja"></span></td>
+                                </tr>
+                            </table>
+
+                        </div>
+                        <hr>
+                        <div style="padding-left: 18px;">
+                            <!-- Barang -->
+                            <table style="width: 100%;  font-size: 13px;">
+                                <tr ng-repeat="dt2 in LoadDataPesananBill" ng-if="LoadDataPesananBill.length > 0">
+                                    <td style="width: 8%;">[{{dt2.qty}}]</td>
+                                    <td style="width: 50%;">{{dt2.nama}}</td>
+                                    <td style="width: 35%; text-align: right;">
+                                        {{(dt2.qty * dt2.harga) | currency:"Rp ":0}}
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <hr>
+                        <!-- Perhitungan -->
+                        <div style="padding-left: 18px;">
+                            <table style="width: 100%;">
+                                <tr>
+                                    <td style="width: 20%;"></td>
+                                    <td style="width: 80%;">
+                                        <table style="width: 100%;">
+                                            <tr>
+                                                <td>Qty</td>
+                                                <td style="width: 10px;">:</td>
+                                                <td style="text-align: center;" id="bill_qty">0</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Subtotal</td>
+                                                <td style="width: 10px;">:</td>
+                                                <td style="text-align: right;" id="bill_subtotal">0</td>
+                                            </tr>
+                                            <tr>
+                                                <td>PPN (10%)</td>
+                                                <td>:</td>
+                                                <td style="text-align: right;" id="bill_ppn">0</td>
+                                            </tr>
+                                            <tr>
+                                                <td>Grand Total</td>
+                                                <td>:</td>
+                                                <td style="text-align: right;" id="bill_grand_total">0</td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+
+                        </div>
+                        <hr>
+                        <div class="text-center bold">
+                            -- BILL TRANSAKSI --
+                        </div>
+                        <hr>
+                        <div class="text-center bold">
+                            -- TERIMA KASIH --
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-success" onclick="window.print()">Print</button>
+                    <button class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Bill Modal -->
+
 </div>
+
+<script>
+function formatItem(name, qty, price) {
+    const left = name.padEnd(16);
+    const right = (qty + "x" + price).padStart(14);
+    return left + right;
+}
+</script>
 
 <!-- style -->
 <style>
@@ -683,5 +1164,59 @@
 
 .modal.modal-right.show .modal-dialog {
     transform: translateX(0);
+}
+</style>
+
+<style>
+@media print {
+    body * {
+        visibility: hidden;
+    }
+
+    #printArea,
+    #printArea * {
+        visibility: visible;
+    }
+
+    #printArea {
+        position: absolute;
+        left: 0;
+        top: 00px;
+        width: 280px;
+        /* Sesuaikan ukuran kertas printer */
+        font-family: Arial, Helvetica, sans-serif, monospace;
+        font-size: 12px;
+        margin: 0;
+        padding: 0;
+        margin-top: -80px;
+    }
+
+    @page {
+        size: auto;
+        /* Biarkan browser menyesuaikan tinggi sesuai isi */
+        margin: 0;
+        /* Hilangkan margin default browser */
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    .bold {
+        font-weight: bold;
+    }
+
+    hr {
+        border: none;
+        border-top: 5px dashed #000;
+        margin: 4px 0;
+        color: #000;
+    }
+
+    .total-line {
+        font-weight: bold;
+        font-size: 13px;
+        padding-left: 10px;
+    }
 }
 </style>
