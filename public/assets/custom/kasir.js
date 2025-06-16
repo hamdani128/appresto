@@ -801,6 +801,10 @@ app.controller("KasirAppController", function ($scope, $http) {
 
 		$("#my-modal-payment-before-service").modal("show");
 	};
+
+	$scope.GabungBill = function () {
+		$("#my-modal-gabung-bill").modal("show");
+	};
 });
 
 // Fungsi untuk membuat tombol dengan kelas dan ikon

@@ -1064,6 +1064,82 @@
     </div>
     <!-- End Bill Modal -->
 
+    <!-- Modal Gabung Bill -->
+    <div id="my-modal-gabung-bill" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="my-modal-title"
+        aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-dark">
+                    <h5 class="modal-title text-white">
+                        Bill Gabung
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row pb-3">
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <label for="">No.Meja Digabung :</label>
+                                <select name="cmb_gabung" id="cmb_gabung" class="form-control">
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <label for="">List Item :</label>
+                        </div>
+                        <div class="col-md-12">
+                            <div class="table-responsive">
+                                <table class="table table-striped table-bordered" style="width:130%"
+                                    id="tb_pesanan_list_detail">
+                                    <thead class="bg-dark text-white">
+                                        <tr>
+                                            <th>#</th>
+                                            <th>No.Order</th>
+                                            <th>No.Meja</th>
+                                            <th>Category</th>
+                                            <th>List</th>
+                                            <th>Harga</th>
+                                            <th>Qty</th>
+                                            <th>Subtotal</th>
+                                            <th>Jenis</th>
+                                            <th>Owner</th>
+                                            <th>Time Request</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="td_pesanan_body_gabung_bill">
+                                        <tr ng-repeat="dt in LoadDataPesananDetail"
+                                            ng-if="LoadDataPesananDetail.length > 0">
+                                            <td>{{$index + 1}}</td>
+                                            <td>{{dt.no_order}}</td>
+                                            <td>{{dt.no_meja}}</td>
+                                            <td>{{dt.kategori}}</td>
+                                            <td>{{dt.nama}}</td>
+                                            <td>{{dt.harga}}</td>
+                                            <td class="qty-cell-list-detail">{{dt.qty}}</td>
+                                            <td class="subtotal-cell-list-detail">{{dt.qty * dt.harga}}</td>
+                                            <td>{{dt.jenis}}</td>
+                                            <td>{{dt.owner}}</td>
+                                            <td>{{dt.created_at}}</td>
+                                        </tr>
+                                        <tr ng-if="LoadDataPesananDetail.length === 0">
+                                            <td colspan="12" class="text-center">No data available</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Modal Gabung -->
+
 </div>
 
 <script>
