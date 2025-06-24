@@ -83,7 +83,7 @@
                     </li>
                     <?php }?>
                     <li>
-                        <a class="dropdown-item" href="ecommerce-products.html">
+                        <a class="dropdown-item" href="<?=base_url('transaksi/invoice')?>">
                             <i class="bx bx-right-arrow-alt"></i>
                             List Transaksi
                         </a>

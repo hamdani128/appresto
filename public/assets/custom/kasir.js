@@ -13,7 +13,7 @@ function base_url(string_url) {
 }
 
 var app = angular.module("KasirApp", ["datatables"]);
-app.controller("KasirAppController", function ($scope, $http) {
+app.controller("KasirAppController", function ($scope, $http, $timeout) {
 	$scope.LoadData = [];
 	$scope.LoadDataPesananList = [];
 	$scope.LoadDatMenuAll = [];
@@ -36,6 +36,40 @@ app.controller("KasirAppController", function ($scope, $http) {
 	};
 	$scope.DataMeja();
 
+	$scope.BackToHome = function () {
+		var btn1 = document.getElementById("btn_booking");
+		var btn2 = document.getElementById("btn_pindah_meja");
+		var btn3 = document.getElementById("btn_tambah_pesanan");
+		var btn4 = document.getElementById("btn_gabung_bill");
+		var show1 = document.getElementById("row_no_meja");
+		var show2 = document.getElementById("row_count_pesanan");
+		var show3 = document.getElementById("row_list_pesanan");
+		var show4 = document.getElementById("table_row_order");
+
+		btn1.style.display = "none";
+		btn2.style.display = "none";
+		btn3.style.display = "none";
+		btn4.style.display = "none";
+		show1.style.display = "none";
+		show2.style.display = "none";
+		show3.style.display = "none";
+		show4.style.display = "block";
+		$scope.DataMeja();
+	};
+
+	$scope.LoadDataTransaksi = function () {
+		$http
+			.get(base_url("opr/kasir/getdata_transaksi_today"))
+			.then(function (response) {
+				$scope.LoadDataTransaksi = response.data;
+			})
+			.catch(function (error) {
+				console.error("Terjadi kesalahan:", error);
+			});
+	};
+
+	$scope.LoadDataTransaksi();
+
 	$scope.SelectedMeja = function (elementId, dt) {
 		$scope.data = angular.copy(dt);
 		var btn1 = document.getElementById("btn_booking");
@@ -45,6 +79,7 @@ app.controller("KasirAppController", function ($scope, $http) {
 		var show1 = document.getElementById("row_no_meja");
 		var show2 = document.getElementById("row_count_pesanan");
 		var show3 = document.getElementById("row_list_pesanan");
+		var show4 = document.getElementById("table_row_order");
 
 		btn1.style.display = "block";
 		btn2.style.display = "none";
@@ -53,6 +88,7 @@ app.controller("KasirAppController", function ($scope, $http) {
 		show1.style.display = "block";
 		show2.style.display = "none";
 		show3.style.display = "none";
+		show4.style.display = "none";
 
 		var x = document.getElementById(elementId);
 		if (x.classList.contains("bg-secondary")) {
@@ -206,6 +242,7 @@ app.controller("KasirAppController", function ($scope, $http) {
 		var show1 = document.getElementById("row_no_meja");
 		var show2 = document.getElementById("row_count_pesanan");
 		var show3 = document.getElementById("row_list_pesanan");
+		var show4 = document.getElementById("table_row_order");
 
 		if (show3.style.display == "none") {
 			// masuk cek
@@ -222,6 +259,7 @@ app.controller("KasirAppController", function ($scope, $http) {
 					show1.style.display = "none";
 					show2.style.display = "block";
 					show3.style.display = "block";
+					show4.style.display = "none";
 
 					document.getElementById("lb_tambahan_no_meja").innerHTML =
 						response.data.no_meja;
@@ -802,8 +840,229 @@ app.controller("KasirAppController", function ($scope, $http) {
 		$("#my-modal-payment-before-service").modal("show");
 	};
 
+	$scope.LoadDataPesananDetail = [];
+	$scope.LoadDataPesananGabungSementara = [];
+	$scope.LoadDataPesananDetailAll = [];
+
 	$scope.GabungBill = function () {
+		var no_meja = document.getElementById("lb_tambahan_no_meja").innerHTML;
+		var no_booking = document.getElementById("lb_tambahan_no_order").innerHTML;
+		var fullname = document.getElementById("userdata").dataset.fullname;
+		var created_at = document.getElementById(
+			"lb_tambahan_created_at"
+		).innerHTML;
+		$scope.DaftarMejaTerisi(no_meja);
+		$scope.DetailPesanan(no_booking, no_meja);
+		document.getElementById("bill_no_order_gabungan").innerHTML = no_booking;
+		document.getElementById("bill_chasier_gabungan").innerHTML = fullname;
+		document.getElementById("bill_date_gabungan").innerHTML = created_at;
 		$("#my-modal-gabung-bill").modal("show");
+	};
+
+	$scope.DaftarMejaTerisi = function (no_meja) {
+		var formdata = { no_meja: no_meja };
+		$http
+			.post(base_url("opr/kasir/get_list_meja_terisi"), formdata)
+			.then(function (response) {
+				$scope.listMejaGabung = response.data;
+			});
+	};
+
+	$scope.UpdateGabungAll = function () {
+		$scope.LoadDataPesananDetailAll = $scope.LoadDataPesananDetail.concat(
+			$scope.LoadDataPesananGabungSementara
+		);
+
+		// FIX PENTING → Pindahin ke $timeout supaya Angular selesai render DOM dulu
+		$timeout(function () {
+			$scope.CalculateTotalForGabung();
+			$scope.groupPesananByOrder();
+		}, 0);
+	};
+
+	$scope.DetailPesanan = function (no_booking, no_meja) {
+		var formdata = { no_booking: no_booking, no_meja: no_meja };
+		$scope.LoadDataPesananDetail = [];
+		$scope.LoadDataPesananGabungSementara = [];
+		$scope.LoadDataPesananDetailAll = [];
+
+		$http
+			.post(base_url("opr/kasir/get_pesanan_detail"), formdata)
+			.then(function (response) {
+				$scope.LoadDataPesananDetail = response.data;
+				$scope.UpdateGabungAll();
+			});
+	};
+
+	$scope.GabungListMeja = function () {
+		var selectedMeja = $scope.cmb_gabung;
+		if (!selectedMeja) return;
+
+		$http
+			.post(base_url("opr/kasir/get_pesanan_detail_no_meja"), {
+				no_meja: selectedMeja,
+			})
+			.then(function (response) {
+				$scope.LoadDataPesananGabungSementara =
+					$scope.LoadDataPesananGabungSementara.concat(response.data);
+				$scope.UpdateGabungAll();
+				$scope.CalculateTotalForGabung();
+			});
+	};
+
+	$scope.ResetGabungPesanan = function () {
+		$scope.LoadDataPesananGabungSementara = []; // Kosongkan data gabungan
+		$scope.UpdateGabungAll(); // Update tampilan tabel
+	};
+
+	$scope.CalculateTotalForGabung = function () {
+		var tbody = document.getElementById("td_pesanan_body_gabung_bill");
+		var rows = tbody.getElementsByTagName("tr");
+		var total_harga = 0;
+		var qty_total = 0;
+
+		for (var i = 0; i < rows.length; i++) {
+			var tds = rows[i].getElementsByTagName("td");
+			if (tds.length < 6) continue; // skip jika row bukan data
+
+			var harga = parseInt(tds[5].textContent.trim()) || 0;
+			var qty = parseInt(tds[6].textContent.trim()) || 0;
+			var subtotal = harga * qty;
+
+			qty_total += qty;
+			total_harga += subtotal;
+		}
+
+		// Update qty dan subtotal
+		document.getElementById("qty-total-gabung").value = formatRupiah(qty_total);
+		document.getElementById("bill_qty_gabungan").innerHTML =
+			formatRupiah(qty_total);
+		document.getElementById("amount-total-gabung").value =
+			formatRupiah(total_harga);
+		document.getElementById("bill_subtotal_gabungan").innerHTML =
+			formatRupiah(total_harga);
+
+		// Hitung PPN
+		var ppn_select = document
+			.getElementById("amount-ppn-gabung")
+			.parentElement.parentElement.querySelector("select");
+		var ppn_percent = parseFloat(ppn_select.value) || 0;
+		var ppn_amount = Math.floor(total_harga * (ppn_percent / 100));
+		document.getElementById("amount-ppn-gabung").value =
+			formatRupiah(ppn_amount);
+
+		document.getElementById("bill_ppn_gabungan").innerHTML =
+			formatRupiah(ppn_amount);
+
+		// Hitung Grand Total
+		var grand_total = total_harga + ppn_amount;
+		document.getElementById("grand-total-gabung").value =
+			formatRupiah(grand_total);
+		document.getElementById("bill_grand_total_gabungan").innerHTML =
+			formatRupiah(grand_total);
+	};
+
+	$scope.groupPesananByOrder = function () {
+		const dataGabungan = $scope.LoadDataPesananDetail.concat(
+			$scope.LoadDataPesananGabungSementara
+		);
+
+		dataGabungan.sort((a, b) => a.no_meja.localeCompare(b.no_meja)); // Sort by no_meja
+
+		const grouped = {};
+
+		dataGabungan.forEach(function (item) {
+			if (!grouped[item.no_meja]) {
+				grouped[item.no_meja] = {
+					no_meja: item.no_meja,
+					items: [],
+				};
+			}
+			grouped[item.no_meja].items.push(item); // ← ini yang tadi salah, harusnya no_meja
+		});
+
+		$scope.groupedOrders = Object.values(grouped);
+	};
+
+	$scope.groupPesananByOrder();
+
+	// Payment Before Service
+	$scope.PaymentBeforeServiceSubmit = function () {
+		var no_booking = document.getElementById(
+			"lb_no_booking_payment_before_service"
+		).innerHTML;
+		var no_meja = document.getElementById(
+			"lb_no_meja_payment_before_service"
+		).innerHTML;
+		var qty = unformatNumber(
+			document.getElementById("total-qty-payment-before-service").innerHTML
+		);
+		var subtotal = unformatNumber(
+			document.getElementById("subtotal-payment-before-service").innerHTML
+		);
+		var ppn_text = unformatNumber(
+			document.getElementById("ppn-text-payment-before-service").innerHTML
+		);
+		var ppn = unformatNumber(
+			document.getElementById("ppn-payment-before-service").innerHTML
+		);
+		var grand_total = unformatNumber(
+			document.getElementById("grand-total-payment-before-service").innerHTML
+		);
+		var metode_payment = $("#combo-payment-before-service").val();
+		var jumlah_dibayar = unformatNumber(
+			$("#jumlah-dibayar-payment-before-service").val()
+		);
+		var kembalian = unformatNumber(
+			document.getElementById("kembalian-payment-before-service").innerHTML
+		);
+		var refrence_payment = $("#combo-reference-payment-before-service").val();
+		var refrence_number = $("#reference-number-payment-before-service").val();
+		var Metode_Service = "Pay Before Service";
+
+		var formdata = {
+			no_order: no_booking,
+			no_meja: no_meja,
+			qty: qty,
+			subtotal: subtotal,
+			ppn_text: ppn_text,
+			ppn: ppn,
+			amount_total: grand_total,
+			metode: metode_payment,
+			dibayar: jumlah_dibayar,
+			kembalian: kembalian,
+			refrence_payment: refrence_payment,
+			refrence_number: refrence_number,
+			metode_service: Metode_Service,
+		};
+
+		Swal.fire({
+			title: "Apakah anda yakin?",
+			text: "Sudahkah Anda melakukan Pengechekan Pembayaran sebelum Layanan Disimpan Kedalam Database !",
+			icon: "warning",
+			showCancelButton: true,
+			confirmButtonColor: "#3085d6",
+			cancelButtonColor: "#d33",
+			confirmButtonText: "Ya, Lanjutkan!",
+		}).then((result) => {
+			if (result.isConfirmed) {
+				$http
+					.post(base_url("opr/kasir/payment_before_service"), formdata)
+					.then(function (response) {
+						if (response.data.status == "success") {
+							Swal.fire({
+								icon: "success",
+								title: "Berhasil",
+								text: "Pembayaran sebelum layanan berhasil !",
+							});
+							document.location.reload();
+						}
+					})
+					.catch(function (error) {
+						console.error("Terjadi kesalahan saat proses data:", error);
+					});
+			}
+		});
 	};
 });
 
@@ -1069,7 +1328,6 @@ const inputBayar = document.getElementById(
 	"jumlah-dibayar-payment-before-service"
 );
 
-// Format saat diketik
 inputBayar.addEventListener("input", function (e) {
 	let cursorPos = this.selectionStart;
 	let originalLength = this.value.length;
@@ -1080,7 +1338,6 @@ inputBayar.addEventListener("input", function (e) {
 	this.selectionEnd = cursorPos + (updatedLength - originalLength);
 });
 
-// Kalkulasi saat tekan Enter
 inputBayar.addEventListener("keydown", function (e) {
 	if (e.key === "Enter") {
 		e.preventDefault();
@@ -1091,6 +1348,20 @@ inputBayar.addEventListener("keydown", function (e) {
 		let jumlahBayar = unformatNumber(this.value);
 		let totalTagihan = unformatNumber(grand_Total);
 		let kembalian = jumlahBayar - totalTagihan;
+
+		// ✅ Cek apakah jumlah bayar kurang dari total tagihan
+		if (jumlahBayar < totalTagihan) {
+			Swal.fire({
+				title: "Error",
+				text: "Jumlah bayar tidak boleh kurang dari total tagihan",
+				icon: "error",
+			});
+			document.getElementById("jumlah-dibayar-payment-before-service").value =
+				"";
+			document.getElementById("kembalian-payment-before-service").innerHTML =
+				"Rp 0";
+			return;
+		}
 
 		document.getElementById("kembalian-payment-before-service").innerHTML =
 			formatRupiah(kembalian.toString());
@@ -1111,6 +1382,16 @@ function changePaymentBeforeService() {
 			"table-row"
 		);
 		$("#display_kembalian_payment_before_service").css("display", "table-row");
+
+		document.getElementById("jumlah-dibayar-payment-before-service").value = "";
+		document.getElementById("kembalian-payment-before-service").innerHTML = "0";
+
+		document.getElementById(
+			"jumlah-dibayar-payment-before-service"
+		).readOnly = false;
+		document.getElementById(
+			"kembalian-payment-before-service"
+		).readOnly = false;
 	} else if (combo_methode == "QRIS") {
 		$("#display_jumlah_dibayar_payment_before_service").css(
 			"display",
@@ -1118,6 +1399,15 @@ function changePaymentBeforeService() {
 		);
 		$("#display_kembalian_payment_before_service").css("display", "table-row");
 		$("#display_reference_payment_before_service").css("display", "table-row");
+
+		combo_insert_qr_code("combo-reference-payment-before-service");
+		document.getElementById("jumlah-dibayar-payment-before-service").value = "";
+		document.getElementById("kembalian-payment-before-service").innerHTML = "0";
+
+		document.getElementById(
+			"jumlah-dibayar-payment-before-service"
+		).readOnly = true;
+		document.getElementById("kembalian-payment-before-service").readOnly = true;
 	} else if (combo_methode == "Bank Transfer") {
 		$("#display_jumlah_dibayar_payment_before_service").css(
 			"display",
@@ -1129,5 +1419,146 @@ function changePaymentBeforeService() {
 			"display",
 			"table-row"
 		);
+
+		combo_insert_bank_tambahan("combo-reference-payment-before-service");
+		document.getElementById("jumlah-dibayar-payment-before-service").value = "";
+		document.getElementById("kembalian-payment-before-service").innerHTML = "0";
+
+		document.getElementById(
+			"jumlah-dibayar-payment-before-service"
+		).readOnly = true;
+		document.getElementById("kembalian-payment-before-service").readOnly = true;
 	}
+}
+
+function combo_insert_qr_code(combo) {
+	const select = document.getElementById(combo);
+	select.innerHTML = "";
+	var data_array = [
+		{ value: "Bank Transfer", text: "Bank Transfer" },
+		{ value: "E-Wallet", text: "E-Wallet" },
+	];
+	const defaultOption = document.createElement("option");
+	defaultOption.value = "";
+	defaultOption.text = "Pilih";
+	select.appendChild(defaultOption);
+	for (let i = 0; i < data_array.length; i++) {
+		const option = document.createElement("option");
+		option.value = data_array[i].value;
+		option.text = data_array[i].text;
+		select.appendChild(option);
+	}
+}
+
+function combo_insert_bank_tambahan(combo) {
+	const select = document.getElementById(combo);
+	select.innerHTML = "";
+	var data_array = [
+		{ value: "BCA", text: "BCA" },
+		{ value: "BNI", text: "BNI" },
+		{ value: "BRI", text: "BRI" },
+		{ value: "MANDIRI", text: "MANDIRI" },
+		{ value: "BTN", text: "BTN" },
+		{ value: "CIMB Niaga", text: "CIMB Niaga" },
+		{ value: "Permata", text: "Permata" },
+		{ value: "HSBC", text: "HSBC" },
+		{ value: "Jago", text: "Jago" },
+		{ value: "Other Bank", text: "Other Bank" },
+	];
+	const defaultOption = document.createElement("option");
+	defaultOption.value = "";
+	defaultOption.text = "Pilih";
+	select.appendChild(defaultOption);
+	for (let i = 0; i < data_array.length; i++) {
+		const option = document.createElement("option");
+		option.value = data_array[i].value;
+		option.text = data_array[i].text;
+		select.appendChild(option);
+	}
+}
+
+function changeReferencePaymentBeforeService() {
+	let grand_Total = document.getElementById(
+		"grand-total-payment-before-service"
+	).innerHTML;
+	let totalTagihan = unformatNumber(grand_Total);
+	document.getElementById("jumlah-dibayar-payment-before-service").value =
+		formatNumber(totalTagihan);
+	var jumlahBayar = unformatNumber(
+		document.getElementById("jumlah-dibayar-payment-before-service").value
+	);
+	let kembalian = jumlahBayar - totalTagihan;
+	document.getElementById("kembalian-payment-before-service").innerHTML =
+		formatRupiah(kembalian.toString());
+}
+
+function printCard(divId) {
+	const divContents = document.getElementById(divId).innerHTML;
+	const printWindow = window.open("", "_blank", "width=800,height=600");
+
+	printWindow.document.write(`
+        <html>
+            <head>
+                <title>Cetak Bill</title>
+                <style>
+                    @page {
+                        size: 80mm auto;
+                        margin: 0;
+                    }
+                    body {
+                        margin: 0;
+                        padding: 0;
+                        font-family: Arial, sans-serif;
+                        width: 80mm;
+                    }
+                    .print-container {
+                        width: 100%;
+                        padding: 5px 10px;
+                        box-sizing: border-box;
+                    }
+                    img {
+                        max-width: 100%;
+                        height: auto;
+                        margin-bottom: 5px;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-bottom: 5px;
+                        font-size: 13px; /* Naikkan font default tabel */
+                    }
+                    .text-center { text-align: center; }
+                    .bold { font-weight: bold; }
+                    .header-title {
+                        font-size: 10px; /* Naikkan ukuran judul */
+                        font-weight: bold;
+                        margin-bottom: 2px;
+                    }
+                    .sub-title {
+                        font-size: 10px; /* Naikkan subtitle sedikit */
+                        margin-bottom: 2px;
+                    }
+                    .item-row {
+                        font-size: 13px; /* Naikkan size item */
+                    }
+                    .totals {
+                        font-size: 14px; /* Naikkan total biar enak dibaca */
+                        font-weight: bold;
+                    }
+                    hr {
+                        border: none;
+                        border-top: 1px dashed #000;
+                        margin: 4px 0;
+                    }
+                </style>
+            </head>
+            <body onload="window.print(); window.close();">
+                <div class="print-container">
+                    ${divContents}
+                </div>
+            </body>
+        </html>
+    `);
+
+	printWindow.document.close();
 }

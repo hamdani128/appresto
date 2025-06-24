@@ -27,22 +27,47 @@ class Kasir extends CI_Controller
             ->set_output(json_encode($query));
     }
 
+    public function getdata_transaksi_today()
+    {
+        date_default_timezone_set("Asia/Jakarta");
+        $query = $this->db->where('tanggal', date('Y-m-d'))->get("invoice")->result();
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($query));
+    }
+
     public function get_number_order()
     {
         date_default_timezone_set("Asia/Jakarta");
-        $SQL = "SELECT MAX(RIGHT(no_order,5)) as KD_MAX FROM `order` WHERE tanggal = '" . date('Y-m-d') . "'";
+        $SQL = "SELECT MAX(RIGHT(no_order,5)) as KD_MAX FROM `invoice` WHERE tanggal = '" . date('Y-m-d') . "'";
         $query = $this->db->query($SQL);
         if ($query->num_rows() > 0) {
             $row = $query->row();
             $n = ((int) $row->KD_MAX) + 1;
             $no = sprintf("%04s", $n);
         } else {
-            $no = "00001";
+            $no = "0001";
         }
-        $kode = '#BK' . date('ymd') . $no;
+        $kode = 'ORD' . date('ymd') . $no;
         $this->output
             ->set_content_type('application/json')
             ->set_output(json_encode($kode));
+    }
+
+    public function get_number_invoice()
+    {
+        date_default_timezone_set("Asia/Jakarta");
+        $SQL = "SELECT MAX(RIGHT(no_order,5)) as KD_MAX FROM `invoice` WHERE tanggal = '" . date('Y-m-d') . "'";
+        $query = $this->db->query($SQL);
+        if ($query->num_rows() > 0) {
+            $row = $query->row();
+            $n = ((int) $row->KD_MAX) + 1;
+            $no = sprintf("%04s", $n);
+        } else {
+            $no = "0001";
+        }
+        $kode = 'INV' . date('ymd') . $no;
+        return $kode;
     }
 
     public function getdata_menu()
@@ -330,6 +355,17 @@ class Kasir extends CI_Controller
             ->set_output(json_encode($query));
     }
 
+    public function get_list_meja_terisi()
+    {
+        date_default_timezone_set("Asia/Jakarta");
+        $input = json_decode(file_get_contents("php://input"), true);
+        $no_meja = $input['no_meja'];
+        $query = $this->db->where("status", 1)->where_not_in("no_meja", $no_meja)->get("daftar_meja")->result();
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($query));
+    }
+
     public function cek_subtotal_transaksi()
     {
         $input = json_decode(file_get_contents("php://input"), true);
@@ -340,4 +376,95 @@ class Kasir extends CI_Controller
             ->set_output(json_encode($total));
     }
 
+    public function get_pesanan_detail()
+    {
+        $input = json_decode(file_get_contents("php://input"), true);
+        $no_booking = $input['no_booking'];
+        $no_meja = $input['no_meja'];
+        $data = $this->db->where("no_order", $no_booking)->where("no_meja", $no_meja)->get("order_detail")->result();
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($data));
+    }
+
+    public function get_pesanan_detail_no_meja()
+    {
+        $input = json_decode(file_get_contents("php://input"), true);
+        $no_meja = $input['no_meja'];
+
+        $data = $this->db
+            ->where("no_meja", $no_meja)
+            ->where("no_order !=", "") // ini lebih aman
+            ->where("no_order IS NOT NULL") // tambahan, jaga-jaga kalau ada null
+            ->get("order_detail")
+            ->result();
+
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($data));
+    }
+
+    public function payment_before_service()
+    {
+        date_default_timezone_set("Asia/Jakarta");
+        $input = json_decode(file_get_contents("php://input"), true);
+        $data1 = [
+            'no_transaksi' => $this->get_number_invoice(),
+            'no_order' => $input['no_order'],
+            'no_meja' => $input['no_meja'],
+            'tanggal' => date('Y-m-d'),
+            'qty' => $input['qty'],
+            'subtotal' => $input['subtotal'],
+            'ppn_text' => $input['ppn_text'],
+            'ppn' => $input['ppn'],
+            'amount_total' => $input['amount_total'],
+            'dibayar' => $input['dibayar'],
+            'kembalian' => $input['kembalian'],
+            'metode' => $input['metode'],
+            'reference_number' => $input['refrence_number'],
+            'reference_payment' => $input['refrence_payment'],
+            'metode_service' => $input['metode_service'],
+            'created_at' => date('Y-m-d H:i:s'),
+            'created_by' => $this->session->userdata('username'),
+        ];
+        $row_order_detail = $this->db->where("no_order", $input['no_order'])->where("no_meja", $input['no_meja'])->get("order_detail")->result();
+        $data2 = [];
+        foreach ($row_order_detail as $row) {
+            $data2[] = [
+                'no_transaksi' => $this->get_number_invoice(),
+                'no_order' => $row->no_order,
+                'no_meja' => $row->no_meja,
+                'tanggal' => $row->tanggal,
+                'kategori' => $row->kategori,
+                'nama' => $row->nama,
+                'harga' => $row->harga,
+                'qty' => $row->qty,
+                'jenis' => $row->jenis,
+                'owner' => $row->owner,
+                'status' => '4',
+                'created_at' => date('Y-m-d H:i:s'),
+                'created_by' => $this->session->userdata('username'),
+            ];
+        }
+        $query1 = $this->db->insert("invoice", $data1);
+        $query2 = $this->db->insert_batch("invoice_detail", $data2);
+        $query3 = $this->db->where("no_meja", $input['no_meja'])->update("daftar_meja", ["no_order" => "", "status" => 0, "updated_at" => date('Y-m-d H:i:s')]);
+        $query4 = $this->db->where("no_meja", $input['no_meja'])->delete("order_detail");
+        $query5 = $this->db->where("no_meja", $input['no_meja'])->delete("order");
+
+        if ($query1 && $query2 && $query3 && $query4 && $query5) {
+            $response = [
+                'status' => "success",
+                'message' => 'Successfully Insert Payment',
+            ];
+        } else {
+            $response = [
+                'status' => "error",
+                'message' => 'Error Payment',
+            ];
+        }
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($response));
+    }
 }

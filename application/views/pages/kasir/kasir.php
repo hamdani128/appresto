@@ -43,7 +43,7 @@
                                     </h5>
                                 </div>
                                 <div class="col-md-6 text-end">
-                                    <button class="btn btn-md btn-light" id="btn_refresh" ng-click="Refresh()">
+                                    <button class="btn btn-md btn-light" id="btn_refresh" ng-click="BackToHome()">
                                         <i class="bx bx-home"></i>
                                         Home
                                     </button>
@@ -51,6 +51,53 @@
                             </div>
                         </div>
                         <div class="card-body">
+                            <div class="row" id="table_row_order" style="display: block;">
+                                <div class="col-12 col-md-12 col-lg-12 col-xl-12">
+                                    <div class="table-responsive">
+                                        <table datatable="ng" dt-options="vm.dtOptions"
+                                            class="table table-striped table-bordered" style="width:100%">
+                                            <thead class="bg-dark text-white text-center">
+                                                <tr>
+                                                    <th>#</th>
+                                                    <th>Transaction</th>
+                                                    <th>Metode</th>
+                                                    <th>Tanggal</th>
+                                                    <th>Status</th>
+                                                    <th>#Act</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                <tr ng-repeat="dt in LoadDataTransaksi"
+                                                    ng-if="LoadDataTransaksi.length > 0">
+                                                    <td style="text-align: center;">{{$index + 1}}</td>
+                                                    <td>
+                                                        <span>Inv.Code : {{dt.no_transaksi}}</span><br>
+                                                        <span>Order No : {{dt.no_order}}</span><br>
+                                                        <span>No.Table : {{dt.no_meja}}</span>
+                                                    </td>
+                                                    <td>{{dt.metode}}</td>
+                                                    <td>{{dt.created_at}}</td>
+                                                    <td>
+                                                        <span class="badge bg-success">
+                                                            Complete
+                                                        </span>
+                                                    </td>
+                                                    <td>
+                                                        <div class="button-group">
+                                                            <button class="btn btn-sm btn-dark">
+                                                                <i class="bx bx-printer"></i>
+                                                            </button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr ng-if="LoadDataTransaksi.length === 0">
+                                                    <td colspan="6">No data available</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="row">
                                 <div class="col-md-12">
                                     <div class="input-group button-group">
@@ -765,8 +812,8 @@
     <!-- End Pindah Meja -->
 
     <!-- Modal Pembayaran Uang Cash -->
-    <div id="my-modal-payment-before-service" class="modal fade" tabindex="-1" role="dialog"
-        aria-labelledby="my-modal-title" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+    <div id="my-modal-payment-before-service" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false"
+        tabindex="-1" role="dialog" aria-labelledby="my-modal-title" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-dark">
@@ -898,7 +945,8 @@
                                             <div
                                                 style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
                                                 <select id="combo-reference-payment-before-service" class="form-control"
-                                                    style="width: 100%;font-size: 20px;">
+                                                    style="width: 100%;font-size: 20px;"
+                                                    onchange="changeReferencePaymentBeforeService()">
                                                 </select>
                                             </div>
                                         </td>
@@ -926,7 +974,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal-footer">
+                <div class="modal-footer">c
                     <button class="btn btn-md btn-success" style="width: 100%;height: 80px;"
                         ng-click="PaymentBeforeServiceSubmit()">
                         <i class="bx bx-paper-plane"></i>
@@ -956,7 +1004,7 @@
                             <img src="<?=base_url()?>public/assets/images/millennialpos.png" alt="">
                             <h5>ROEMAH PREMIUM KOPI</h5>
                         </div>
-                        <div class="text-center">
+                        <div class="text-center" class="sub-title">
                             Jl. STM Jl. Sakti Lubis No.SIMPANG,
                             Suka Maju, Kec. Medan Amplas, Kota Medan,
                             Sumatera Utara
@@ -975,7 +1023,7 @@
                                 </tr>
                                 <tr>
                                     <td>
-                                        No.Invoice
+                                        No.Order
                                     </td>
                                     <td>:</td>
                                     <td><span id="bill_invoice"></span></td>
@@ -1056,7 +1104,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button class="btn btn-success" onclick="window.print()">Print</button>
+                    <button class="btn btn-success" onclick="printCard('printArea')">Print</button>
                     <button class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
                 </div>
             </div>
@@ -1065,9 +1113,9 @@
     <!-- End Bill Modal -->
 
     <!-- Modal Gabung Bill -->
-    <div id="my-modal-gabung-bill" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="my-modal-title"
-        aria-hidden="true" data-backdrop="static" data-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+    <div id="my-modal-gabung-bill" class="modal fade modal-right" tabindex="-1" role="dialog"
+        aria-labelledby="my-modal-title" aria-hidden="true" data-backdrop="static" data-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-fullscreen" role="document">
             <div class="modal-content">
                 <div class="modal-header bg-dark">
                     <h5 class="modal-title text-white">
@@ -1076,60 +1124,277 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    <div class="row pb-3">
-                        <div class="col-md-12">
-                            <div class="form-group">
-                                <label for="">No.Meja Digabung :</label>
-                                <select name="cmb_gabung" id="cmb_gabung" class="form-control">
-                                </select>
-                            </div>
-                        </div>
-                    </div>
                     <div class="row">
-                        <div class="col-md-12">
-                            <label for="">List Item :</label>
-                        </div>
-                        <div class="col-md-12">
-                            <div class="table-responsive">
-                                <table class="table table-striped table-bordered" style="width:130%"
-                                    id="tb_pesanan_list_detail">
-                                    <thead class="bg-dark text-white">
-                                        <tr>
-                                            <th>#</th>
-                                            <th>No.Order</th>
-                                            <th>No.Meja</th>
-                                            <th>Category</th>
-                                            <th>List</th>
-                                            <th>Harga</th>
-                                            <th>Qty</th>
-                                            <th>Subtotal</th>
-                                            <th>Jenis</th>
-                                            <th>Owner</th>
-                                            <th>Time Request</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="td_pesanan_body_gabung_bill">
-                                        <tr ng-repeat="dt in LoadDataPesananDetail"
-                                            ng-if="LoadDataPesananDetail.length > 0">
-                                            <td>{{$index + 1}}</td>
-                                            <td>{{dt.no_order}}</td>
-                                            <td>{{dt.no_meja}}</td>
-                                            <td>{{dt.kategori}}</td>
-                                            <td>{{dt.nama}}</td>
-                                            <td>{{dt.harga}}</td>
-                                            <td class="qty-cell-list-detail">{{dt.qty}}</td>
-                                            <td class="subtotal-cell-list-detail">{{dt.qty * dt.harga}}</td>
-                                            <td>{{dt.jenis}}</td>
-                                            <td>{{dt.owner}}</td>
-                                            <td>{{dt.created_at}}</td>
-                                        </tr>
-                                        <tr ng-if="LoadDataPesananDetail.length === 0">
-                                            <td colspan="12" class="text-center">No data available</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                        <div class="col-9 col-md-9 col-sm-9 col-lg-9">
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row pb-3">
+                                        <div class="col-md-12">
+                                            <div class="form-group">
+                                                <label for="">No.Meja Digabung :</label>
+                                                <select class="form-control" ng-model="cmb_gabung"
+                                                    ng-options="meja.no_meja as (meja.no_meja + ' (' + meja.nama_meja + ')') for meja in listMejaGabung"
+                                                    ng-change="GabungListMeja()">
+                                                    <option value="">Pilih</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <label for="">List Item : </label>
+                                        </div>
+                                        <div class="col-md-12">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped table-bordered" style="width:130%"
+                                                    id="tb_pesanan_list_detail">
+                                                    <thead class="bg-dark text-white">
+                                                        <tr>
+                                                            <th>#</th>
+                                                            <th>No.Order</th>
+                                                            <th>No.Meja</th>
+                                                            <th>Category</th>
+                                                            <th>List</th>
+                                                            <th>Harga</th>
+                                                            <th>Qty</th>
+                                                            <th>Subtotal</th>
+                                                            <th>Jenis</th>
+                                                            <th>Owner</th>
+                                                            <th>Time Request</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody id="td_pesanan_body_gabung_bill">
+                                                        <tr ng-repeat="dt in (LoadDataPesananDetail.concat(LoadDataPesananGabungSementara))"
+                                                            ng-if="LoadDataPesananDetail.length + LoadDataPesananGabungSementara.length > 0">
+                                                            <td>{{$index + 1}}</td>
+                                                            <td>{{dt.no_order}}</td>
+                                                            <td>{{dt.no_meja}}</td>
+                                                            <td>{{dt.kategori}}</td>
+                                                            <td>{{dt.nama}}</td>
+                                                            <td>{{dt.harga}}</td>
+                                                            <td>{{dt.qty}}</td>
+                                                            <td>{{dt.qty * dt.harga}}</td>
+                                                            <td>{{dt.jenis}}</td>
+                                                            <td>{{dt.owner}}</td>
+                                                            <td>{{dt.created_at}}</td>
+                                                        </tr>
+                                                        <tr
+                                                            ng-if="LoadDataPesananDetail.length + LoadDataPesananGabungSementara.length === 0">
+                                                            <td colspan="11" class="text-center">No data available</td>
+                                                        </tr>
+                                                    </tbody>
+                                                    <tfoot style="border: 1px solid #dee2e6;">
+                                                        <tr>
+                                                            <td colspan="7"
+                                                                style="text-align: right; font-size: 16px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <label for="">Total Qty : </label>
+                                                            </td>
+                                                            <td colspan="4"
+                                                                style="font-size: 16px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <input type="text" class="form-control"
+                                                                    name="qty-total-gabung" id="qty-total-gabung"
+                                                                    style="text-align: right;" value="0">
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="7"
+                                                                style="text-align: right; font-size: 16px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <label for="">Subtotal : </label>
+                                                            </td>
+                                                            <td colspan="4"
+                                                                style="font-size: 16px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <input type="text" class="form-control"
+                                                                    name="amount-total-gabung" id="amount-total-gabung"
+                                                                    style="text-align: right;" value="0">
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="7"
+                                                                style="text-align: right; font-size: 16px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <div
+                                                                    style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+
+                                                                    <select id="ppn-select-gabung" class="form-control"
+                                                                        style="width: 100px;"
+                                                                        ng-change="CalculateTotalForGabung()"
+                                                                        ng-model="ppnValue">
+                                                                        <option value="">Pilih PPN :</option>
+                                                                        <option value="10">10%</option>
+                                                                        <option value="11">11%</option>
+                                                                    </select>
+                                                                </div>
+                                                            </td>
+                                                            <td colspan="11"
+                                                                style="font-size: 16px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <input type="text" class="form-control"
+                                                                    name="amount-ppn-gabung" id="amount-ppn-gabung""
+                                                                    style=" text-align: right;" value="0">
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="7"
+                                                                style="text-align: right; font-size: 16px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <label for="">Grand Total : </label>
+                                                            </td>
+                                                            <td colspan="11"
+                                                                style="font-size: 16px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <input type="text" class="form-control"
+                                                                    name="grand-total-gabung" id="grand-total-gabung"
+                                                                    style="text-align: right;" value="0">
+                                                            </td>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12 text-end">
+                                            <button class="btn btn-md btn-warning btn-md"
+                                                ng-click="ResetGabungPesanan()" style="flex: 1;">
+                                                <i class="bx bx-refresh"></i>
+                                                Clear
+                                            </button>
+                                            <button class="btn btn-success btn btn-md" style="flex: 1;"
+                                                onclick="printCard('printArea2')">
+                                                <i class="bx bx-printer"></i> Cetak Bill
+                                            </button>
+
+                                            <button class="btn btn-info btn btn-md" ng-click="pay_after_service()"
+                                                style="flex: 1;">
+                                                <i class="bx bx-save"></i>
+                                                Pay after service
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+                        <!-- Bill -->
+                        <div class="col-3 col-md-3 col-sm-3 col-lg-3">
+                            <div class="card">
+                                <div class="card-body" id="printArea2">
+                                    <div>
+                                        <div class="text-center bold" style="font-size: 14px;margin-top: 0px;">
+                                            <img src="<?=base_url()?>public/assets/images/millennialpos.png" alt="">
+                                            <h5>ROEMAH PREMIUM KOPI</h5>
+                                        </div>
+                                        <div class="text-center">
+                                            Jl. STM Jl. Sakti Lubis No.SIMPANG,
+                                            Suka Maju, Kec. Medan Amplas, Kota Medan,
+                                            Sumatera Utara
+                                            20217<br>
+                                            Telp: 0812-3456-7890<br>
+                                        </div>
+                                        <hr>
+                                        <div style="padding-left: 18px;">
+                                            <table>
+                                                <tr>
+                                                    <td>
+                                                        Tanggal
+                                                    </td>
+                                                    <td>:</td>
+                                                    <td><span id="bill_date_gabungan"></span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        Kasir
+                                                    </td>
+                                                    <td>:</td>
+                                                    <td><span id="bill_chasier_gabungan"></span></td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        No.order
+                                                    </td>
+                                                    <td>:</td>
+                                                    <td><span id="bill_no_order_gabungan"></span></td>
+                                                </tr>
+                                            </table>
+
+                                        </div>
+                                        <hr>
+                                        <div style="padding-left: 18px;">
+                                            <!-- Barang -->
+                                            <table style="width: 100%; font-size: 13px;">
+                                                <tbody ng-repeat="group in groupedOrders">
+                                                    <tr class="fw-bold">
+                                                        <td colspan="3" style="padding-top: 6px; padding-bottom: 2px;">
+                                                            Table: {{ group.no_meja }}
+                                                            <hr class="my-1">
+                                                        </td>
+                                                    </tr>
+                                                    <tr ng-repeat="item in group.items">
+                                                        <td style="width: 8%; text-align: center;">[{{ item.qty }}]</td>
+                                                        <td style="width: 60%;">{{ item.nama }}</td>
+                                                        <td style="width: 30%; text-align: right;">
+                                                            {{ (item.qty * item.harga) | currency:'Rp ':0 }}
+                                                        </td>
+                                                    </tr>
+                                                </tbody>
+                                            </table>
+                                        </div>
+
+                                        <hr>
+                                        <!-- Perhitungan -->
+                                        <div style="padding-left: 18px;">
+                                            <table style="width: 100%;">
+                                                <tr>
+                                                    <td style="width: 20%;"></td>
+                                                    <td style="width: 80%;">
+                                                        <table style="width: 100%;">
+                                                            <tr>
+                                                                <td>Qty</td>
+                                                                <td style="width: 10px;">:</td>
+                                                                <td style="text-align: center;" id="bill_qty_gabungan">0
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Subtotal</td>
+                                                                <td style="width: 10px;">:</td>
+                                                                <td style="text-align: right;"
+                                                                    id="bill_subtotal_gabungan">0</td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>PPN (10%)</td>
+                                                                <td>:</td>
+                                                                <td style="text-align: right;" id="bill_ppn_gabungan">0
+                                                                </td>
+                                                            </tr>
+                                                            <tr>
+                                                                <td>Grand Total</td>
+                                                                <td>:</td>
+                                                                <td style="text-align: right;"
+                                                                    id="bill_grand_total_gabungan">0
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </table>
+
+                                        </div>
+                                        <hr>
+                                        <div class="text-center bold">
+                                            -- BILL TRANSAKSI --
+                                        </div>
+                                        <hr>
+                                        <div class="text-center bold">
+                                            -- TERIMA KASIH --
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- End bill -->
                     </div>
                 </div>
                 <div class="modal-footer">

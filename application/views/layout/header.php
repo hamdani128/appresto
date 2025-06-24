@@ -316,6 +316,7 @@
                     <img src="<?=base_url()?>public/assets/images/avatars/avatar-2.png" class="user-img"
                         alt="user avatar">
                     <div class="user-info ps-3">
+                        <div id="userdata" data-fullname="<?=$this->session->userdata('fullname');?>"></div>
                         <p class="user-name mb-0"><?=$this->session->userdata('fullname');?></p>
                         <p class="designattion mb-0"><?=$this->session->userdata('level');?></p>
                     </div>
