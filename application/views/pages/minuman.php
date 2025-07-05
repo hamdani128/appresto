@@ -103,9 +103,8 @@
                                                 ng-click="ReadyOpen(da)">
                                                 <i class="bx bx-book-open"></i>
                                             </button>
-                                            <button class="btn btn-md btn-dark" ng-if="da.status=='1'"
-                                                ng-click="ReadyClose(da)">
-                                                <i class="bx bx-book"></i>
+                                            <button class="btn btn-md btn-dark" ng-click="ReadyClose(da)">
+                                                <i class="bx bx-refresh"></i>
                                             </button>
                                         </div>
                                     </td>

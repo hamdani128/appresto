@@ -416,7 +416,7 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 					};
 
 					$http
-						.post(base_url("opr/kasir/create_order_detail"), formdata)
+						.post(base_url("opr/kasir/create_order_detail_tambahan"), formdata)
 						.then(function (response) {
 							var data = response.data;
 							if (data.status == true) {
@@ -840,6 +840,38 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 		$("#my-modal-payment-before-service").modal("show");
 	};
 
+	$scope.pay_after_service = function () {
+		$scope.global_no_booking = document.getElementById(
+			"lb_tambahan_no_order"
+		).innerHTML;
+		$scope.global_no_meja = document.getElementById(
+			"lb_tambahan_no_meja"
+		).innerHTML;
+		document.getElementById("lb_no_booking_payment_After_service").innerHTML =
+			$scope.global_no_booking;
+		document.getElementById("lb_no_meja_payment_After_service").innerHTML =
+			$scope.global_no_meja;
+		var qty = $("#qty-total").val();
+		var subtotal = $("#amount-total").val();
+		var ppn_text = $("#ppn-select").val();
+		var ppn = $("#amount-ppn").val();
+		var total = $("#grand-total").val();
+		document.getElementById("total-qty-payment-After-service").innerHTML = qty;
+		document.getElementById("subtotal-payment-After-service").innerHTML =
+			formatRupiah(subtotal);
+		if (ppn_text === "") {
+			document.getElementById("ppn-text-payment-After-service").innerHTML = 0;
+		} else {
+			document.getElementById("ppn-text-payment-After-service").innerHTML =
+				ppn_text;
+		}
+		document.getElementById("ppn-payment-After-service").innerHTML =
+			formatRupiah(ppn);
+		document.getElementById("grand-total-payment-After-service").innerHTML =
+			formatRupiah(total);
+		$("#my-modal-payment-After-service").modal("show");
+	};
+
 	$scope.LoadDataPesananDetail = [];
 	$scope.LoadDataPesananGabungSementara = [];
 	$scope.LoadDataPesananDetailAll = [];
@@ -877,6 +909,7 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 		$timeout(function () {
 			$scope.CalculateTotalForGabung();
 			$scope.groupPesananByOrder();
+			$scope.CalculatePaymentGabung();
 		}, 0);
 	};
 
@@ -907,6 +940,7 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 					$scope.LoadDataPesananGabungSementara.concat(response.data);
 				$scope.UpdateGabungAll();
 				$scope.CalculateTotalForGabung();
+				$scope.CalculatePaymentGabung();
 			});
 	};
 
@@ -960,9 +994,11 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 			formatRupiah(grand_total);
 		document.getElementById("bill_grand_total_gabungan").innerHTML =
 			formatRupiah(grand_total);
+		$scope.CalculatePaymentGabung();
 	};
-
+	$scope.groupedOrders = [];
 	$scope.groupPesananByOrder = function () {
+		$scope.groupedOrders = [];
 		const dataGabungan = $scope.LoadDataPesananDetail.concat(
 			$scope.LoadDataPesananGabungSementara
 		);
@@ -1048,6 +1084,199 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 			if (result.isConfirmed) {
 				$http
 					.post(base_url("opr/kasir/payment_before_service"), formdata)
+					.then(function (response) {
+						if (response.data.status == "success") {
+							Swal.fire({
+								icon: "success",
+								title: "Berhasil",
+								text: "Pembayaran sebelum layanan berhasil !",
+							});
+							document.location.reload();
+						}
+					})
+					.catch(function (error) {
+						console.error("Terjadi kesalahan saat proses data:", error);
+					});
+			}
+		});
+	};
+
+	// Payment After Service
+	$scope.PaymentAfterServiceSubmit = function () {
+		var no_booking = document.getElementById(
+			"lb_no_booking_payment_After_service"
+		).innerHTML;
+		var no_meja = document.getElementById(
+			"lb_no_meja_payment_After_service"
+		).innerHTML;
+		var qty = unformatNumber(
+			document.getElementById("total-qty-payment-After-service").innerHTML
+		);
+		var subtotal = unformatNumber(
+			document.getElementById("subtotal-payment-After-service").innerHTML
+		);
+		var ppn_text = unformatNumber(
+			document.getElementById("ppn-text-payment-After-service").innerHTML
+		);
+		var ppn = unformatNumber(
+			document.getElementById("ppn-payment-After-service").innerHTML
+		);
+		var grand_total = unformatNumber(
+			document.getElementById("grand-total-payment-After-service").innerHTML
+		);
+		var metode_payment = $("#combo-payment-After-service").val();
+		var jumlah_dibayar = unformatNumber(
+			$("#jumlah-dibayar-payment-After-service").val()
+		);
+		var kembalian = unformatNumber(
+			document.getElementById("kembalian-payment-After-service").innerHTML
+		);
+		var refrence_payment = $("#combo-reference-payment-After-service").val();
+		var refrence_number = $("#reference-number-payment-After-service").val();
+		var Metode_Service = "Pay After Service";
+
+		var formdata = {
+			no_order: no_booking,
+			no_meja: no_meja,
+			qty: qty,
+			subtotal: subtotal,
+			ppn_text: ppn_text,
+			ppn: ppn,
+			amount_total: grand_total,
+			metode: metode_payment,
+			dibayar: jumlah_dibayar,
+			kembalian: kembalian,
+			refrence_payment: refrence_payment,
+			refrence_number: refrence_number,
+			metode_service: Metode_Service,
+		};
+
+		Swal.fire({
+			title: "Apakah anda yakin?",
+			text: "Sudahkah Anda melakukan Pengechekan Pembayaran sebelum Layanan Disimpan Kedalam Database !",
+			icon: "warning",
+			showCancelButton: true,
+			confirmButtonColor: "#3085d6",
+			cancelButtonColor: "#d33",
+			confirmButtonText: "Ya, Lanjutkan!",
+		}).then((result) => {
+			if (result.isConfirmed) {
+				$http
+					.post(base_url("opr/kasir/payment_after_service"), formdata)
+					.then(function (response) {
+						if (response.data.status == "success") {
+							Swal.fire({
+								icon: "success",
+								title: "Berhasil",
+								text: "Pembayaran sebelum layanan berhasil !",
+							});
+							document.location.reload();
+						}
+					})
+					.catch(function (error) {
+						console.error("Terjadi kesalahan saat proses data:", error);
+					});
+			}
+		});
+	};
+	//
+
+	$scope.pay_payment_bill_gabung = function () {
+		$scope.CalculatePaymentGabung();
+		var card = document.getElementById("card-payment-BillGabungan");
+		if (card.style.display === "none") {
+			card.style.display = "block";
+		} else {
+			card.style.display = "none";
+		}
+	};
+
+	$scope.CalculatePaymentGabung = function () {
+		var total_qty = unformatNumber(
+			document.getElementById("qty-total-gabung").value
+		);
+		var subtoal = unformatNumber($("#amount-total-gabung").val());
+		var ppn_text = unformatNumber($("#ppn-select-gabung").val());
+		var ppn_value = unformatNumber(
+			document.getElementById("amount-ppn-gabung").value
+		);
+		var grand_total = unformatNumber(
+			document.getElementById("grand-total-gabung").value
+		);
+		document.getElementById(
+			"total-qty-payment-BillGabungan-service"
+		).innerHTML = formatNumber(total_qty);
+
+		document.getElementById("subtotal-payment-BillGabungan-service").innerHTML =
+			formatNumber(subtoal);
+
+		document.getElementById("ppn-text-payment-BillGabungan-service").innerHTML =
+			formatNumber(ppn_text);
+
+		document.getElementById("ppn-payment-BillGabungan-service").innerHTML =
+			formatNumber(ppn_value);
+
+		document.getElementById(
+			"grand-total-payment-BillGabungan-service"
+		).innerHTML = formatNumber(grand_total);
+	};
+
+	$scope.PaymentBillGabunganSubmit = function () {
+		var qty = unformatNumber(
+			document.getElementById("total-qty-payment-BillGabungan-service")
+				.innerHTML
+		);
+		var subtotal = unformatNumber(
+			document.getElementById("subtotal-payment-BillGabungan-service").innerHTML
+		);
+		var ppn_text = unformatNumber(
+			document.getElementById("ppn-text-payment-BillGabungan-service").innerHTML
+		);
+		var ppn = unformatNumber(
+			document.getElementById("ppn-payment-BillGabungan-service").innerHTML
+		);
+		var grand_total = unformatNumber(
+			document.getElementById("grand-total-payment-BillGabungan-service")
+				.innerHTML
+		);
+		var metode_payment = $("#combo-payment-BillGabungan-service").val();
+		var jumlah_dibayar = unformatNumber(
+			$("#jumlah-dibayar-payment-BillGabungan-service").val()
+		);
+		var kembalian = unformatNumber(
+			document.getElementById("kembalian-payment-BillGabungan-service")
+				.innerHTML
+		);
+		var refrence_payment = $(
+			"#combo-reference-payment-BillGabungan-service"
+		).val();
+		var refrence_number = $(
+			"#reference-number-payment-BillGabungan-service"
+		).val();
+		var Metode_Service = "Pay Gabung Bill";
+
+		var formdata = {
+			group: $scope.groupedOrders,
+			metode: metode_payment,
+			dibayar: jumlah_dibayar,
+			kembalian: kembalian,
+			refrence_payment: refrence_payment,
+			refrence_number: refrence_number,
+			metode_service: Metode_Service,
+		};
+
+		Swal.fire({
+			title: "Apakah anda yakin?",
+			text: "Sudahkah Anda melakukan Pengechekan Pembayaran sebelum Layanan Disimpan Kedalam Database !",
+			icon: "warning",
+			showCancelButton: true,
+			confirmButtonColor: "#3085d6",
+			cancelButtonColor: "#d33",
+			confirmButtonText: "Ya, Lanjutkan!",
+		}).then((result) => {
+			if (result.isConfirmed) {
+				$http
+					.post(base_url("opr/kasir/payment_bill_gabung"), formdata)
 					.then(function (response) {
 						if (response.data.status == "success") {
 							Swal.fire({
@@ -1489,6 +1718,288 @@ function changeReferencePaymentBeforeService() {
 	);
 	let kembalian = jumlahBayar - totalTagihan;
 	document.getElementById("kembalian-payment-before-service").innerHTML =
+		formatRupiah(kembalian.toString());
+}
+
+function changePaymentAfterService() {
+	var combo_methode = $("#combo-payment-After-service").val();
+
+	$("#display_jumlah_dibayar_payment_After_service").css("display", "none");
+	$("#display_kembalian_payment_After_service").css("display", "none");
+	$("#display_reference_payment_After_service").css("display", "none");
+	$("#display_reference_number_payment_After_service").css("display", "none");
+
+	if (combo_methode == "Cash") {
+		$("#display_jumlah_dibayar_payment_After_service").css(
+			"display",
+			"table-row"
+		);
+		$("#display_kembalian_payment_After_service").css("display", "table-row");
+
+		document.getElementById("jumlah-dibayar-payment-After-service").value = "";
+		document.getElementById("kembalian-payment-After-service").innerHTML = "0";
+
+		document.getElementById(
+			"jumlah-dibayar-payment-After-service"
+		).readOnly = false;
+		document.getElementById("kembalian-payment-After-service").readOnly = false;
+	} else if (combo_methode == "QRIS") {
+		$("#display_jumlah_dibayar_payment_After_service").css(
+			"display",
+			"table-row"
+		);
+		$("#display_kembalian_payment_After_service").css("display", "table-row");
+		$("#display_reference_payment_After_service").css("display", "table-row");
+
+		combo_insert_qr_code("combo-reference-payment-After-service");
+		document.getElementById("jumlah-dibayar-payment-After-service").value = "";
+		document.getElementById("kembalian-payment-After-service").innerHTML = "0";
+
+		document.getElementById(
+			"jumlah-dibayar-payment-After-service"
+		).readOnly = true;
+		document.getElementById("kembalian-payment-After-service").readOnly = true;
+	} else if (combo_methode == "Bank Transfer") {
+		$("#display_jumlah_dibayar_payment_After_service").css(
+			"display",
+			"table-row"
+		);
+		$("#display_kembalian_payment_After_service").css("display", "table-row");
+		$("#display_reference_payment_After_service").css("display", "table-row");
+		$("#display_reference_number_payment_After_service").css(
+			"display",
+			"table-row"
+		);
+
+		combo_insert_bank_tambahan("combo-reference-payment-After-service");
+		document.getElementById("jumlah-dibayar-payment-After-service").value = "";
+		document.getElementById("kembalian-payment-After-service").innerHTML = "0";
+
+		document.getElementById(
+			"jumlah-dibayar-payment-After-service"
+		).readOnly = true;
+		document.getElementById("kembalian-payment-After-service").readOnly = true;
+	}
+}
+
+function changeReferencePaymentAfterService() {
+	let grand_Total = document.getElementById(
+		"grand-total-payment-After-service"
+	).innerHTML;
+	let totalTagihan = unformatNumber(grand_Total);
+	document.getElementById("jumlah-dibayar-payment-After-service").value =
+		formatNumber(totalTagihan);
+	var jumlahBayar = unformatNumber(
+		document.getElementById("jumlah-dibayar-payment-After-service").value
+	);
+	let kembalian = jumlahBayar - totalTagihan;
+	document.getElementById("kembalian-payment-Ater-service").innerHTML =
+		formatRupiah(kembalian.toString());
+}
+
+const inputBayar2 = document.getElementById(
+	"jumlah-dibayar-payment-After-service"
+);
+
+inputBayar2.addEventListener("input", function (e) {
+	let cursorPos = this.selectionStart;
+	let originalLength = this.value.length;
+
+	this.value = formatRupiah(this.value);
+
+	let updatedLength = this.value.length;
+	this.selectionEnd = cursorPos + (updatedLength - originalLength);
+});
+
+inputBayar2.addEventListener("keydown", function (e) {
+	if (e.key === "Enter") {
+		e.preventDefault();
+
+		let grand_Total = document.getElementById(
+			"grand-total-payment-After-service"
+		).innerHTML;
+		let jumlahBayar = unformatNumber(this.value);
+		let totalTagihan = unformatNumber(grand_Total);
+		let kembalian = jumlahBayar - totalTagihan;
+
+		// ✅ Cek apakah jumlah bayar kurang dari total tagihan
+		if (jumlahBayar < totalTagihan) {
+			Swal.fire({
+				title: "Error",
+				text: "Jumlah bayar tidak boleh kurang dari total tagihan",
+				icon: "error",
+			});
+			document.getElementById("jumlah-dibayar-payment-After-service").value =
+				"";
+			document.getElementById("kembalian-payment-After-service").innerHTML =
+				"Rp 0";
+			return;
+		}
+
+		document.getElementById("kembalian-payment-After-service").innerHTML =
+			formatRupiah(kembalian.toString());
+	}
+});
+
+function changePaymentBillGabunganService() {
+	var combo_methode = $("#combo-payment-BillGabungan-service").val();
+
+	$("#display_jumlah_dibayar_payment_BillGabungan_service").css(
+		"display",
+		"none"
+	);
+	$("#display_kembalian_payment_BillGabungan_service").css("display", "none");
+	$("#display_reference_payment_BillGabungan_service").css("display", "none");
+	$("#display_reference_number_payment_BillGabungan_service").css(
+		"display",
+		"none"
+	);
+
+	if (combo_methode == "Cash") {
+		$("#display_jumlah_dibayar_payment_BillGabungan_service").css(
+			"display",
+			"table-row"
+		);
+		$("#display_kembalian_payment_BillGabungan_service").css(
+			"display",
+			"table-row"
+		);
+
+		document.getElementById(
+			"jumlah-dibayar-payment-BillGabungan-service"
+		).value = "";
+		document.getElementById(
+			"kembalian-payment-BillGabungan-service"
+		).innerHTML = "0";
+
+		document.getElementById(
+			"jumlah-dibayar-payment-BillGabungan-service"
+		).readOnly = false;
+		document.getElementById(
+			"kembalian-payment-BillGabungan-service"
+		).readOnly = false;
+	} else if (combo_methode == "QRIS") {
+		$("#display_jumlah_dibayar_payment_BillGabungan_service").css(
+			"display",
+			"table-row"
+		);
+		$("#display_kembalian_payment_BillGabungan_service").css(
+			"display",
+			"table-row"
+		);
+		$("#display_reference_payment_BillGabungan_service").css(
+			"display",
+			"table-row"
+		);
+
+		combo_insert_qr_code("combo-reference-payment-BillGabungan-service");
+		document.getElementById(
+			"jumlah-dibayar-payment-BillGabungan-service"
+		).value = "";
+		document.getElementById(
+			"kembalian-payment-BillGabungan-service"
+		).innerHTML = "0";
+
+		document.getElementById(
+			"jumlah-dibayar-payment-BillGabungan-service"
+		).readOnly = true;
+		document.getElementById(
+			"kembalian-payment-BillGabungan-service"
+		).readOnly = true;
+	} else if (combo_methode == "Bank Transfer") {
+		$("#display_jumlah_dibayar_payment_BillGabungan_service").css(
+			"display",
+			"table-row"
+		);
+		$("#display_kembalian_payment_BillGabungan_service").css(
+			"display",
+			"table-row"
+		);
+		$("#display_reference_payment_BillGabungan_service").css(
+			"display",
+			"table-row"
+		);
+		$("#display_reference_number_payment_BillGabungan_service").css(
+			"display",
+			"table-row"
+		);
+
+		combo_insert_bank_tambahan("combo-reference-payment-BillGabungan-service");
+		document.getElementById(
+			"jumlah-dibayar-payment-BillGabungan-service"
+		).value = "";
+		document.getElementById(
+			"kembalian-payment-BillGabungan-service"
+		).innerHTML = "0";
+
+		document.getElementById(
+			"jumlah-dibayar-payment-BillGabungan-service"
+		).readOnly = true;
+		document.getElementById(
+			"kembalian-payment-BillGabungan-service"
+		).readOnly = true;
+	}
+}
+
+const inputBayar3 = document.getElementById(
+	"jumlah-dibayar-payment-BillGabungan-service"
+);
+
+inputBayar3.addEventListener("input", function (e) {
+	let cursorPos = this.selectionStart;
+	let originalLength = this.value.length;
+
+	this.value = formatRupiah(this.value);
+
+	let updatedLength = this.value.length;
+	this.selectionEnd = cursorPos + (updatedLength - originalLength);
+});
+
+inputBayar3.addEventListener("keydown", function (e) {
+	if (e.key === "Enter") {
+		e.preventDefault();
+
+		let grand_Total = document.getElementById(
+			"grand-total-payment-BillGabungan-service"
+		).innerHTML;
+		let jumlahBayar = unformatNumber(this.value);
+		let totalTagihan = unformatNumber(grand_Total);
+		let kembalian = jumlahBayar - totalTagihan;
+
+		// ✅ Cek apakah jumlah bayar kurang dari total tagihan
+		if (jumlahBayar < totalTagihan) {
+			Swal.fire({
+				title: "Error",
+				text: "Jumlah bayar tidak boleh kurang dari total tagihan",
+				icon: "error",
+			});
+			document.getElementById(
+				"jumlah-dibayar-payment-BillGabungan-service"
+			).value = "";
+			document.getElementById(
+				"kembalian-payment-BillGabungan-service"
+			).innerHTML = "Rp 0";
+			return;
+		}
+
+		document.getElementById(
+			"kembalian-payment-BillGabungan-service"
+		).innerHTML = formatRupiah(kembalian.toString());
+	}
+});
+
+function changeReferencePaymentBillGabunganService() {
+	let grand_Total = document.getElementById(
+		"grand-total-payment-BillGabungan-service"
+	).innerHTML;
+	let totalTagihan = unformatNumber(grand_Total);
+	document.getElementById("jumlah-dibayar-payment-BillGabungan-service").value =
+		formatNumber(totalTagihan);
+	var jumlahBayar = unformatNumber(
+		document.getElementById("jumlah-dibayar-payment-BillGabungan-service").value
+	);
+	let kembalian = jumlahBayar - totalTagihan;
+	document.getElementById("kembalian-payment-BillGabungan-service").innerHTML =
 		formatRupiah(kembalian.toString());
 }
 

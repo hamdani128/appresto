@@ -151,7 +151,8 @@ class Minuman extends CI_Controller
 
     public function data_minuman()
     {
-        $SQL = "SELECT
+        if ($this->session->userdata('level') == 'Super Admin' && $this->session->userdata('level') == 'Kasir') {
+            $SQL = "SELECT
                 a.id AS id,
                 b.id AS kategori_id,
                 b.kategori AS kategori,
@@ -164,6 +165,24 @@ class Minuman extends CI_Controller
             FROM minuman a
             LEFT JOIN kategori_minuman b ON a.kategori_id = b.id
             LEFT JOIN mitra c ON a.owner = c.kode";
+        } elseif ($this->session->userdata('level') == 'Mitra') {
+            $SQL = "SELECT
+                a.id AS id,
+                b.id AS kategori_id,
+                b.kategori AS kategori,
+                a.nama AS nama,
+                a.harga AS harga,
+                a.img AS img,
+                a.owner AS owner,
+                IF(c.nama IS NULL, 'Owner', c.nama) AS 'name_owner',
+                a.status AS status
+            FROM minuman a
+            LEFT JOIN kategori_minuman b ON a.kategori_id = b.id
+            LEFT JOIN mitra c ON a.owner = c.kode
+            WHERE a.owner = '" . $this->session->userdata('username') . "'
+            ";
+        }
+
         $query = $this->db->query($SQL)->result();
         $this->output
             ->set_content_type('application/json')
@@ -187,6 +206,7 @@ class Minuman extends CI_Controller
                 'nama' => $nama,
                 'harga' => $harga,
                 'owner' => $owner,
+                'status' => 1,
                 'user_id' => $userid,
                 'updated_at' => $now,
             );
@@ -225,6 +245,7 @@ class Minuman extends CI_Controller
                     'nama' => $nama,
                     'harga' => $harga,
                     'owner' => $owner,
+                    'status' => 1,
                     'user_id' => $userid,
                     'created_at' => $now,
                     'updated_at' => $now,

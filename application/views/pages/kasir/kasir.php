@@ -274,6 +274,25 @@
                                                         font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
                                                         <div
                                                             style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                                                            Discount (%)
+                                                        </div>
+                                                    </td>
+                                                    <td colspan="2"
+                                                        style="font-size: 16px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                        <input type="text" class="form-control" name="discount-nominal"
+                                                            id="discount-nominal" style="text-align: right;"
+                                                            placeholder="Sample : 10">
+                                                        <input type="text" class="form-control" name="discount-value"
+                                                            id="discount-value" style="text-align: right;" value="0">
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td colspan="6"
+                                                        style="text-align: right; font-size: 16px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                        <div
+                                                            style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
 
                                                             <select id="ppn-select" class="form-control"
                                                                 style="width: 100px;" ng-change="CalculateTotal()"
@@ -986,6 +1005,198 @@
     </div>
     <!-- End Modal -->
 
+
+    <!-- Modal Pembayaran Uang  -->
+    <div id="my-modal-payment-After-service" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false"
+        tabindex="-1" role="dialog" aria-labelledby="my-modal-title" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-dark">
+                    <h5 class="modal-title text-white">No.Pesanan <label
+                            id="lb_no_booking_payment_After_service"></label> | No.Meja
+                        <label id="lb_no_meja_payment_After_service"></label>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <table class="table table-striped table-bordered" style="width:100%"
+                                id="tb_payment_After_service">
+                                <tfoot>
+                                    <tr>
+                                        <td colspan="2"
+                                            style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="">Total Qty : </label>
+                                        </td>
+                                        <td colspan="6"
+                                            style="font-size: 20px; font-weight: bold;text-align: right;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="" id="total-qty-payment-After-service">0</label>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"
+                                            style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="">Subtotal : </label>
+                                        </td>
+                                        <td colspan="6"
+                                            style="font-size: 20px; font-weight: bold;text-align: right;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="" id="subtotal-payment-After-service">0</label>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"
+                                            style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="">Discount (<label for=""
+                                                    id="lb-discount-After-service"></label> %) : </label>
+                                        </td>
+                                        <td colspan="6"
+                                            style="font-size: 20px; font-weight: bold;text-align: right;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <div
+                                                style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                                                <label for="" id="Discount-After-service">0</label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"
+                                            style="text-align: right; font-size: 20px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="">
+                                                PPN
+                                                <label for="" id="ppn-text-payment-After-service">
+                                                </label>% :
+                                            </label>
+                                        </td>
+                                        <td colspan="6"
+                                            style="font-size: 20px; font-weight: bold;text-align: right;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="" id="ppn-payment-After-service">0</label>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"
+                                            style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="">Grand Total : </label>
+                                        </td>
+                                        <td colspan="6"
+                                            style="font-size: 20px; font-weight: bold;text-align: right;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="" id="grand-total-payment-After-service">0</label>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"
+                                            style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="">Metode Payment :</label>
+                                        </td>
+                                        <td colspan="6"
+                                            style="font-size: 20px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <div
+                                                style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                                                <select id="combo-payment-After-service" class="form-control"
+                                                    style="width: 100%;font-size: 20px;"
+                                                    onchange="changePaymentAfterService()">
+                                                    <option value="">Pilih :</option>
+                                                    <option value="Cash">Cash</option>
+                                                    <option value="QRIS">QRIS</option>
+                                                    <option value="Bank Transfer">Bank Transfer</option>
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr id="display_jumlah_dibayar_payment_After_service" style="display: none;">
+                                        <td colspan="2"
+                                            style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="">Jumlah Dibayar :</label>
+                                        </td>
+                                        <td colspan="6"
+                                            style="font-size: 20px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <div
+                                                style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                                                <input type="text" name="jumlah-dibayar-payment-After-service"
+                                                    id="jumlah-dibayar-payment-After-service" class=" form-control"
+                                                    style="text-align: right;width:
+                                                100%;font-size: 20px;">
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr id="display_kembalian_payment_After_service" style="display: none;">
+                                        <td colspan="2"
+                                            style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="">kembalian : </label>
+                                        </td>
+                                        <td colspan="6"
+                                            style="font-size: 20px; font-weight: bold;text-align: right;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="" id="kembalian-payment-After-service">0</label>
+                                        </td>
+                                    </tr>
+                                    <tr id="display_reference_payment_After_service" style="display: none;">
+                                        <td colspan="2"
+                                            style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="">Reference Payment :</label>
+                                        </td>
+                                        <td colspan="6"
+                                            style="font-size: 20px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <div
+                                                style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                                                <select id="combo-reference-payment-After-service" class="form-control"
+                                                    style="width: 100%;font-size: 20px;"
+                                                    onchange="changeReferencePaymentAfterService()">
+                                                </select>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr id="display_reference_number_payment_After_service" style="display: none;">
+                                        <td colspan="2"
+                                            style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="">Reference Number :</label>
+                                        </td>
+                                        <td colspan="6"
+                                            style="font-size: 20px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <div
+                                                style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                                                <input type="text" name="reference-number-payment-After-service"
+                                                    id="reference-number-payment-After-service" class=" form-control"
+                                                    style="text-align: right;width:
+                                                100%;">
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">c
+                    <button class="btn btn-md btn-success" style="width: 100%;height: 80px;"
+                        ng-click="PaymentAfterServiceSubmit()">
+                        <i class="bx bx-paper-plane"></i>
+                        Submit
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Modal Pembayaran -->
+
     <!-- Cetak Bill Modal -->
     <div id="my-modal-cetak-bill" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
         <div class="modal-dialog modal-sm" role="document">
@@ -1126,6 +1337,7 @@
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-9 col-md-9 col-sm-9 col-lg-9">
+                            <!-- card-detail -->
                             <div class="card">
                                 <div class="card-body">
                                     <div class="row pb-3">
@@ -1268,15 +1480,204 @@
                                                 <i class="bx bx-printer"></i> Cetak Bill
                                             </button>
 
-                                            <button class="btn btn-info btn btn-md" ng-click="pay_after_service()"
+                                            <button class="btn btn-info btn btn-md" ng-click="pay_payment_bill_gabung()"
                                                 style="flex: 1;">
                                                 <i class="bx bx-save"></i>
-                                                Pay after service
+                                                Payment
                                             </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
+                            <!-- End Card Detail -->
+
+                            <!-- card pembayaran -->
+                            <div class="card" id="card-payment-BillGabungan" style="display: none;">
+                                <div class="card-header bg-info">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <h7 class="text-white">Lock to Transaction</h7>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <div class="table-responsive">
+                                                <table class="table table-striped table-bordered" style="width:100%"
+                                                    id="tb_payment_BillGabungan_service">
+                                                    <tfoot>
+                                                        <tr>
+                                                            <td colspan="2"
+                                                                style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <label for="">Total Qty : </label>
+                                                            </td>
+                                                            <td colspan="6"
+                                                                style="font-size: 20px; font-weight: bold;text-align: right;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <label for=""
+                                                                    id="total-qty-payment-BillGabungan-service">0</label>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="2"
+                                                                style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <label for="">Subtotal : </label>
+                                                            </td>
+                                                            <td colspan="6"
+                                                                style="font-size: 20px; font-weight: bold;text-align: right;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <label for=""
+                                                                    id="subtotal-payment-BillGabungan-service">0</label>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="2"
+                                                                style="text-align: right; font-size: 20px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <label for="">
+                                                                    PPN
+                                                                    <label for=""
+                                                                        id="ppn-text-payment-BillGabungan-service">
+                                                                    </label>% :
+                                                                </label>
+                                                            </td>
+                                                            <td colspan="6"
+                                                                style="font-size: 20px; font-weight: bold;text-align: right;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <label for=""
+                                                                    id="ppn-payment-BillGabungan-service">0</label>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="2"
+                                                                style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <label for="">Grand Total : </label>
+                                                            </td>
+                                                            <td colspan="6"
+                                                                style="font-size: 20px; font-weight: bold;text-align: right;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <label for=""
+                                                                    id="grand-total-payment-BillGabungan-service">0</label>
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td colspan="2"
+                                                                style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <label for="">Metode Payment :</label>
+                                                            </td>
+                                                            <td colspan="6"
+                                                                style="font-size: 20px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <div
+                                                                    style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                                                                    <select id="combo-payment-BillGabungan-service"
+                                                                        class="form-control"
+                                                                        style="width: 100%;font-size: 20px;"
+                                                                        onchange="changePaymentBillGabunganService()">
+                                                                        <option value="">Pilih :</option>
+                                                                        <option value="Cash">Cash</option>
+                                                                        <option value="QRIS">QRIS</option>
+                                                                        <option value="Bank Transfer">Bank Transfer
+                                                                        </option>
+                                                                    </select>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        <tr id="display_jumlah_dibayar_payment_BillGabungan_service"
+                                                            style="display: none;">
+                                                            <td colspan="2"
+                                                                style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <label for="">Jumlah Dibayar :</label>
+                                                            </td>
+                                                            <td colspan="6"
+                                                                style="font-size: 20px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <div
+                                                                    style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                                                                    <input type="text"
+                                                                        name="jumlah-dibayar-payment-BillGabungan-service"
+                                                                        id="jumlah-dibayar-payment-BillGabungan-service"
+                                                                        class=" form-control" style="text-align: right;width:
+                                                100%;font-size: 20px;">
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        <tr id="display_kembalian_payment_BillGabungan_service"
+                                                            style="display: none;">
+                                                            <td colspan="2"
+                                                                style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <label for="">kembalian : </label>
+                                                            </td>
+                                                            <td colspan="6"
+                                                                style="font-size: 20px; font-weight: bold;text-align: right;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <label for=""
+                                                                    id="kembalian-payment-BillGabungan-service">0</label>
+                                                            </td>
+                                                        </tr>
+                                                        <tr id="display_reference_payment_BillGabungan_service"
+                                                            style="display: none;">
+                                                            <td colspan="2"
+                                                                style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <label for="">Reference Payment :</label>
+                                                            </td>
+                                                            <td colspan="6"
+                                                                style="font-size: 20px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <div
+                                                                    style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                                                                    <select
+                                                                        id="combo-reference-payment-BillGabungan-service"
+                                                                        class="form-control"
+                                                                        style="width: 100%;font-size: 20px;"
+                                                                        onchange="changeReferencePaymentBillGabunganService()">
+                                                                    </select>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                        <tr id="display_reference_number_payment_BillGabungan_service"
+                                                            style="display: none;">
+                                                            <td colspan="2"
+                                                                style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <label for="">Reference Number :</label>
+                                                            </td>
+                                                            <td colspan="6"
+                                                                style="font-size: 20px; font-weight: bold;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                                                <div
+                                                                    style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                                                                    <input type="text"
+                                                                        name="reference-number-payment-BillGabungan-service"
+                                                                        id="reference-number-payment-BillGabungan-service"
+                                                                        class=" form-control" style="text-align: right;width:
+                                                                        100%;">
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </tfoot>
+                                                </table>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button class="btn btn-md btn-success" style="width: 100%;height: 80px;"
+                                        ng-click="PaymentBillGabunganSubmit()">
+                                        <i class="bx bx-paper-plane"></i>
+                                        Submit
+                                    </button>
+                                </div>
+                            </div>
+                            <!-- end Card pembayaran -->
                         </div>
                         <!-- Bill -->
                         <div class="col-3 col-md-3 col-sm-3 col-lg-3">

@@ -48,7 +48,7 @@
                             Data Minuman
                         </a>
                     </li>
-                    <?php if ($this->session->userdata('level') != 'Kasir') {?>
+                    <?php if ($this->session->userdata('level') != 'Kasir' && $this->session->userdata('level') != 'Mitra') {?>
                     <li>
                         <a class="dropdown-item" href="<?=base_url('master/sdm')?>">
                             <i class="bx bx-right-arrow-alt"></i>
@@ -67,7 +67,7 @@
             <?php if ($this->session->userdata('level') !== 'Mitra') {?>
             <li class="nav-item dropdown">
                 <a href="javascript:;"
-                    class="nav-link dropdown-toggle dropdown-toggle-nocaret <?=uri_string() == 'transaksi/pesanan' ? 'active text-white' : ''?>"
+                    class="nav-link dropdown-toggle dropdown-toggle-nocaret <?=uri_string() == 'transaksi/pesanan' || uri_string() == 'transaksi/invoice' ? 'active text-white' : ''?>"
                     data-bs-toggle="dropdown">
                     <div class="parent-icon"><i class='bx bx-cart'></i>
                     </div>
@@ -78,7 +78,7 @@
                     <li>
                         <a class="dropdown-item" href="<?=base_url('transaksi/pesanan')?>">
                             <i class="bx bx-right-arrow-alt"></i>
-                            Pesanan
+                            Point Of Sale
                         </a>
                     </li>
                     <?php }?>

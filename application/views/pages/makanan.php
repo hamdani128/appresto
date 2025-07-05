@@ -99,6 +99,9 @@
                                             <button class="btn btn-md btn-warning" ng-click="ShowEditMakanan(dt)">
                                                 <i class="bx bx-edit"></i>
                                             </button>
+                                            <button class="btn btn-md btn-dark" ng-click="ReadyClose(da)">
+                                                <i class="bx bx-refresh"></i>
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>

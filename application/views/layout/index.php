@@ -169,6 +169,9 @@ echo date('Y')?>. All right
     <script src="<?=base_url()?>public/assets/custom/sdm.js"></script>
     <script src="<?=base_url()?>public/assets/custom/kasir.js"></script>
     <script src="<?=base_url()?>public/assets/custom/mitra.js"></script>
+    <script src="<?=base_url()?>public/assets/custom/list_transaksi.js"></script>
+    <script src="<?=base_url()?>public/assets/custom/home-kasir.js"></script>
+    <script src="<?=base_url()?>public/assets/custom/home-mitra.js"></script>
 </body>
 
 </html>

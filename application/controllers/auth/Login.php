@@ -35,7 +35,7 @@ class Login extends CI_Controller
         if (!empty($cek)) {
             $data_session = array(
                 'nama' => $username,
-                'usernaname' => $cek->username,
+                'username' => $cek->username,
                 'fullname' => $cek->fullname,
                 'email' => $cek->email,
                 'log_in' => "login",

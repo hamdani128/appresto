@@ -93,4 +93,12 @@ class M_pesanan extends CI_Model
         $query = $this->db->query($SQL)->row()->total;
         return $query;
     }
+
+    public function GetTransaksi($date_start, $date_end)
+    {
+        $SQL = "SELECT * FROM invoice WHERE tanggal BETWEEN '" . $date_start . "' AND '" . $date_end . "'";
+        $query = $this->db->query($SQL)->result();
+        return $query;
+    }
+
 }
