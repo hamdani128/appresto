@@ -461,6 +461,11 @@ class Kasir extends CI_Controller
     {
         date_default_timezone_set("Asia/Jakarta");
         $input = json_decode(file_get_contents("php://input"), true);
+        if ($input['discount_text'] == '' || $input['discount'] == 0) {
+            $desc_discount = '-';
+        } else {
+            $desc_discount = 'Discount';
+        }
         $data1 = [
             'no_transaksi' => $this->get_number_invoice(),
             'no_order' => $input['no_order'],
@@ -470,6 +475,9 @@ class Kasir extends CI_Controller
             'subtotal' => $input['subtotal'],
             'ppn_text' => $input['ppn_text'],
             'ppn' => $input['ppn'],
+            'potongan_desc' => $desc_discount,
+            'discount' => $input['discount_text'],
+            'potongan' => $input['discount'],
             'amount_total' => $input['amount_total'],
             'dibayar' => $input['dibayar'],
             'kembalian' => $input['kembalian'],
@@ -492,6 +500,8 @@ class Kasir extends CI_Controller
                 'nama' => $row->nama,
                 'harga' => $row->harga,
                 'qty' => $row->qty,
+                'potongan' => $row->potongan,
+                'discount' => $row->discount,
                 'jenis' => $row->jenis,
                 'owner' => $row->owner,
                 'status' => '4',
@@ -524,6 +534,11 @@ class Kasir extends CI_Controller
     {
         date_default_timezone_set("Asia/Jakarta");
         $input = json_decode(file_get_contents("php://input"), true);
+        if ($input['discount_text'] == '' || $input['discount'] == 0) {
+            $desc_discount = '-';
+        } else {
+            $desc_discount = 'Discount';
+        }
         $data1 = [
             'no_transaksi' => $this->get_number_invoice(),
             'no_order' => $input['no_order'],
@@ -533,6 +548,9 @@ class Kasir extends CI_Controller
             'subtotal' => $input['subtotal'],
             'ppn_text' => $input['ppn_text'],
             'ppn' => $input['ppn'],
+            'potongan_desc' => $desc_discount,
+            'discount' => $input['discount_text'],
+            'potongan' => $input['discount'],
             'amount_total' => $input['amount_total'],
             'dibayar' => $input['dibayar'],
             'kembalian' => $input['kembalian'],
@@ -555,6 +573,8 @@ class Kasir extends CI_Controller
                 'nama' => $row->nama,
                 'harga' => $row->harga,
                 'qty' => $row->qty,
+                'potongan' => $row->potongan,
+                'discount' => $row->discount,
                 'jenis' => $row->jenis,
                 'owner' => $row->owner,
                 'status' => '4',
@@ -653,6 +673,8 @@ class Kasir extends CI_Controller
                     'nama' => $row->nama,
                     'harga' => $row->harga,
                     'qty' => $row->qty,
+                    'potongan' => $row->potongan,
+                    'discount' => $row->discount,
                     'jenis' => $row->jenis,
                     'owner' => $row->owner,
                     'status' => '4',
@@ -699,4 +721,22 @@ class Kasir extends CI_Controller
             ->set_output(json_encode($response));
     }
 
+    public function discount_detail_row()
+    {
+        date_default_timezone_set("Asia/Jakarta");
+        $input = json_decode(file_get_contents("php://input"), true);
+        $no_order = $input['no_order'];
+        $no_meja = $input['no_meja'];
+        $menu = $input['menu'];
+        $discount = $input['discount'];
+        $result = $this->db->where("no_order", $no_order)->where("no_meja", $no_meja)->where("nama", $menu)->get("order_detail")->result();
+        foreach ($result as $row) {
+            $data = [
+                'potongan' => ($row->harga * $row->qty) * ($discount / 100),
+                'discount' => $discount,
+                'updated_at' => date('Y-m-d H:i:s'),
+            ];
+            $this->db->where("id", $row->id)->update("order_detail", $data);
+        }
+    }
 }

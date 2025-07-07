@@ -300,20 +300,104 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 			show3.style.display = "none";
 		}
 	};
+	$scope.CalculateRowSubtotal = function (item) {
+		var harga = parseInt(item.harga) || 0;
+		var qty = parseInt(item.qty) || 0;
+		var discount_percent = parseFloat(item.discount) || 0;
+
+		var total = harga * qty;
+		var discount_value = Math.floor((total * discount_percent) / 100);
+
+		item.potongan = discount_value;
+
+		var subtotal = total - discount_value;
+		if (subtotal < 0) subtotal = 0;
+
+		item.subtotal = subtotal;
+		var no_order = document.getElementById("lb_tambahan_no_order").innerHTML;
+		var no_meja = document.getElementById("lb_tambahan_no_meja").innerHTML;
+		// Simpan ke backend (optional)
+		var formdata = {
+			no_meja: no_meja,
+			no_order: no_order,
+			menu: item.nama,
+			discount: item.discount,
+		};
+
+		$http
+			.post(base_url("opr/kasir/discount_detail_row"), formdata)
+			.then(function (response) {
+				// optional: show success
+			})
+			.catch(function (error) {
+				console.error("Terjadi kesalahan saat proses data:", error);
+			});
+
+		$scope.CalculateTotal(); // Recalculate global total
+	};
+
+	// $scope.CalculateTotal = function () {
+	// 	var tbody = document.getElementById("tb_pesanan_list_body_menu");
+	// 	var rows = tbody.getElementsByTagName("tr");
+	// 	var total_harga = 0;
+	// 	var qty_total = 0;
+
+	// 	for (var i = 0; i < rows.length; i++) {
+	// 		var tds = rows[i].getElementsByTagName("td");
+	// 		if (tds.length < 6) continue; // skip jika bukan data row
+
+	// 		// Bersihkan nilai harga dan qty dari format Rp. dan separator ribuan
+	// 		var harga_text = tds[3].textContent.trim().replace(/[^\d]/g, ""); // hapus semua kecuali angka
+	// 		var qty_text = tds[4].textContent.trim().replace(/[^\d]/g, "");
+
+	// 		var harga = parseInt(harga_text) || 0;
+	// 		var qty = parseInt(qty_text) || 0;
+	// 		var subtotal = harga * qty;
+
+	// 		qty_total += qty;
+	// 		total_harga += subtotal;
+	// 	}
+
+	// 	// Update qty dan subtotal
+	// 	document.getElementById("qty-total").value = formatRupiah(qty_total);
+	// 	document.getElementById("amount-total").value = formatRupiah(total_harga);
+
+	// 	var discount_nominal = $("#discount-nominal").val();
+	// 	var dicount_value = total_harga * (discount_nominal / 100);
+	// 	var nominal_total = total_harga - dicount_value;
+
+	// 	document.getElementById("discount-value").value =
+	// 		formatRupiah(dicount_value);
+
+	// 	// Hitung PPN
+	// 	var ppn_select = document
+	// 		.getElementById("amount-ppn")
+	// 		.parentElement.parentElement.querySelector("select");
+	// 	var ppn_percent = parseFloat(ppn_select.value) || 0;
+	// 	var ppn_amount = Math.floor(nominal_total * (ppn_percent / 100));
+	// 	document.getElementById("amount-ppn").value = formatRupiah(ppn_amount);
+
+	// 	// Hitung Grand Total
+	// 	var grand_total = nominal_total + ppn_amount;
+	// 	document.getElementById("grand-total").value = formatRupiah(grand_total);
+	// };
 
 	$scope.CalculateTotal = function () {
-		var tbody = document.getElementById("tb_pesanan_list_body_menu");
-		var rows = tbody.getElementsByTagName("tr");
 		var total_harga = 0;
 		var qty_total = 0;
 
-		for (var i = 0; i < rows.length; i++) {
-			var tds = rows[i].getElementsByTagName("td");
-			if (tds.length < 6) continue; // skip jika row bukan data
+		for (var i = 0; i < $scope.LoadDataPesananList.length; i++) {
+			var item = $scope.LoadDataPesananList[i];
 
-			var harga = parseInt(tds[3].textContent.trim()) || 0;
-			var qty = parseInt(tds[4].textContent.trim()) || 0;
-			var subtotal = harga * qty;
+			var harga = parseInt(item.harga) || 0;
+			var qty = parseInt(item.qty) || 0;
+			var discount_percent = parseFloat(item.discount) || 0;
+
+			var total = harga * qty;
+			var discount_nominal = Math.floor((total * discount_percent) / 100);
+			var subtotal = total - discount_nominal;
+
+			if (subtotal < 0) subtotal = 0;
 
 			qty_total += qty;
 			total_harga += subtotal;
@@ -323,16 +407,26 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 		document.getElementById("qty-total").value = formatRupiah(qty_total);
 		document.getElementById("amount-total").value = formatRupiah(total_harga);
 
+		// Diskon global
+		var discount_nominal_global = parseFloat($("#discount-nominal").val()) || 0;
+		var discount_value = Math.floor(
+			total_harga * (discount_nominal_global / 100)
+		);
+		var nominal_total = total_harga - discount_value;
+
+		document.getElementById("discount-value").value =
+			formatRupiah(discount_value);
+
 		// Hitung PPN
 		var ppn_select = document
 			.getElementById("amount-ppn")
 			.parentElement.parentElement.querySelector("select");
 		var ppn_percent = parseFloat(ppn_select.value) || 0;
-		var ppn_amount = Math.floor(total_harga * (ppn_percent / 100));
+		var ppn_amount = Math.floor(nominal_total * (ppn_percent / 100));
 		document.getElementById("amount-ppn").value = formatRupiah(ppn_amount);
 
-		// Hitung Grand Total
-		var grand_total = total_harga + ppn_amount;
+		// Grand Total
+		var grand_total = nominal_total + ppn_amount;
 		document.getElementById("grand-total").value = formatRupiah(grand_total);
 	};
 
@@ -464,8 +558,15 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 		var ppn_select_text = $("#ppn-select").val();
 		var ppn = $("#amount-ppn").val();
 		var grandtotal = $("#grand-total").val();
+		var discount_text = $("#discount-nominal").val();
+		var discount_value = $("#discount-value").val();
+
 		document.getElementById("bill_qty").innerHTML = formatNumber(qty);
 		document.getElementById("bill_subtotal").innerHTML = formatRupiah(subtotal);
+		document.getElementById("bill_text_discount").innerHTML =
+			formatNumber(discount_text);
+		document.getElementById("bill_value_discount").innerHTML =
+			formatRupiah(discount_value);
 		document.getElementById("bill_ppn").innerHTML = formatRupiah(ppn);
 		document.getElementById("bill_grand_total").innerHTML =
 			formatRupiah(grandtotal);
@@ -823,6 +924,8 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 		var ppn_text = $("#ppn-select").val();
 		var ppn = $("#amount-ppn").val();
 		var total = $("#grand-total").val();
+		var discount_text = $("#discount-nominal").val();
+		var discount_value = $("#discount-value").val();
 		document.getElementById("total-qty-payment-before-service").innerHTML = qty;
 		document.getElementById("subtotal-payment-before-service").innerHTML =
 			formatRupiah(subtotal);
@@ -832,6 +935,10 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 			document.getElementById("ppn-text-payment-before-service").innerHTML =
 				ppn_text;
 		}
+		document.getElementById("lb-discount-before-service").innerHTML =
+			formatNumber(discount_text);
+		document.getElementById("Discount-before-service").innerHTML =
+			formatRupiah(discount_value);
 		document.getElementById("ppn-payment-before-service").innerHTML =
 			formatRupiah(ppn);
 		document.getElementById("grand-total-payment-before-service").innerHTML =
@@ -856,6 +963,9 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 		var ppn_text = $("#ppn-select").val();
 		var ppn = $("#amount-ppn").val();
 		var total = $("#grand-total").val();
+		var discount_text = $("#discount-nominal").val();
+		var discount_value = $("#discount-value").val();
+
 		document.getElementById("total-qty-payment-After-service").innerHTML = qty;
 		document.getElementById("subtotal-payment-After-service").innerHTML =
 			formatRupiah(subtotal);
@@ -865,6 +975,11 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 			document.getElementById("ppn-text-payment-After-service").innerHTML =
 				ppn_text;
 		}
+
+		document.getElementById("lb-discount-After-service").innerHTML =
+			formatNumber(discount_text);
+		document.getElementById("Discount-After-service").innerHTML =
+			formatNumber(discount_value);
 		document.getElementById("ppn-payment-After-service").innerHTML =
 			formatRupiah(ppn);
 		document.getElementById("grand-total-payment-After-service").innerHTML =
@@ -1036,6 +1151,13 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 		var subtotal = unformatNumber(
 			document.getElementById("subtotal-payment-before-service").innerHTML
 		);
+		var discount_text = unformatNumber(
+			document.getElementById("lb-discount-before-service").innerHTML
+		);
+		var discount = unformatNumber(
+			document.getElementById("Discount-before-service").innerHTML
+		);
+
 		var ppn_text = unformatNumber(
 			document.getElementById("ppn-text-payment-before-service").innerHTML
 		);
@@ -1061,6 +1183,8 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 			no_meja: no_meja,
 			qty: qty,
 			subtotal: subtotal,
+			discount_text: discount_text,
+			discount: discount,
 			ppn_text: ppn_text,
 			ppn: ppn,
 			amount_total: grand_total,
@@ -1115,6 +1239,12 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 		var subtotal = unformatNumber(
 			document.getElementById("subtotal-payment-After-service").innerHTML
 		);
+		var discount_text = unformatNumber(
+			document.getElementById("lb-discount-After-service").innerHTML
+		);
+		var discount = unformatNumber(
+			document.getElementById("Discount-After-service").innerHTML
+		);
 		var ppn_text = unformatNumber(
 			document.getElementById("ppn-text-payment-After-service").innerHTML
 		);
@@ -1140,6 +1270,8 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 			no_meja: no_meja,
 			qty: qty,
 			subtotal: subtotal,
+			discount_text: discount_text,
+			discount: discount,
 			ppn_text: ppn_text,
 			ppn: ppn,
 			amount_total: grand_total,
@@ -1292,6 +1424,72 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 					});
 			}
 		});
+	};
+
+	// Bill Billing
+	$scope.ShowDetailTransaksi = function (dt) {
+		var no_booking = dt.no_order;
+		var no_meja = dt.no_meja;
+
+		document.getElementById("lb_bill_billing_no_pesanan").innerHTML =
+			no_booking;
+		document.getElementById("lb_bill_billing_no_meja").innerHTML = no_meja;
+
+		$scope.DetailPesananBilling(no_booking, no_meja);
+
+		// Unbind event dulu biar tidak dobel
+		$("#my-modal-bill-billing")
+			.off("shown.bs.modal")
+			.on("shown.bs.modal", function () {
+				printCard("printArea3");
+			});
+
+		// Tampilkan modal
+		$("#my-modal-bill-billing").modal("show");
+	};
+
+	//
+	$scope.DetailPesananBilling = function (no_booking, no_meja) {
+		var formdata = { no_booking: no_booking, no_meja: no_meja };
+		$scope.LoadDataPesananDetail = [];
+		$scope.LoadDataPesananGabungSementara = [];
+		$scope.LoadDataPesananDetailAll = [];
+
+		$http
+			.post(base_url("transaksi/invoice/get_detail_transaksi"), formdata)
+			.then(function (response) {
+				var data = response.data.transaksi;
+				document.getElementById("bill_billing_date_show").innerHTML =
+					data.created_at;
+				document.getElementById("bill_billing_chasier_show").innerHTML =
+					data.created_by;
+				document.getElementById("bill_billing_no_order_show").innerHTML =
+					data.no_order;
+				document.getElementById("bill_billing_qty_show").innerHTML =
+					formatNumber(data.qty);
+				document.getElementById("bill_billing_subtotal_show").innerHTML =
+					formatRupiah(data.subtotal);
+
+				document.getElementById("bill_billing_discount_persen").innerHTML =
+					formatNumber(data.discount);
+				document.getElementById("bill_billing_discount_show").innerHTML =
+					formatRupiah(data.potongan);
+				document.getElementById("bill_billing_ppn_show").innerHTML =
+					formatRupiah(data.ppn);
+
+				document.getElementById("bill_billing_grand_total_show").innerHTML =
+					formatRupiah(data.amount_total);
+				document.getElementById("bill_billing_metode_show").innerHTML =
+					data.metode;
+				document.getElementById("bill_billing_jumlah_dibayar_show").innerHTML =
+					formatRupiah(data.dibayar);
+				document.getElementById("bill_billing_kembalian_show").innerHTML =
+					formatRupiah(data.kembalian);
+				document.getElementById("bill_billing_service_metode_show").innerHTML =
+					data.metode_service;
+				$scope.LoadDataPesananDetail = response.data.detail_transaksi;
+				$scope.UpdateGabungAll();
+			});
 	};
 });
 

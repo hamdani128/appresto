@@ -2,14 +2,14 @@
     <div class="page-wrapper">
         <div class="page-content">
             <div class="row">
-                <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 d-flex">
+                <div class="col-12 col-sm-5 col-md-5 col-lg-5 col-xl-5 d-flex">
                     <div class="card radius-10 w-100">
                         <div class="card-header bg-dark">
                             <h5 class="text-white">List Table</h5>
                         </div>
                         <div class="card-body">
                             <div class="row">
-                                <div class="col-lg-2" ng-repeat="dt in LoadData" ng-if="LoadData.length > 0">
+                                <div class="col-md-4" ng-repeat="dt in LoadData" ng-if="LoadData.length > 0">
                                     <div class="card bg-secondary" id="bg_{{$index}}" ng-if="dt.status === '0'"
                                         ng-click="SelectedMeja('bg_' + $index, dt)">
                                         <div class="card-body">
@@ -32,7 +32,7 @@
                     </div>
                 </div>
                 <!-- Order -->
-                <div class="col-12 col-sm-6 col-md-6 col-lg-6 col-xl-6 d-flex">
+                <div class="col-12 col-sm-7 col-md-7 col-lg-7 col-xl7 d-flex">
                     <div class="card radius-10 overflow-hidden w-100">
                         <div class="card-header bg-dark">
                             <div class="row">
@@ -84,7 +84,8 @@
                                                     </td>
                                                     <td>
                                                         <div class="button-group">
-                                                            <button class="btn btn-sm btn-dark">
+                                                            <button class="btn btn-sm btn-dark"
+                                                                ng-click="ShowDetailTransaksi(dt)">
                                                                 <i class="bx bx-printer"></i>
                                                             </button>
                                                         </div>
@@ -204,18 +205,20 @@
 
                                 <div class="row pt-2">
                                     <div class="table-responsive">
-                                        <table class="table table-striped table-bordered" style="width:100%"
+                                        <table class="table table-striped table-bordered" style="width:110%"
                                             id="tb_pesanan_list">
                                             <thead class="bg-dark text-white">
                                                 <tr>
-                                                    <th>#</th>
-                                                    <th>Cat.</th>
-                                                    <th>List</th>
-                                                    <th>Harga</th>
-                                                    <th>Qty</th>
-                                                    <th>Subtotal</th>
-                                                    <th>Jenis</th>
-                                                    <th>Action</th>
+                                                    <th style="width: 2%;">#</th>
+                                                    <th style="width: 5%;">Cat.</th>
+                                                    <th style="width: 15%;">List</th>
+                                                    <th style="width: 10%;">Harga</th>
+                                                    <th style="width: 10%;">Qty</th>
+                                                    <th style="width: 10%;">Subtotal</th>
+                                                    <th style="width: 10%;">Jenis</th>
+                                                    <th style="width: 25%;">Potongan</th>
+                                                    <th style="width: 5%;">Disc.(%)</th>
+                                                    <th style="width: 5%;">Action</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="tb_pesanan_list_body_menu">
@@ -223,32 +226,40 @@
                                                     ng-if="LoadDataPesananList.length > 0">
                                                     <td>{{$index + 1}}</td>
                                                     <td>{{dt.kategori}}</td>
-                                                    <td>{{dt.nama}}</td>
-                                                    <td>{{dt.harga}}</td>
-                                                    <td>{{dt.qty}}</td>
-                                                    <td>{{dt.qty * dt.harga}}</td>
+                                                    <td>{{ dt.nama }}</td>
+                                                    <td>{{ dt.harga | currency:"Rp. ":0 }}</td>
+                                                    <td>{{ dt.qty }}</td>
+                                                    <td>{{ dt.subtotal | currency:"Rp. ":0 }}</td>\
                                                     <td>{{dt.jenis}}</td>
+                                                    <td>{{ dt.potongan | currency:"Rp. ":0 }}</td>
                                                     <td>
-                                                        <div class="button-group">
-                                                            <button class="btn btn-sm btn-dark"
-                                                                ng-click="ShowDetailPesanan(dt)">
-                                                                <i class="bx bx-show"></i>
-                                                            </button>
-                                                        </div>
+                                                        <input type="text" class="form-control" ng-model="dt.discount"
+                                                            ng-change="CalculateRowSubtotal(dt)">
+                                                    </td>
+                                                    <!-- Aksi -->
+                                                    <td>
+                                                        <button class="btn btn-sm btn-dark"
+                                                            ng-click="ShowDetailPesanan(dt)">
+                                                            <i class="bx bx-show"></i>
+                                                        </button>
                                                     </td>
                                                 </tr>
+
                                                 <tr ng-if="LoadDataPesananList.length === 0">
-                                                    <td colspan="7" class="text-center">No data available</td>
+                                                    <td colspan="10" class="text-center">No data available</td>
                                                 </tr>
                                             </tbody>
+
+
+
                                             <tfoot style="border: 1px solid #dee2e6;">
                                                 <tr>
-                                                    <td colspan="6"
+                                                    <td colspan="5"
                                                         style="text-align: right; font-size: 16px; font-weight: bold;
                                                     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
                                                         <label for="">Total Qty : </label>
                                                     </td>
-                                                    <td colspan="2"
+                                                    <td colspan="5"
                                                         style="font-size: 16px; font-weight: bold;
                                                         font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
                                                         <input type="text" class="form-control" name="qty-total"
@@ -256,12 +267,12 @@
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td colspan="6"
+                                                    <td colspan="5"
                                                         style="text-align: right; font-size: 16px; font-weight: bold;
                                                     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
                                                         <label for="">Subtotal : </label>
                                                     </td>
-                                                    <td colspan="2"
+                                                    <td colspan="5"
                                                         style="font-size: 16px; font-weight: bold;
                                                         font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
                                                         <input type="text" class="form-control" name="amount-total"
@@ -269,7 +280,7 @@
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td colspan="6"
+                                                    <td colspan="5"
                                                         style="text-align: right; font-size: 16px; font-weight: bold;
                                                         font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
                                                         <div
@@ -277,18 +288,19 @@
                                                             Discount (%)
                                                         </div>
                                                     </td>
-                                                    <td colspan="2"
+                                                    <td colspan="5"
                                                         style="font-size: 16px; font-weight: bold;
                                                         font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
                                                         <input type="text" class="form-control" name="discount-nominal"
                                                             id="discount-nominal" style="text-align: right;"
-                                                            placeholder="Sample : 10">
+                                                            placeholder="Sample : 10" ng-keyup="CalculateTotal()"
+                                                            value="0">
                                                         <input type="text" class="form-control" name="discount-value"
                                                             id="discount-value" style="text-align: right;" value="0">
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td colspan="6"
+                                                    <td colspan="5"
                                                         style="text-align: right; font-size: 16px; font-weight: bold;
                                                         font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
                                                         <div
@@ -303,7 +315,7 @@
                                                             </select>
                                                         </div>
                                                     </td>
-                                                    <td colspan="2"
+                                                    <td colspan="5"
                                                         style="font-size: 16px; font-weight: bold;
                                                         font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
                                                         <input type="text" class="form-control" name="amount-ppn"
@@ -311,12 +323,12 @@
                                                     </td>
                                                 </tr>
                                                 <tr>
-                                                    <td colspan="6"
+                                                    <td colspan="5"
                                                         style="text-align: right; font-size: 16px; font-weight: bold;
                                                     font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
                                                         <label for="">Grand Total : </label>
                                                     </td>
-                                                    <td colspan="2"
+                                                    <td colspan="5"
                                                         style="font-size: 16px; font-weight: bold;
                                                         font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
                                                         <input type="text" class="form-control" name="grand-total"
@@ -875,6 +887,22 @@
                                     <tr>
                                         <td colspan="2"
                                             style="text-align: right; font-size: 20px; font-weight: bold;
+                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <label for="">Discount (<label for=""
+                                                    id="lb-discount-before-service"></label> %) : </label>
+                                        </td>
+                                        <td colspan="6"
+                                            style="font-size: 20px; font-weight: bold;text-align: right;
+                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
+                                            <div
+                                                style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
+                                                <label for="" id="Discount-before-service">0</label>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2"
+                                            style="text-align: right; font-size: 20px; font-weight: bold;
                                                         font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
                                             <label for="">
                                                 PPN
@@ -1287,6 +1315,12 @@
                                                 <td>Subtotal</td>
                                                 <td style="width: 10px;">:</td>
                                                 <td style="text-align: right;" id="bill_subtotal">0</td>
+                                            </tr>
+
+                                            <tr>
+                                                <td>Discount (<label for="" id="bill_text_discount"></label>%)</td>
+                                                <td style="width: 10px;">:</td>
+                                                <td style="text-align: right;" id="bill_value_discount">0</td>
                                             </tr>
                                             <tr>
                                                 <td>PPN (10%)</td>
@@ -1805,6 +1839,181 @@
         </div>
     </div>
     <!-- End Modal Gabung -->
+
+    <!-- Modal Bill Biling -->
+    <div id="my-modal-bill-billing" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
+        <div class="modal-dialog modal-md" role="document">
+            <div class="modal-content">
+                <div class="modal-header bg-dark text-white">
+                    <h5 class="modal-title text-white">No.Pesanan <label id="lb_bill_billing_no_pesanan"></label> |
+                        No.Meja
+                        <label id="lb_bill_billing_no_meja"></label>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="card">
+                        <div class="card-body" id="printArea3">
+                            <div>
+                                <div class="text-center bold" style="font-size: 14px;margin-top: 0px;">
+                                    <img src="<?=base_url()?>public/assets/images/millennialpos.png" alt="">
+                                    <h5>ROEMAH PREMIUM KOPI</h5>
+                                </div>
+                                <div class="text-center">
+                                    Jl. STM Jl. Sakti Lubis No.SIMPANG,
+                                    Suka Maju, Kec. Medan Amplas, Kota Medan,
+                                    Sumatera Utara
+                                    20217<br>
+                                    Telp: 0812-3456-7890<br>
+                                </div>
+                                <hr>
+                                <div style="padding-left: 18px;">
+                                    <table style="width: 100%;">
+                                        <tr>
+                                            <td style="width: 20%;">
+                                                Tanggal
+                                            </td>
+                                            <td style="width: 5%;">:</td>
+                                            <td style="width: 75%;"><span id="bill_billing_date_show"
+                                                    style="font-weight: 500;"></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                Kasir
+                                            </td>
+                                            <td>:</td>
+                                            <td><span id="bill_billing_chasier_show" style="font-weight: 500;"></span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                No.order
+                                            </td>
+                                            <td>:</td>
+                                            <td><span id="bill_billing_no_order_show" style="font-weight: 500;"></span>
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                </div>
+                                <hr>
+                                <div style="padding-left: 18px;">
+                                    <!-- Barang -->
+                                    <table style="width: 100%; font-size: 13px;">
+                                        <tbody ng-repeat="group in groupedOrders">
+                                            <tr class="fw-bold">
+                                                <td colspan="3" style="padding-top: 0px; padding-bottom: 2px;">
+                                                    Table : {{ group.no_meja }}
+                                                    <hr class="my-1">
+                                                </td>
+                                            </tr>
+                                            <tr ng-repeat="item in group.items">
+                                                <td style="width: 8%; text-align: center;">[{{ item.qty }}]</td>
+                                                <td style="width: 60%;">
+                                                    {{ item.nama }}
+                                                    <span ng-if="item.potongan !== null">
+                                                        ({{item.discount}}%)
+                                                    </span>
+                                                </td>
+                                                <td style="width: 30%; text-align: right;">
+                                                    {{ (item.qty * item.harga) - item.potongan | currency:'Rp ':0 }}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+
+                                <hr>
+                                <!-- Perhitungan -->
+                                <div style="padding-left: 18px;">
+                                    <table style="width: 100%;">
+                                        <tr>
+
+                                            <td style="width: 100%;">
+                                                <table style="width: 100%;">
+                                                    <tr>
+                                                        <td>Qty</td>
+                                                        <td style="width: 10px;">:</td>
+                                                        <td style="text-align: right;padding-right: 10px;font-weight: 500;"
+                                                            id="bill_billing_qty_show">0
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Subtotal</td>
+                                                        <td style="width: 10px;">:</td>
+                                                        <td style="text-align: right;font-weight: 500;"
+                                                            id="bill_billing_subtotal_show">0
+                                                        </td>
+                                                    </tr>
+
+                                                    <tr>
+                                                        <td>Discount (<label for=""
+                                                                id="bill_billing_discount_persen"></label>%)</td>
+                                                        <td>:</td>
+                                                        <td style="text-align: right;font-weight: 500;"
+                                                            id="bill_billing_discount_show">0
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>PPN (10%)</td>
+                                                        <td>:</td>
+                                                        <td style="text-align: right;font-weight: 500;"
+                                                            id="bill_billing_ppn_show">0
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Grand Total</td>
+                                                        <td>:</td>
+                                                        <td style="text-align: right;font-weight: 500;"
+                                                            id="bill_billing_grand_total_show">0
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Metode Bayar</td>
+                                                        <td>:</td>
+                                                        <td style="text-align: right;font-weight: 500;"
+                                                            id="bill_billing_metode_show">-
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Jumlah Dibayar</td>
+                                                        <td>:</td>
+                                                        <td style="text-align: right;font-weight: 500;"
+                                                            id="bill_billing_jumlah_dibayar_show">0
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Kembalian</td>
+                                                        <td>:</td>
+                                                        <td style="text-align: right;font-weight: 500;"
+                                                            id="bill_billing_kembalian_show">0
+                                                        </td>
+                                                    </tr>
+                                                    <tr>
+                                                        <td>Service Metode</td>
+                                                        <td>:</td>
+                                                        <td style="text-align: right;font-weight: 500;"
+                                                            id="bill_billing_service_metode_show">
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                </div>
+                                <hr>
+                                <div class="text-center bold">
+                                    -- TERIMA KASIH --
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- End Modal Bill Biling -->
 
 </div>
 

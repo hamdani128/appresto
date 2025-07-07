@@ -39,16 +39,19 @@ class M_pesanan extends CI_Model
     public function ListDataMenuByNoOrder($no_order)
     {
         $SQL = "SELECT
-                a.kategori as kategori,
-                a.nama as nama,
-                a.harga as harga,
-                a.jenis as jenis,
-                SUM(a.qty) as qty
-                FROM order_detail a
-                WHERE a.no_order='" . $no_order . "'
-                GROUP BY 1,2,3,4";
-        $query = $this->db->query($SQL)->result();
-        return $query;
+                a.kategori,
+                a.nama,
+                a.harga,
+                a.jenis,
+                SUM(a.qty) AS qty,
+                AVG(a.discount) AS discount,
+                SUM(a.potongan) AS potongan,
+                SUM(a.qty * a.harga) - SUM(COALESCE(a.potongan, 0)) AS subtotal
+            FROM order_detail a
+            WHERE a.no_order = ?
+            GROUP BY a.nama, a.harga, a.kategori, a.jenis";
+
+        return $this->db->query($SQL, [$no_order])->result();
     }
 
     public function ListDetailPesanan($no_booking, $no_meja, $makanan)
