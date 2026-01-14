@@ -17,7 +17,7 @@ class Invoice extends CI_Controller
     {
         parent::__construct();
         $this->load->helper("url");
-        $this->session->sess_expiration = '60';
+        $this->session->sess_expiration      = '60';
         $this->session->sess_expire_on_close = 'true';
         if ($this->session->userdata('log_in') != "login") {
             redirect(base_url("auth/login"));
@@ -36,10 +36,10 @@ class Invoice extends CI_Controller
     public function get_transaksi()
     {
         date_default_timezone_set('Asia/Jakarta');
-        $input = json_decode(file_get_contents("php://input"), true);
+        $input      = json_decode(file_get_contents("php://input"), true);
         $date_start = $input['date_start'];
-        $date_end = $input['date_end'];
-        $query = $this->M_pesanan->GetTransaksi($date_start, $date_end);
+        $date_end   = $input['date_end'];
+        $query      = $this->M_pesanan->GetTransaksi($date_start, $date_end);
         $this->output
             ->set_content_type('application/json')
             ->set_output(json_encode($query));
@@ -48,14 +48,31 @@ class Invoice extends CI_Controller
     public function get_detail_transaksi()
     {
         date_default_timezone_set('Asia/Jakarta');
-        $input = json_decode(file_get_contents("php://input"), true);
-        $no_booking = $input['no_booking'];
-        $no_meja = $input['no_meja'];
-        $row = $this->db->where("no_order", $no_booking)->where("no_meja", $no_meja)->get("invoice")->row();
-        $result = $this->db->where("no_order", $no_booking)->where("no_meja", $no_meja)->get("invoice_detail")->result();
-        $data = [
-            'transaksi' => $row,
+        $input        = json_decode(file_get_contents("php://input"), true);
+        $no_booking   = $input['no_booking'];
+        $no_meja      = $input['no_meja'];
+        $no_transaksi = $input['no_transaksi'];
+        $row          = $this->db->where("no_order", $no_booking)->where("no_meja", $no_meja)->where('no_transaksi', $no_transaksi)->get("invoice")->row();
+        $result       = $this->db->where("no_order", $no_booking)->where("no_meja", $no_meja)->where('no_transaksi', $no_transaksi)->get("invoice_detail")->result();
+        $data         = [
+            'transaksi'        => $row,
             'detail_transaksi' => $result,
+        ];
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($data));
+    }
+
+    public function get_transaksi_periode()
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $input      = json_decode(file_get_contents("php://input"), true);
+        $date_start = $input['date_start'];
+        $date_end   = $input['date_end'];
+        $query      = $this->M_pesanan->GetPeriodeTransaksi($date_start, $date_end);
+        $data       = [
+            'kasir'  => $this->session->userdata('username') . '-' . $this->session->userdata('fullname'),
+            'detail' => $query,
         ];
         $this->output
             ->set_content_type('application/json')

@@ -5,34 +5,42 @@
     <!-- Required meta tags -->
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Coffe App</title>
     <!--favicon-->
-    <link rel="icon" href="<?=base_url()?>public/assets/images/coffe.png" type="image/png" />
+    <link rel="icon" href="<?php echo base_url() ?>public/assets/images/coffe.png" type="image/png" />
     <!--plugins-->
-    <link href="<?=base_url()?>public/assets/plugins/vectormap/jquery-jvectormap-2.0.2.css" rel="stylesheet" />
-    <link href="<?=base_url()?>public/assets/plugins/simplebar/css/simplebar.css" rel="stylesheet" />
-    <link href="<?=base_url()?>public/assets/plugins/perfect-scrollbar/css/perfect-scrollbar.css" rel="stylesheet" />
+    <!--plugins-->
+    <link rel="stylesheet" href="<?php echo base_url() ?>public/assets/plugins/notifications/css/lobibox.min.css" />
+    <link href="<?php echo base_url() ?>public/assets/plugins/vectormap/jquery-jvectormap-2.0.2.css" rel="stylesheet" />
+    <link href="<?php echo base_url() ?>public/assets/plugins/simplebar/css/simplebar.css" rel="stylesheet" />
+    <link href="<?php echo base_url() ?>public/assets/plugins/perfect-scrollbar/css/perfect-scrollbar.css"
+        rel="stylesheet" />
 
     <!-- loader-->
-    <link href="<?=base_url()?>public/assets/css/pace.min.css" rel="stylesheet" />
-    <script src="<?=base_url()?>public/assets/js/pace.min.js"></script>
+    <link href="<?php echo base_url() ?>public/assets/css/pace.min.css" rel="stylesheet" />
+    <script src="<?php echo base_url() ?>public/assets/js/pace.min.js"></script>
     <!-- Bootstrap CSS -->
-    <link href="<?=base_url()?>public/assets/css/bootstrap.min.css" rel="stylesheet">
-    <link href="<?=base_url()?>public/assets/css/bootstrap-extended.css" rel="stylesheet">
+    <link href="<?php echo base_url() ?>public/assets/css/bootstrap.min.css" rel="stylesheet">
+    <link href="<?php echo base_url() ?>public/assets/css/bootstrap-extended.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
-    <link href="<?=base_url()?>public/assets/css/app.css" rel="stylesheet">
-    <link href="<?=base_url()?>public/assets/css/icons.css" rel="stylesheet">
+    <link href="<?php echo base_url() ?>public/assets/css/app.css" rel="stylesheet">
+    <link href="<?php echo base_url() ?>public/assets/css/icons.css" rel="stylesheet">
     <!-- datatable -->
-    <link href="<?=base_url()?>public/assets/plugins/datatable/css/dataTables.bootstrap5.min.css" rel="stylesheet" />
+    <link href="<?php echo base_url() ?>public/assets/plugins/datatable/css/dataTables.bootstrap5.min.css"
+        rel="stylesheet" />
     <!-- SweetAlert2 -->
-    <link rel="stylesheet" href="<?=base_url()?>public/assets/sweetalert/sweetalert2.css">
-    <link rel="stylesheet" href="<?=base_url()?>public/assets/sweetalert/sweetalert2.min.css">
+    <link rel="stylesheet" href="<?php echo base_url() ?>public/assets/sweetalert/sweetalert2.css">
+    <link rel="stylesheet" href="<?php echo base_url() ?>public/assets/sweetalert/sweetalert2.min.css">
 
     <!-- Theme Style CSS -->
-    <link rel="stylesheet" href="<?=base_url()?>public/assets/css/dark-theme.css" />
-    <link rel="stylesheet" href="<?=base_url()?>public/assets/css/semi-dark.css" />
-    <link rel="stylesheet" href="<?=base_url()?>public/assets/css/header-colors.css" />
-    <title>Coffe App</title>
+    <link rel="stylesheet" href="<?php echo base_url() ?>public/assets/css/dark-theme.css" />
+    <link rel="stylesheet" href="<?php echo base_url() ?>public/assets/css/semi-dark.css" />
+    <link rel="stylesheet" href="<?php echo base_url() ?>public/assets/css/header-colors.css" />
+
+
+
 </head>
+
 
 <body>
     <!--wrapper-->
@@ -60,7 +68,7 @@
         <!--End Back To Top Button-->
         <footer class="page-footer">
             <p class="mb-0">Copyright © <?php date_default_timezone_set('Asia/Jakarta');
-echo date('Y')?>. All right
+                                         echo date('Y')?>. All right
                 reserved.</p>
         </footer>
     </div>
@@ -131,47 +139,80 @@ echo date('Y')?>. All right
 
         </div>
     </div>
+    <!-- Script Connect Bluetooth -->
+    <script src="<?php echo base_url() ?>public/assets/custom/dom-to-image.min.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/custom/bluetooth-printer.js"></script>
     <!--end switcher-->
     <!-- Bootstrap JS -->
-    <script src="<?=base_url()?>public/assets/js/bootstrap.bundle.min.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/js/bootstrap.bundle.min.js"></script>
     <!--plugins-->
-    <script src="<?=base_url()?>public/assets/js/jquery.min.js"></script>
-    <script src="<?=base_url()?>public/assets/plugins/simplebar/js/simplebar.min.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/js/jquery.min.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/plugins/simplebar/js/simplebar.min.js"></script>
 
-    <script src="<?=base_url()?>public/assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js"></script>
-    <script src="<?=base_url()?>public/assets/plugins/chartjs/chart.min.js"></script>
-    <script src="<?=base_url()?>public/assets/plugins/vectormap/jquery-jvectormap-2.0.2.min.js"></script>
-    <script src="<?=base_url()?>public/assets/plugins/vectormap/jquery-jvectormap-world-mill-en.js"></script>
-    <script src="<?=base_url()?>public/assets/plugins/jquery.easy-pie-chart/jquery.easypiechart.min.js"></script>
-    <script src="<?=base_url()?>public/assets/plugins/sparkline-charts/jquery.sparkline.min.js"></script>
-    <script src="<?=base_url()?>public/assets/plugins/jquery-knob/excanvas.js"></script>
-    <script src="<?=base_url()?>public/assets/plugins/jquery-knob/jquery.knob.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/plugins/perfect-scrollbar/js/perfect-scrollbar.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/plugins/chartjs/chart.min.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/plugins/vectormap/jquery-jvectormap-2.0.2.min.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/plugins/vectormap/jquery-jvectormap-world-mill-en.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/plugins/jquery.easy-pie-chart/jquery.easypiechart.min.js">
+    </script>
+    <script src="<?php echo base_url() ?>public/assets/plugins/sparkline-charts/jquery.sparkline.min.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/plugins/jquery-knob/excanvas.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/plugins/jquery-knob/jquery.knob.js"></script>
 
+    <!--notification js -->
+    <script src="<?php echo base_url() ?>public/assets/plugins/notifications/js/lobibox.min.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/plugins/notifications/js/notifications.min.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/plugins/notifications/js/notification-custom-script.js"></script>
     <!-- SweetAlert -->
-    <script src="<?=base_url()?>public/assets/sweetalert/sweetalert2.js"></script>
-    <script src="<?=base_url()?>public/assets/sweetalert/sweetalert2.min.js"></script>
-    <script src="<?=base_url()?>public/assets/sweetalert/sweetalert2.all.js"></script>
-    <script src="<?=base_url()?>public/assets/sweetalert/sweetalert2.all.min.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/sweetalert/sweetalert2.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/sweetalert/sweetalert2.min.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/sweetalert/sweetalert2.all.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/sweetalert/sweetalert2.all.min.js"></script>
     <!-- datatable -->
-    <script src="<?=base_url()?>public/assets/plugins/datatable/js/jquery.dataTables.min.js"></script>
-    <script src="<?=base_url()?>public/assets/plugins/datatable/js/dataTables.bootstrap5.min.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/plugins/datatable/js/jquery.dataTables.min.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/plugins/datatable/js/dataTables.bootstrap5.min.js"></script>
     <!-- Angular -->
-    <script src="<?=base_url()?>public/assets/angular/angular.js"></script>
-    <script src="<?=base_url()?>public/assets/angular/angular.min.js"></script>
-    <script src="<?=base_url()?>public/assets/angular/angular-datatables.min.js"></script>
-    <script src="<?=base_url()?>public/assets/js/index.js"></script>
-    <!--app JS-->
-    <script src="<?=base_url()?>public/assets/js/app.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/angular/angular.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/angular/angular.min.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/angular/angular-datatables.min.js"></script>
     <!-- csutom -->
-    <script src="<?=base_url()?>public/assets/custom/makanan.js"></script>
-    <script src="<?=base_url()?>public/assets/custom/minuman.js"></script>
-    <script src="<?=base_url()?>public/assets/custom/meja.js"></script>
-    <script src="<?=base_url()?>public/assets/custom/sdm.js"></script>
-    <script src="<?=base_url()?>public/assets/custom/kasir.js"></script>
-    <script src="<?=base_url()?>public/assets/custom/mitra.js"></script>
-    <script src="<?=base_url()?>public/assets/custom/list_transaksi.js"></script>
-    <script src="<?=base_url()?>public/assets/custom/home-kasir.js"></script>
-    <script src="<?=base_url()?>public/assets/custom/home-mitra.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/custom/makanan.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/custom/minuman.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/custom/meja.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/custom/sdm.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/custom/kasir.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/custom/mitra.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/custom/report.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/custom/list_transaksi.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/custom/home-kasir.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/custom/home-mitra.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/custom/notify-mitra.js"></script>
+
+    <script src="<?php echo base_url() ?>public/assets/js/index.js"></script>
+    <!--app JS-->
+    <script src="<?php echo base_url() ?>public/assets/js/app.js"></script>
+    <!-- JS -->
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const toggleBtn = document.querySelector(".mobile-toggle-menu");
+        const sidebar = document.querySelector(".nav-container");
+        const closeBtn = document.querySelector(".toggle-icon");
+
+        if (toggleBtn && sidebar) {
+            toggleBtn.addEventListener("click", function() {
+                sidebar.classList.toggle("menu-open");
+            });
+        }
+
+        if (closeBtn && sidebar) {
+            closeBtn.addEventListener("click", function() {
+                sidebar.classList.remove("menu-open");
+            });
+        }
+    });
+    </script>
+
+
 </body>
 
 </html>

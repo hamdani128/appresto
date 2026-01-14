@@ -123,9 +123,32 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 			});
 	};
 
+	$scope.categories = []; // inisialisasi array kosong
+
+	$scope.ComboJenisMakanan = function () {
+		$http
+			.get(base_url("opr/kasir/getdata_kategori"))
+			.then(function (response) {
+				$scope.categories = response.data; // simpan ke scope
+			})
+			.catch(function (error) {
+				console.error("Terjadi kesalahan:", error);
+			});
+	};
+
+	$scope.ComboJenisMakanan(); // panggil
+
 	$scope.searchMenu = function () {
 		$scope.filteredMenu = $scope.LoadDatMenuAll.filter(function (menu) {
-			return menu.nama.toLowerCase().includes($scope.keywordMenu.toLowerCase());
+			var keywordMatch = menu.nama
+				.toLowerCase()
+				.includes($scope.keywordMenu ? $scope.keywordMenu.toLowerCase() : "");
+
+			var categoryMatch = $scope.selectedCategory
+				? menu.kategori === $scope.selectedCategory
+				: true;
+
+			return keywordMatch && categoryMatch;
 		});
 	};
 
@@ -336,52 +359,6 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 		$scope.CalculateTotal(); // Recalculate global total
 	};
 
-	// $scope.CalculateTotal = function () {
-	// 	var tbody = document.getElementById("tb_pesanan_list_body_menu");
-	// 	var rows = tbody.getElementsByTagName("tr");
-	// 	var total_harga = 0;
-	// 	var qty_total = 0;
-
-	// 	for (var i = 0; i < rows.length; i++) {
-	// 		var tds = rows[i].getElementsByTagName("td");
-	// 		if (tds.length < 6) continue; // skip jika bukan data row
-
-	// 		// Bersihkan nilai harga dan qty dari format Rp. dan separator ribuan
-	// 		var harga_text = tds[3].textContent.trim().replace(/[^\d]/g, ""); // hapus semua kecuali angka
-	// 		var qty_text = tds[4].textContent.trim().replace(/[^\d]/g, "");
-
-	// 		var harga = parseInt(harga_text) || 0;
-	// 		var qty = parseInt(qty_text) || 0;
-	// 		var subtotal = harga * qty;
-
-	// 		qty_total += qty;
-	// 		total_harga += subtotal;
-	// 	}
-
-	// 	// Update qty dan subtotal
-	// 	document.getElementById("qty-total").value = formatRupiah(qty_total);
-	// 	document.getElementById("amount-total").value = formatRupiah(total_harga);
-
-	// 	var discount_nominal = $("#discount-nominal").val();
-	// 	var dicount_value = total_harga * (discount_nominal / 100);
-	// 	var nominal_total = total_harga - dicount_value;
-
-	// 	document.getElementById("discount-value").value =
-	// 		formatRupiah(dicount_value);
-
-	// 	// Hitung PPN
-	// 	var ppn_select = document
-	// 		.getElementById("amount-ppn")
-	// 		.parentElement.parentElement.querySelector("select");
-	// 	var ppn_percent = parseFloat(ppn_select.value) || 0;
-	// 	var ppn_amount = Math.floor(nominal_total * (ppn_percent / 100));
-	// 	document.getElementById("amount-ppn").value = formatRupiah(ppn_amount);
-
-	// 	// Hitung Grand Total
-	// 	var grand_total = nominal_total + ppn_amount;
-	// 	document.getElementById("grand-total").value = formatRupiah(grand_total);
-	// };
-
 	$scope.CalculateTotal = function () {
 		var total_harga = 0;
 		var qty_total = 0;
@@ -403,31 +380,39 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 			total_harga += subtotal;
 		}
 
-		// Update qty dan subtotal
-		document.getElementById("qty-total").value = formatRupiah(qty_total);
-		document.getElementById("amount-total").value = formatRupiah(total_harga);
+		// ===== SAFE SET VALUE =====
+		function setVal(id, value) {
+			var el = document.getElementById(id);
+			if (el) el.value = value;
+		}
+
+		setVal("qty-total", formatRupiah(qty_total));
+		setVal("amount-total", formatRupiah(total_harga));
 
 		// Diskon global
-		var discount_nominal_global = parseFloat($("#discount-nominal").val()) || 0;
+		var discount_input = document.getElementById("discount-nominal");
+		var discount_nominal_global = discount_input
+			? parseFloat(discount_input.value) || 0
+			: 0;
+
 		var discount_value = Math.floor(
 			total_harga * (discount_nominal_global / 100)
 		);
+
 		var nominal_total = total_harga - discount_value;
 
-		document.getElementById("discount-value").value =
-			formatRupiah(discount_value);
+		setVal("discount-value", formatRupiah(discount_value));
 
-		// Hitung PPN
-		var ppn_select = document
-			.getElementById("amount-ppn")
-			.parentElement.parentElement.querySelector("select");
-		var ppn_percent = parseFloat(ppn_select.value) || 0;
+		// PPN (FIX PALING PENTING)
+		var ppn_select = document.getElementById("ppn-select");
+		var ppn_percent = ppn_select ? parseFloat(ppn_select.value) || 0 : 0;
+
 		var ppn_amount = Math.floor(nominal_total * (ppn_percent / 100));
-		document.getElementById("amount-ppn").value = formatRupiah(ppn_amount);
+		setVal("amount-ppn", formatRupiah(ppn_amount));
 
 		// Grand Total
 		var grand_total = nominal_total + ppn_amount;
-		document.getElementById("grand-total").value = formatRupiah(grand_total);
+		setVal("grand-total", formatRupiah(grand_total));
 	};
 
 	$scope.TambahPesanan = function () {
@@ -531,35 +516,29 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 	};
 
 	$scope.CetakBill = function () {
-		var no_booking = document.getElementById("lb_tambahan_no_order").innerHTML;
-		var no_meja = document.getElementById("lb_tambahan_no_meja").innerHTML;
-		var created_at = document.getElementById(
-			"lb_tambahan_created_at"
-		).innerHTML;
+		var no_booking =
+			document.getElementById("lb_tambahan_no_order")?.innerHTML || "";
+		var no_meja =
+			document.getElementById("lb_tambahan_no_meja")?.innerHTML || "";
+		var created_at =
+			document.getElementById("lb_tambahan_created_at")?.innerHTML || "";
+
 		document.getElementById("bill_date").innerHTML = created_at;
 		document.getElementById("bill_invoice").innerHTML = no_booking;
 		document.getElementById("bill_chasier").innerHTML = "Rizki Hamdani";
 		document.getElementById("bill_no_meja").innerHTML = no_meja;
-
-		// $scope.LoadDataPesananDetail = [];
-		var formdata = {
-			no_meja: no_meja,
-		};
-		$http
-			.post(base_url("opr/kasir/list_pesanan"), formdata)
-			.then(function (response) {
-				$scope.LoadDataPesananBill = response.data.detail;
-			})
-			.catch(function (error) {
-				console.error("Terjadi kesalahan saat proses data:", error);
-			});
-		var qty = $("#qty-total").val();
-		var subtotal = $("#amount-total").val();
-		var ppn_select_text = $("#ppn-select").val();
-		var ppn = $("#amount-ppn").val();
-		var grandtotal = $("#grand-total").val();
-		var discount_text = $("#discount-nominal").val();
-		var discount_value = $("#discount-value").val();
+		$scope.LoadDataPesananBill = $scope.LoadDataPesananList;
+		function getVal(id) {
+			var el = document.getElementById(id);
+			return el ? el.value : "0";
+		}
+		// Ambil nilai AMAN
+		var qty = getVal("qty-total");
+		var subtotal = getVal("amount-total");
+		var ppn = getVal("amount-ppn");
+		var grandtotal = getVal("grand-total");
+		var discount_text = getVal("discount-nominal");
+		var discount_value = getVal("discount-value");
 
 		document.getElementById("bill_qty").innerHTML = formatNumber(qty);
 		document.getElementById("bill_subtotal").innerHTML = formatRupiah(subtotal);
@@ -570,6 +549,7 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 		document.getElementById("bill_ppn").innerHTML = formatRupiah(ppn);
 		document.getElementById("bill_grand_total").innerHTML =
 			formatRupiah(grandtotal);
+
 		$("#my-modal-cetak-bill").modal("show");
 	};
 
@@ -908,6 +888,183 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 		}
 	};
 
+	$scope.LoadDataPesananSplit = $scope.LoadDataPesananSplit || [];
+
+	$scope.SplitPindahPAy = function (dt) {
+		if (!dt || dt.qty <= 0) return;
+
+		// === 1. Kurangi qty di bill utama ===
+		dt.qty -= 1;
+
+		var harga = parseInt(dt.harga) || 0;
+		var disc = parseFloat(dt.discount) || 0;
+
+		var total = harga * dt.qty;
+		var disc_nominal = Math.floor((total * disc) / 100);
+		dt.subtotal = total - disc_nominal;
+
+		if (dt.subtotal < 0) dt.subtotal = 0;
+
+		// === 2. Cari item di bill split ===
+		var splitItem = $scope.LoadDataPesananSplit.find(function (item) {
+			return item.nama === dt.nama;
+			// ganti id_menu sesuai primary key item kamu
+		});
+
+		if (splitItem) {
+			// Jika sudah ada → tambah qty
+			splitItem.qty += 1;
+		} else {
+			// Jika belum ada → clone item
+			splitItem = angular.copy(dt);
+			splitItem.qty = 1;
+			$scope.LoadDataPesananSplit.push(splitItem);
+		}
+
+		// === 3. Hitung subtotal split item ===
+		var splitTotal = harga * splitItem.qty;
+		var splitDiscNominal = Math.floor((splitTotal * disc) / 100);
+		splitItem.subtotal = splitTotal - splitDiscNominal;
+
+		if (splitItem.subtotal < 0) splitItem.subtotal = 0;
+
+		// === 4. Hapus item dari bill utama jika qty 0 ===
+		if (dt.qty === 0) {
+			var index = $scope.LoadDataPesananList.indexOf(dt);
+			if (index > -1) {
+				$scope.LoadDataPesananList.splice(index, 1);
+			}
+		}
+
+		// === 5. Update total split (optional) ===
+		$scope.HitungTotalSplit();
+	};
+
+	$scope.SplitKembali = function (dt) {
+		if (!dt || dt.qty <= 0) return;
+
+		var harga = parseInt(dt.harga) || 0;
+		var disc = parseFloat(dt.discount) || 0;
+
+		// === 1. Kurangi qty di bill split ===
+		dt.qty -= 1;
+
+		var totalSplit = harga * dt.qty;
+		var discSplit = Math.floor((totalSplit * disc) / 100);
+		dt.subtotal = totalSplit - discSplit;
+
+		if (dt.subtotal < 0) dt.subtotal = 0;
+
+		// === 2. Cari item di bill utama ===
+		var mainItem = $scope.LoadDataPesananList.find(function (item) {
+			return item.nama === dt.nama;
+			// ganti sesuai ID unik item kamu
+		});
+
+		if (mainItem) {
+			mainItem.qty += 1;
+		} else {
+			mainItem = angular.copy(dt);
+			mainItem.qty = 1;
+			$scope.LoadDataPesananList.push(mainItem);
+		}
+
+		// === 3. Hitung ulang subtotal bill utama item ===
+		var totalMain = harga * mainItem.qty;
+		var discMain = Math.floor((totalMain * disc) / 100);
+		mainItem.subtotal = totalMain - discMain;
+
+		if (mainItem.subtotal < 0) mainItem.subtotal = 0;
+
+		// === 4. Hapus item dari bill split jika qty 0 ===
+		if (dt.qty === 0) {
+			var idx = $scope.LoadDataPesananSplit.indexOf(dt);
+			if (idx > -1) {
+				$scope.LoadDataPesananSplit.splice(idx, 1);
+			}
+		}
+
+		// === 5. Update total split ===
+		$scope.HitungTotalSplit();
+	};
+
+	$scope.HitungTotalSplit = function () {
+		var total = 0;
+
+		angular.forEach($scope.LoadDataPesananSplit, function (item) {
+			total += item.subtotal || 0;
+		});
+
+		$scope.TotalSplit = total;
+	};
+
+	$scope.HitungSplitBill = function () {
+		var totalSplit = parseInt($scope.TotalSplit) || 0;
+
+		var ppnEl = document.getElementById("split-ppn-percent");
+		if (!ppnEl) return;
+
+		var ppnPercent = parseFloat(ppnEl.value) || 0;
+
+		var ppnValue = Math.floor((totalSplit * ppnPercent) / 100);
+		var grandTotal = totalSplit + ppnValue;
+
+		// tampilkan
+		var ppnValueEl = document.getElementById("split-ppn-value");
+		if (ppnValueEl) {
+			ppnValueEl.value = formatRupiah(ppnValue);
+		}
+
+		var grandTotalEl = document.getElementById("split-grand-total");
+		if (grandTotalEl) {
+			grandTotalEl.innerHTML = "Rp. " + formatRupiah(grandTotal);
+		}
+
+		// simpan
+		$scope.SplitGrandTotal = grandTotal;
+
+		// update kembalian
+		$scope.HitungKembalianSplit();
+	};
+
+	$scope.HitungKembalianSplit = function () {
+		var bayarEl = document.getElementById("split-paid-amount");
+		if (!bayarEl) return;
+
+		var bayar = bayarEl.value.replace(/\D/g, "");
+		bayar = parseInt(bayar) || 0;
+
+		var grandTotal = parseInt($scope.SplitGrandTotal) || 0;
+		var kembalian = bayar - grandTotal;
+
+		if (kembalian < 0) kembalian = 0;
+
+		document.getElementById("split-change").innerHTML =
+			"Rp. " + formatRupiah(kembalian);
+	};
+
+	$scope.OnChangePaymentMethod = function () {
+		var metode = document.getElementById("split-payment-method").value;
+		var paidEl = document.getElementById("split-paid-amount");
+
+		if (!paidEl) return;
+
+		// QRIS & TRANSFER → AUTO LUNAS
+		if (metode === "QRIS" || metode === "TRANSFER") {
+			var grandTotal = parseInt($scope.SplitGrandTotal) || 0;
+
+			paidEl.value = formatRupiah(grandTotal);
+			paidEl.setAttribute("readonly", true);
+		} else {
+			// CASH → INPUT MANUAL
+			paidEl.value = "";
+			paidEl.removeAttribute("readonly");
+		}
+
+		// update kembalian
+		$scope.HitungKembalianSplit();
+	};
+
 	$scope.pay_before_service = function () {
 		$scope.global_no_booking = document.getElementById(
 			"lb_tambahan_no_order"
@@ -1065,24 +1222,31 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 	};
 
 	$scope.CalculateTotalForGabung = function () {
-		var tbody = document.getElementById("td_pesanan_body_gabung_bill");
-		var rows = tbody.getElementsByTagName("tr");
 		var total_harga = 0;
 		var qty_total = 0;
 
-		for (var i = 0; i < rows.length; i++) {
-			var tds = rows[i].getElementsByTagName("td");
-			if (tds.length < 6) continue; // skip jika row bukan data
+		// Loop data pesanan
+		var dataGabungan = $scope.LoadDataPesananDetail.concat(
+			$scope.LoadDataPesananGabungSementara
+		);
+		for (var i = 0; i < dataGabungan.length; i++) {
+			var item = dataGabungan[i];
+			var harga = parseInt(item.harga) || 0;
+			var qty = parseInt(item.qty) || 0;
+			var potongan = parseInt(item.potongan) || 0;
+			var discount_percent = parseFloat(item.discount) || 0;
 
-			var harga = parseInt(tds[5].textContent.trim()) || 0;
-			var qty = parseInt(tds[6].textContent.trim()) || 0;
-			var subtotal = harga * qty;
+			var total = harga * qty;
+			// var diskon = Math.floor(total * (discount_percent / 100));
+			var subtotal = total - potongan;
+
+			if (subtotal < 0) subtotal = 0;
 
 			qty_total += qty;
 			total_harga += subtotal;
 		}
 
-		// Update qty dan subtotal
+		// Update Qty dan Subtotal
 		document.getElementById("qty-total-gabung").value = formatRupiah(qty_total);
 		document.getElementById("bill_qty_gabungan").innerHTML =
 			formatRupiah(qty_total);
@@ -1091,26 +1255,33 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 		document.getElementById("bill_subtotal_gabungan").innerHTML =
 			formatRupiah(total_harga);
 
+		// Diskon tambahan dari input
+		var discountInput =
+			parseFloat(document.getElementById("discount-nominal-gabung").value) || 0;
+		var discountValue = Math.floor(total_harga * (discountInput / 100));
+		document.getElementById("discount-value-gabung").value =
+			formatRupiah(discountValue);
+
+		var subtotalSetelahDiskon = total_harga - discountValue;
+
 		// Hitung PPN
-		var ppn_select = document
-			.getElementById("amount-ppn-gabung")
-			.parentElement.parentElement.querySelector("select");
-		var ppn_percent = parseFloat(ppn_select.value) || 0;
-		var ppn_amount = Math.floor(total_harga * (ppn_percent / 100));
+		var ppn_percent = parseFloat($scope.ppnValue) || 0;
+		var ppn_amount = Math.floor(subtotalSetelahDiskon * (ppn_percent / 100));
 		document.getElementById("amount-ppn-gabung").value =
 			formatRupiah(ppn_amount);
-
 		document.getElementById("bill_ppn_gabungan").innerHTML =
 			formatRupiah(ppn_amount);
 
-		// Hitung Grand Total
-		var grand_total = total_harga + ppn_amount;
+		// Grand Total
+		var grand_total = subtotalSetelahDiskon + ppn_amount;
 		document.getElementById("grand-total-gabung").value =
 			formatRupiah(grand_total);
 		document.getElementById("bill_grand_total_gabungan").innerHTML =
 			formatRupiah(grand_total);
+
 		$scope.CalculatePaymentGabung();
 	};
+
 	$scope.groupedOrders = [];
 	$scope.groupPesananByOrder = function () {
 		$scope.groupedOrders = [];
@@ -1332,6 +1503,12 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 		var ppn_value = unformatNumber(
 			document.getElementById("amount-ppn-gabung").value
 		);
+		var discount_text = unformatNumber(
+			document.getElementById("discount-nominal-gabung").value
+		);
+		var discount_value = unformatNumber(
+			document.getElementById("discount-value-gabung").value
+		);
 		var grand_total = unformatNumber(
 			document.getElementById("grand-total-gabung").value
 		);
@@ -1341,6 +1518,18 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 
 		document.getElementById("subtotal-payment-BillGabungan-service").innerHTML =
 			formatNumber(subtoal);
+
+		// billl
+		document.getElementById("bill_discount_text_gabungan").innerHTML =
+			formatNumber(discount_text);
+		document.getElementById("bill_potongan_value_gabungan").innerHTML =
+			formatNumber(discount_value);
+
+		// submit
+		document.getElementById("bill_discount_persen_gabungan").innerHTML =
+			formatNumber(discount_text);
+		document.getElementById("bill_discount_value_gabungan").innerHTML =
+			formatNumber(discount_value);
 
 		document.getElementById("ppn-text-payment-BillGabungan-service").innerHTML =
 			formatNumber(ppn_text);
@@ -1361,16 +1550,28 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 		var subtotal = unformatNumber(
 			document.getElementById("subtotal-payment-BillGabungan-service").innerHTML
 		);
+
+		var discount_text = unformatNumber(
+			document.getElementById("bill_discount_persen_gabungan").innerHTML
+		);
+
+		var discount_value = unformatNumber(
+			document.getElementById("bill_discount_value_gabungan").innerHTML
+		);
+
 		var ppn_text = unformatNumber(
 			document.getElementById("ppn-text-payment-BillGabungan-service").innerHTML
 		);
+
 		var ppn = unformatNumber(
 			document.getElementById("ppn-payment-BillGabungan-service").innerHTML
 		);
+
 		var grand_total = unformatNumber(
 			document.getElementById("grand-total-payment-BillGabungan-service")
 				.innerHTML
 		);
+
 		var metode_payment = $("#combo-payment-BillGabungan-service").val();
 		var jumlah_dibayar = unformatNumber(
 			$("#jumlah-dibayar-payment-BillGabungan-service").val()
@@ -1389,6 +1590,9 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 
 		var formdata = {
 			group: $scope.groupedOrders,
+			discount_text: discount_text,
+			discount_value: discount_value,
+			ppn_text: ppn_text,
 			metode: metode_payment,
 			dibayar: jumlah_dibayar,
 			kembalian: kembalian,
@@ -1430,27 +1634,33 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 	$scope.ShowDetailTransaksi = function (dt) {
 		var no_booking = dt.no_order;
 		var no_meja = dt.no_meja;
+		var no_transaksi = dt.no_transaksi;
 
 		document.getElementById("lb_bill_billing_no_pesanan").innerHTML =
 			no_booking;
 		document.getElementById("lb_bill_billing_no_meja").innerHTML = no_meja;
 
-		$scope.DetailPesananBilling(no_booking, no_meja);
+		$scope.DetailPesananBilling(no_booking, no_meja, no_transaksi);
 
-		// Unbind event dulu biar tidak dobel
-		$("#my-modal-bill-billing")
-			.off("shown.bs.modal")
-			.on("shown.bs.modal", function () {
-				printCard("printArea3");
-			});
+		// // Unbind event dulu biar tidak dobel
+		// $("#my-modal-bill-billing")
+		// 	.off("shown.bs.modal")
+		// 	.on("shown.bs.modal", function () {
+		// 		// printCard("printArea3");
+		// 	});
 
 		// Tampilkan modal
 		$("#my-modal-bill-billing").modal("show");
+		printEppposAfterPayment();
 	};
 
 	//
-	$scope.DetailPesananBilling = function (no_booking, no_meja) {
-		var formdata = { no_booking: no_booking, no_meja: no_meja };
+	$scope.DetailPesananBilling = function (no_booking, no_meja, no_transaksi) {
+		var formdata = {
+			no_booking: no_booking,
+			no_meja: no_meja,
+			no_transaksi: no_transaksi,
+		};
 		$scope.LoadDataPesananDetail = [];
 		$scope.LoadDataPesananGabungSementara = [];
 		$scope.LoadDataPesananDetailAll = [];
@@ -1489,6 +1699,157 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 					data.metode_service;
 				$scope.LoadDataPesananDetail = response.data.detail_transaksi;
 				$scope.UpdateGabungAll();
+			});
+	};
+
+	// Split Bill
+	$scope.SplitBill = function () {
+		var no_booking = document.getElementById("lb_tambahan_no_order").innerHTML;
+		var no_meja = document.getElementById("lb_tambahan_no_meja").innerHTML;
+		document.getElementById("lb_no_booking_split_bill").innerHTML = no_booking;
+		document.getElementById("lb_no_meja_split_bill").innerHTML = no_meja;
+		$("#my-modal-split-bill").modal("show");
+	};
+
+	$scope.SubmitSplitBill = function () {
+		var metode_bayar = $("#split-payment-method").val();
+		if ($scope.LoadDataPesananSplit.length == 0) {
+			Swal.fire({
+				icon: "error",
+				title: "Gagal",
+				text: "Tidak ada pesanan yang dipilih !",
+			});
+		} else if (!metode_bayar) {
+			Swal.fire({
+				icon: "error",
+				title: "Gagal",
+				text: "Metode pembayaran belum dipilih !",
+			});
+		} else {
+			var no_order = document.getElementById(
+				"lb_no_booking_split_bill"
+			).innerHTML;
+			var no_meja = document.getElementById("lb_no_meja_split_bill").innerHTML;
+			var total_qty = 0;
+			var subtotal = 0;
+			angular.forEach($scope.LoadDataPesananSplit, function (dt) {
+				total_qty += dt.qty;
+				subtotal += dt.subtotal;
+			});
+			var ppn_text = $("#split-ppn-percent").val();
+			var ppn_value = subtotal * (ppn_text / 100);
+			var grant_total = subtotal + ppn_value;
+			var metode_payment = $("#split-payment-method").val();
+			var jumlah_dibayar = unformatNumber_New($("#split-paid-amount").val());
+			var kembalian = jumlah_dibayar - grant_total;
+
+			// form
+			var formdata = {
+				no_order: no_order,
+				no_meja: no_meja,
+				qty: total_qty,
+				subtotal: subtotal,
+				ppn_text: ppn_text,
+				ppn: ppn_value,
+				amount_total: grant_total,
+				metode: metode_payment,
+				dibayar: jumlah_dibayar,
+				kembalian: kembalian,
+				detail: $scope.LoadDataPesananSplit,
+			};
+
+			Swal.fire({
+				title: "Apakah anda yakin?",
+				text: "Sudahkah Anda melakukan Pengechekan Pembayaran sebelum Layanan Disimpan Kedalam Database !",
+				icon: "warning",
+				showCancelButton: true,
+				confirmButtonColor: "#3085d6",
+				cancelButtonColor: "#d33",
+				confirmButtonText: "Ya, Lanjutkan!",
+			}).then((result) => {
+				if (result.isConfirmed) {
+					$http
+						.post(base_url("opr/kasir/payment_split_bill"), formdata)
+						.then(function (response) {
+							if (response.data.status == "success") {
+								Swal.fire({
+									icon: "success",
+									title: "Berhasil",
+									text: "Pembayaran split bill berhasil !",
+								});
+								document.location.reload();
+							}
+						})
+						.catch(function (error) {
+							console.error("Terjadi kesalahan saat proses data:", error);
+						});
+				}
+			});
+		}
+	};
+
+	$scope.cancel = {
+		no_booking: "",
+		no_meja: "",
+		reason: "",
+		password: "",
+		loading: false,
+		error: "",
+	};
+	// camcel order
+	$scope.cancel_order = function () {
+		$scope.cancel.no_booking = document.getElementById(
+			"lb_tambahan_no_order"
+		).innerHTML;
+		$scope.cancel.no_meja = document.getElementById(
+			"lb_tambahan_no_meja"
+		).innerHTML;
+		$scope.cancel.reason = "";
+		$scope.cancel.password = "";
+		$scope.cancel.error = "";
+		$scope.cancel.loading = false;
+		$("#my-modal-cancel-order").modal("show");
+	};
+
+	$scope.submitCancelOrder = function () {
+		if (!$scope.cancel.reason) {
+			$scope.cancel.error = "Alasan pembatalan wajib diisi";
+			return;
+		}
+
+		if (!$scope.cancel.password) {
+			$scope.cancel.error = "Password Super Admin wajib diisi";
+			return;
+		}
+
+		$scope.cancel.loading = true;
+		$scope.cancel.error = "";
+
+		$http
+			.post(base_url("opr/kasir/cancel_order"), {
+				no_booking: $scope.cancel.no_booking,
+				no_meja: $scope.cancel.no_meja,
+				reason: $scope.cancel.reason,
+				password: $scope.cancel.password,
+			})
+			.then(function (res) {
+				if (res.data.status === "success") {
+					$("#my-modal-cancel-order").modal("hide");
+					swal.fire({
+						icon: "success",
+						title: "Berhasil",
+						text: "Pesanan berhasil dibatalkan !",
+					});
+					document.location.reload();
+				} else {
+					$scope.cancel.error = res.data.message;
+				}
+			})
+			.catch(function () {
+				$scope.cancel.error = "Terjadi kesalahan server";
+			})
+			.finally(function () {
+				$scope.cancel.loading = false;
 			});
 	};
 });
@@ -1735,10 +2096,15 @@ function updateRowNumbers_tambahan() {
 }
 
 function formatRupiah(angka) {
-	// Hapus semua karakter selain angka
+	if (angka === undefined || angka === null) return "0";
+
 	angka = angka.toString().replace(/\D/g, "");
-	// Tambah titik ribuan
 	return angka.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+}
+
+function formatInputRupiah(el) {
+	var angka = el.value.replace(/\D/g, "");
+	el.value = formatRupiah(angka);
 }
 
 // Fungsi format angka: 1000000 => "1.000.000"
@@ -1751,6 +2117,11 @@ function unformatNumber(str) {
 	return parseInt(str.replace(/\./g, "").replace(/,/g, "")) || 0;
 }
 
+function unformatNumber_New(str) {
+	if (!str) return 0;
+
+	return parseInt(str.toString().replace(/\./g, "").replace(/,/g, ""), 10) || 0;
+}
 const inputBayar = document.getElementById(
 	"jumlah-dibayar-payment-before-service"
 );
@@ -2201,73 +2572,393 @@ function changeReferencePaymentBillGabunganService() {
 		formatRupiah(kembalian.toString());
 }
 
-function printCard(divId) {
-	const divContents = document.getElementById(divId).innerHTML;
-	const printWindow = window.open("", "_blank", "width=800,height=600");
+let savedDevice = null;
+let savedChar = null;
+async function getPrinterChar() {
+	if (savedChar) return savedChar;
 
-	printWindow.document.write(`
-        <html>
-            <head>
-                <title>Cetak Bill</title>
-                <style>
-                    @page {
-                        size: 80mm auto;
-                        margin: 0;
-                    }
-                    body {
-                        margin: 0;
-                        padding: 0;
-                        font-family: Arial, sans-serif;
-                        width: 80mm;
-                    }
-                    .print-container {
-                        width: 100%;
-                        padding: 5px 10px;
-                        box-sizing: border-box;
-                    }
-                    img {
-                        max-width: 100%;
-                        height: auto;
-                        margin-bottom: 5px;
-                    }
-                    table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        margin-bottom: 5px;
-                        font-size: 13px; /* Naikkan font default tabel */
-                    }
-                    .text-center { text-align: center; }
-                    .bold { font-weight: bold; }
-                    .header-title {
-                        font-size: 10px; /* Naikkan ukuran judul */
-                        font-weight: bold;
-                        margin-bottom: 2px;
-                    }
-                    .sub-title {
-                        font-size: 10px; /* Naikkan subtitle sedikit */
-                        margin-bottom: 2px;
-                    }
-                    .item-row {
-                        font-size: 13px; /* Naikkan size item */
-                    }
-                    .totals {
-                        font-size: 14px; /* Naikkan total biar enak dibaca */
-                        font-weight: bold;
-                    }
-                    hr {
-                        border: none;
-                        border-top: 1px dashed #000;
-                        margin: 4px 0;
-                    }
-                </style>
-            </head>
-            <body onload="window.print(); window.close();">
-                <div class="print-container">
-                    ${divContents}
-                </div>
-            </body>
-        </html>
-    `);
+	const device = await navigator.bluetooth.requestDevice({
+		acceptAllDevices: true,
+	});
 
-	printWindow.document.close();
+	const server = await device.gatt.connect();
+	const services = await server.getPrimaryServices();
+
+	for (const service of services) {
+		const chars = await service.getCharacteristics();
+		for (const ch of chars) {
+			if (ch.properties.write || ch.properties.writeWithoutResponse) {
+				savedDevice = device;
+				savedChar = ch;
+				return ch;
+			}
+		}
+	}
+
+	throw "Printer tidak ditemukan";
+}
+
+// GLOBAL
+
+let BTPrinter = null;
+
+document.addEventListener("DOMContentLoaded", () => {
+	BTPrinter = new ThermalPrinter();
+	console.log("BTPrinter siap");
+});
+
+// async function printEpppos() {
+// 	try {
+// 		if (!BTPrinter) throw "Bluetooth belum siap";
+
+// 		await BTPrinter.connect();
+
+// 		const text = buildBillText();
+
+// 		// 🔥 FIX UTAMA: encode string → bytes
+// 		// const encoder = new TextEncoder();
+// 		// const data = encoder.encode(text); // Uint8Array
+
+// 		// // await BTPrinter.print(data); // ✅ sekarang BENAR
+// 		// await printChunked(BTPrinter, text);
+// 		// 🔥 KIRIM KE ELECTRON
+// 		// if (window.btPrinter) {
+// 		// 	await window.btPrinter.print(text);
+// 		// 	showNotification("Berhasil cetak", "success");
+// 		// } else {
+// 		// 	throw "Electron printer tidak tersedia";
+// 		// }
+// 		window.btPrinter.print("TEST");
+// 		showNotification("Berhasil cetak", "success");
+// 	} catch (err) {
+// 		console.error(err);
+// 		showNotification("Gagal cetak Bluetooth", "error");
+// 	}
+// }
+
+async function printEpppos() {
+	try {
+		if (!BTPrinter) throw "Bluetooth belum siap";
+
+		await BTPrinter.connect();
+
+		const text = buildBillText();
+
+		// 🔥 FIX UTAMA: encode string → bytes
+		const encoder = new TextEncoder();
+		const data = encoder.encode(text); // Uint8Array
+		await printChunked(BTPrinter, text);
+		// await BTPrinter.print(data); // ✅ sekarang BENAR
+
+		showNotification("Berhasil cetak", "success");
+	} catch (err) {
+		console.error(err);
+		showNotification("Gagal cetak Bluetooth", "error");
+	}
+}
+
+function buildBillText() {
+	let text = "";
+
+	// ===== HEADER TEXT =====
+	text += "        SHAMROCK COFFEE        \n";
+	text += "Jl. STM Komplek SBC Block O No.9-12 i\n";
+	text += "Suka Maju, Kec. Medan Johor\n";
+	text += "Kota Medan - Sumatera Utara\n";
+	text += "Telp: 082320103919\n";
+	text += "--------------------------------\n";
+
+	// ===== INFO TRANSAKSI =====
+	text += "Date     : " + bill_date.innerText + "\n";
+	text += "No.Order : " + bill_invoice.innerText + "\n";
+	text += "Kasir    : " + bill_chasier.innerText + "\n";
+	text += "Meja     : " + bill_no_meja.innerText + "\n";
+	text += "--------------------------------\n";
+
+	// ===== ITEM =====
+	const scope = angular.element(document.getElementById("printArea")).scope();
+	const items = scope.LoadDataPesananBill || [];
+	items.forEach((item) => {
+		const qty = String(item.qty).padStart(2, " ");
+		const name = item.nama.substring(0, 18).padEnd(18, " ");
+		const total = (item.qty * item.harga)
+			.toLocaleString("id-ID")
+			.padStart(8, " ");
+		text += `${qty} ${name}${total}\n`;
+	});
+
+	// ===== TOTAL =====
+	text += "--------------------------------\n";
+	text += `Qty      : ${bill_qty.innerText}\n`;
+	text += `Subtotal : ${bill_subtotal.innerText}\n`;
+	text += `Disc     : ${bill_value_discount.innerText}\n`;
+	text += `PPN 10%  : ${bill_ppn.innerText}\n`;
+	text += `TOTAL    : ${bill_grand_total.innerText}\n`;
+	text += "--------------------------------\n";
+
+	// ===== FOOTER =====
+	text += "      -- TERIMA KASIH --      \n";
+	text += " Barang yang sudah dibeli\n";
+	text += " tidak dapat dikembalikan\n\n\n";
+
+	return text;
+}
+
+async function imageToEscPosBytes(imgUrl, options = {}) {
+	const { maxWidth = 300, threshold = 180 } = options;
+
+	return new Promise((resolve, reject) => {
+		const img = new Image();
+		img.crossOrigin = "anonymous";
+		img.src = imgUrl;
+
+		img.onload = () => {
+			const scale = Math.min(1, maxWidth / img.width);
+			const width = Math.floor((img.width * scale) / 8) * 8;
+			const height = Math.floor(img.height * scale);
+
+			const canvas = document.createElement("canvas");
+			canvas.width = width;
+			canvas.height = height;
+
+			const ctx = canvas.getContext("2d");
+			ctx.fillStyle = "#FFFFFF";
+			ctx.fillRect(0, 0, width, height);
+			ctx.drawImage(img, 0, 0, width, height);
+
+			const imgData = ctx.getImageData(0, 0, width, height);
+			const bytes = [];
+
+			// GS v 0
+			bytes.push(0x1d, 0x76, 0x30, 0x00);
+			bytes.push(width / 8, 0x00);
+			bytes.push(height & 0xff, (height >> 8) & 0xff);
+
+			for (let y = 0; y < height; y++) {
+				for (let x = 0; x < width; x += 8) {
+					let byte = 0;
+					for (let b = 0; b < 8; b++) {
+						const i = (y * width + (x + b)) * 4;
+						const avg =
+							(imgData.data[i] + imgData.data[i + 1] + imgData.data[i + 2]) / 3;
+
+						// 🔥 INVERT + THRESHOLD
+						if (avg > threshold) {
+							byte |= 1 << (7 - b);
+						}
+					}
+					bytes.push(byte);
+				}
+			}
+
+			resolve(new Uint8Array(bytes));
+		};
+
+		img.onerror = () => reject("Gagal load image");
+	});
+}
+
+async function buildBillEscpos() {
+	let bytes = [];
+
+	// INIT
+	bytes.push(0x1b, 0x40); // ESC @
+	bytes.push(0x1b, 0x61, 0x01); // CENTER
+
+	// LOGO
+	const logoBytes = await imageToEscPosBytes(
+		base_url("public/assets/images/millennialpos.png")
+	);
+	bytes.push(...logoBytes);
+
+	// FEED
+	bytes.push(0x0a, 0x0a);
+
+	// LEFT
+	bytes.push(0x1b, 0x61, 0x00);
+
+	// TEXT
+	const encoder = new TextEncoder();
+	bytes.push(...encoder.encode(buildBillText()));
+
+	// CUT
+	bytes.push(0x0a, 0x0a, 0x0a);
+	bytes.push(0x1d, 0x56, 0x00);
+
+	return new Uint8Array(bytes);
+}
+
+async function printEppposAfterPayment() {
+	try {
+		if (!BTPrinter) throw "Bluetooth belum siap";
+
+		await BTPrinter.connect();
+
+		const text = buildBillTextAfterPayment();
+
+		// 🔥 FIX UTAMA: encode string → bytes
+		const encoder = new TextEncoder();
+		const data = encoder.encode(text); // Uint8Array
+		await printChunked(BTPrinter, text);
+		// await BTPrinter.print(data); // ✅ sekarang BENAR
+
+		showNotification("Berhasil cetak", "success");
+	} catch (err) {
+		console.error(err);
+		showNotification("Gagal cetak Bluetooth", "error");
+	}
+}
+
+function buildBillTextAfterPayment() {
+	let text = "";
+
+	// ===== HEADER =====
+	text += "        SHAMROCK COFFEE        \n";
+	text += "Jl. STM Komplek SBC Block O No.9-12 i\n";
+	text += "Suka Maju, Kec. Medan Johor\n";
+	text += "Kota Medan - Sumatera Utara\n";
+	text += "Telp: 082320103919\n";
+	text += "--------------------------------\n";
+
+	// ===== INFO TRANSAKSI =====
+	text += "Tanggal : " + bill_billing_date_show.innerText + "\n";
+	text += "Kasir   : " + bill_billing_chasier_show.innerText + "\n";
+	text += "No.Order: " + bill_billing_no_order_show.innerText + "\n";
+	text += "--------------------------------\n";
+
+	// ===== ITEM PER MEJA =====
+	const scope = angular.element(document.getElementById("printArea3")).scope();
+
+	const groupedOrders = scope.groupedOrders || [];
+
+	groupedOrders.forEach((group) => {
+		text += `MEJA : ${group.no_meja}\n`;
+		text += "--------------------------------\n";
+
+		group.items.forEach((item) => {
+			const qty = `[${item.qty}]`.padEnd(5, " ");
+			const name = item.nama.substring(0, 16).padEnd(16, " ");
+			const total = (item.qty * item.harga - (item.potongan || 0))
+				.toLocaleString("id-ID")
+				.padStart(8, " ");
+
+			text += `${qty}${name}${total}\n`;
+		});
+
+		text += "--------------------------------\n";
+	});
+
+	// ===== TOTAL & PAYMENT =====
+	text += `Qty        : ${bill_billing_qty_show.innerText}\n`;
+	text += `Subtotal   : ${bill_billing_subtotal_show.innerText}\n`;
+	text += `Discount   : ${bill_billing_discount_show.innerText}\n`;
+	text += `PPN 10%    : ${bill_billing_ppn_show.innerText}\n`;
+	text += "--------------------------------\n";
+
+	text += `GRAND TOTAL  : ${bill_billing_grand_total_show.innerText}\n`;
+	text += `Metode Bayar : ${bill_billing_metode_show.innerText}\n`;
+	text += `Dibayar      : ${bill_billing_jumlah_dibayar_show.innerText}\n`;
+	text += `Kembalian    : ${bill_billing_kembalian_show.innerText}\n`;
+
+	// OPTIONAL (kadang kosong)
+	const serviceMetode = bill_billing_service_metode_show.innerText.trim();
+	if (serviceMetode !== "") {
+		text += `Service    : ${serviceMetode}\n`;
+	}
+
+	text += "--------------------------------\n";
+
+	// ===== FOOTER =====
+	text += "      -- TERIMA KASIH --      \n";
+	text += " Barang yang sudah dibeli\n";
+	text += " tidak dapat dikembalikan\n\n\n";
+
+	return text;
+}
+
+async function printEppposBillGabung() {
+	try {
+		if (!BTPrinter) throw "Bluetooth belum siap";
+
+		await BTPrinter.connect();
+
+		const text = buildBillTextBillGabung();
+
+		// 🔥 FIX UTAMA: encode string → bytes
+		const encoder = new TextEncoder();
+		const data = encoder.encode(text); // Uint8Array
+		await printChunked(BTPrinter, text);
+		// await BTPrinter.print(data); // ✅ sekarang BENAR
+
+		showNotification("Berhasil cetak", "success");
+	} catch (err) {
+		console.error(err);
+		showNotification("Gagal cetak Bluetooth", "error");
+	}
+}
+
+function buildBillTextBillGabung() {
+	let text = "";
+
+	// ===== HEADER =====
+	text += "        SHAMROCK COFFEE        \n";
+	text += "Jl. STM Komplek SBC Block O No.9-12 i\n";
+	text += "Suka Maju, Kec. Medan Johor\n";
+	text += "Kota Medan - Sumatera Utara\n";
+	text += "Telp: 082320103919\n";
+	text += "--------------------------------\n";
+
+	// ===== INFO TRANSAKSI =====
+	text += `Tanggal : ${bill_date_gabungan.innerText}\n`;
+	text += `Kasir   : ${bill_chasier_gabungan.innerText}\n`;
+	text += `No.Order: ${bill_no_order_gabungan.innerText}\n`;
+	text += "--------------------------------\n";
+
+	// ===== ITEM PER TABLE =====
+	const scope = angular.element(document.getElementById("printArea2")).scope();
+
+	const groupedOrders = scope.groupedOrders || [];
+
+	groupedOrders.forEach((group) => {
+		text += `TABLE : ${group.no_meja}\n`;
+		text += "--------------------------------\n";
+
+		group.items.forEach((item) => {
+			const qty = `[${item.qty}]`.padEnd(5, " ");
+			const name = item.nama.substring(0, 16).padEnd(16, " ");
+			const total = (item.qty * item.harga - (item.potongan || 0))
+				.toLocaleString("id-ID")
+				.padStart(8, " ");
+
+			text += `${qty}${name}${total}\n`;
+		});
+
+		text += "--------------------------------\n";
+	});
+
+	// ===== TOTAL =====
+	text += `Qty        : ${bill_qty_gabungan.innerText}\n`;
+	text += `Subtotal   : ${bill_subtotal_gabungan.innerText}\n`;
+	text += `Disc (${bill_discount_text_gabungan.innerText}%) : ${bill_potongan_value_gabungan.innerText}\n`;
+	text += `PPN 10%    : ${bill_ppn_gabungan.innerText}\n`;
+	text += "--------------------------------\n";
+	text += `GRAND TOTAL: ${bill_grand_total_gabungan.innerText}\n`;
+	text += "--------------------------------\n";
+
+	// ===== FOOTER =====
+	text += "     -- BILL TRANSAKSI --     \n";
+	text += "      -- TERIMA KASIH --      \n\n\n";
+
+	return text;
+}
+
+async function printChunked(printer, text, chunkSize = 180) {
+	const encoder = new TextEncoder();
+	const bytes = encoder.encode(text);
+
+	for (let i = 0; i < bytes.length; i += chunkSize) {
+		const chunk = bytes.slice(i, i + chunkSize);
+		await printer.print(chunk);
+		await new Promise((r) => setTimeout(r, 120)); // ⏱️ WAJIB
+	}
 }

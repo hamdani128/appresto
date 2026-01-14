@@ -67,7 +67,7 @@
                                     <td>{{da.harga}}</td>
                                     <td style="text-align: center;">
                                         <img style="height: 80px;width: 100px;"
-                                            ng-src="{{da.img ? '<?=base_url("public/upload/")?>' + da.img : '<?=base_url("public/assets/images/refreshments.png")?>'}}"
+                                            ng-src="{{da.img ? '<?php echo base_url("public/upload/")?>' + da.img : '<?php echo base_url("public/assets/images/refreshments.png")?>'}}"
                                             alt="">
                                     </td>
                                     <td>

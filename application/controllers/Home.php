@@ -72,4 +72,89 @@ class Home extends CI_Controller
             ->set_output(json_encode($data));
     }
 
+    public function mitra_notification()
+    {
+        $mitra = $this->session->userdata('username');
+        $data = [
+            'jumlah_notifikasi' => $this->M_home->CountNotifikasiMitra($mitra),
+            'rows' => $this->M_home->RowNotifikasiMitra($mitra),
+        ];
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($data));
+    }
+
+    public function mark_as_read_mitra_notification()
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $input = json_decode(file_get_contents('php://input'), true);
+        $no_order = $input['no_order'];
+        $no_meja = $input['no_meja'];
+        $owner = $input['owner'];
+
+        $data = [
+            'notif' => 0,
+            'updated_at' => date('Y-m-d H:i:s'),
+            'updated_by' => $this->session->userdata('username'),
+        ];
+        $query = $this->db->where(['no_order' => $no_order, 'no_meja' => $no_meja, 'owner' => $owner])->update('mitra_order_notif', $data);
+        return $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($query));
+    }
+
+    public function get_row_orders()
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $mitra = $this->session->userdata('username');
+        $data = $this->M_home->ListDetailPesananByOwner($mitra);
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($data));
+    }
+
+    public function get_data_transaksi_mitra()
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $mitra = $this->session->userdata('username');
+        $input = json_decode(file_get_contents('php://input'), true);
+        $start_date = $input['start_date'];
+        $end_date = $input['end_date'];
+        $data = $this->M_home->LoadDataTransaksiMitra($mitra, $start_date, $end_date);
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($data));
+    }
+
+    public function home_kasir_summary_mitra()
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $input = json_decode(file_get_contents('php://input'), true);
+        $date_start = $input['date_start'];
+        $date_end = $input['date_end'];
+        $mitra = $this->session->userdata('username');
+        $total_revenue = $this->M_home->GetRevenueMitra($date_start, $date_end, $mitra);
+        $total_visitor = $this->M_home->GetVisitorMitra($date_start, $date_end, $mitra);
+        $total_count_transaksi = $this->M_home->GetCountTransaksiMitra($date_start, $date_end, $mitra);
+        $resultDeskripsi = $this->M_home->getDeskripsiMenuCountMitra($date_start, $date_end, $mitra);
+        $year = date('Y');
+        $chart_data = $this->M_home->GetForChart1($year);
+        $jumlah_per_bulan = array_fill(1, 12, 0); // isi default 0 dari bulan 1 sampai 12
+        foreach ($chart_data as $row) {
+            $bulan = (int) $row['bulan'];
+            $jumlah_per_bulan[$bulan] = (int) $row['jumlah'];
+        }
+
+        $data = [
+            'total_revenue' => $total_revenue,
+            'total_visitor' => $total_visitor,
+            'total_count_transaksi' => $total_count_transaksi,
+            'menu_deskripsi' => $resultDeskripsi,
+            'visitor_chart' => array_values($jumlah_per_bulan), // kirim array 12 elemen ke JS
+        ];
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($data));
+    }
+
 }

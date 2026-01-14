@@ -151,7 +151,10 @@ class Minuman extends CI_Controller
 
     public function data_minuman()
     {
-        if ($this->session->userdata('level') == 'Super Admin' && $this->session->userdata('level') == 'Kasir') {
+        if (
+            $this->session->userdata('level') == 'Super Admin' ||
+            $this->session->userdata('level') == 'Kasir'
+        ) {
             $SQL = "SELECT
                 a.id AS id,
                 b.id AS kategori_id,

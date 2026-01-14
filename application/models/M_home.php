@@ -57,4 +57,115 @@ class M_home extends CI_Model
         return $query->result_array(); // ✅ bukan row(), tapi result_array()
     }
 
+    public function CountNotifikasiMitra($mitra)
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $this->db->select('COUNT(*) as jumlah');
+        $this->db->from('mitra_order_notif');
+        $this->db->where('owner', $mitra);
+        $this->db->where('tanggal', date('Y-m-d'));
+        $this->db->where('notif', 1);
+        $query = $this->db->get();
+        return $query->row()->jumlah;
+    }
+
+    public function RowNotifikasiMitra($mitra)
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $this->db->select('*');
+        $this->db->from('mitra_order_notif');
+        $this->db->where('owner', $mitra);
+        $this->db->where('tanggal', date('Y-m-d'));
+        $this->db->where('notif', 1);
+        $query = $this->db->get();
+        return $query->result();
+    }
+
+    public function ListDetailPesananByOwner($mitra)
+    {
+        $SQL = "SELECT
+                a.*,
+                b.nama as status_food
+                FROM order_detail a
+                LEFT JOIN status_food b ON a.status = b.id
+                WHERE a.owner='" . $mitra . "'";
+        $query = $this->db->query($SQL)->result();
+        return $query;
+    }
+
+    public function LoadDataTransaksiMitra($mitra, $start_date, $end_date)
+    {
+        $SQL = "SELECT
+                a.no_transaksi AS no_transaksi,
+                a.no_order AS no_order,
+                a.no_meja AS no_meja,
+                a.tanggal AS tanggal,
+                b.metode AS metode,
+                b.created_at as created_at,
+                b.reference_payment AS reference_payment,
+                SUM((COALESCE(a.harga, 0) * COALESCE(a.qty, 0)) - COALESCE(a.potongan, 0)) AS subtotal
+            FROM invoice_detail a
+            LEFT JOIN invoice b
+                ON a.no_transaksi = b.no_transaksi
+                AND a.no_order = b.no_order
+                AND a.no_meja = b.no_meja
+            WHERE a.owner = '" . $mitra . "'
+            AND a.tanggal BETWEEN '" . $start_date . "' AND '" . $end_date . "'
+            GROUP BY
+                a.no_transaksi,
+                a.no_order,
+                a.no_meja,
+                a.tanggal,
+                b.metode,
+                b.reference_payment,
+                b.created_at";
+        $query = $this->db->query($SQL)->result();
+        return $query;
+    }
+
+    public function GetRevenueMitra($date_start, $date_end, $mitra)
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $this->db->select('SUM((COALESCE(harga, 0) * COALESCE(qty, 0)) - COALESCE(potongan, 0)) AS  total_revenue');
+        $this->db->from('invoice_detail');
+        $this->db->where('tanggal >=', $date_start);
+        $this->db->where('tanggal <=', $date_end);
+        $this->db->where('owner', $mitra);
+        $query = $this->db->get();
+        return $query->row()->total_revenue;
+    }
+
+    public function GetVisitorMitra($date_start, $date_end)
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $this->db->select('COUNT(*) as jumlah');
+        $this->db->from('order');
+        $this->db->where("tanggal BETWEEN '$date_start' AND '$date_end'");
+        $query = $this->db->get();
+        return $query->row()->jumlah;
+    }
+
+    public function GetCountTransaksiMitra($date_start, $date_end, $mitra)
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $this->db->select('COUNT(*) as jumlah');
+        $this->db->from('invoice_detail');
+        $this->db->where("tanggal BETWEEN '$date_start' AND '$date_end'");
+        $this->db->where('owner', $mitra);
+        $query = $this->db->get();
+        return $query->row()->jumlah;
+    }
+
+    public function getDeskripsiMenuCountMitra($date_start, $date_end, $mitra)
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $this->db->select('jenis as jenis,nama as nama,SUM(qty) as jumlah');
+        $this->db->from('invoice_detail');
+        $this->db->where("tanggal BETWEEN '$date_start' AND '$date_end'");
+        $this->db->where("owner", $mitra);
+        $this->db->group_by('jenis,nama');
+        $query = $this->db->get();
+        return $query->result();
+    }
+
 }

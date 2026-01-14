@@ -1,4 +1,4 @@
-<div ng-app="HomeMitraApp" ng-controller="HomeMitraAppController">
+<div id="contentAppDivMitra" ng-controller="HomeMitraAppController">
     <div class="page-wrapper">
         <div class="page-content">
             <div class="row align-items-center pb-5">
@@ -33,7 +33,7 @@
                             <div class="d-flex align-items-center">
                                 <div>
                                     <p class="mb-0 text-white">Revenue</p>
-                                    <h4 class="my-1 text-white">0</h4>
+                                    <h4 class="my-1 text-white" id="revenue_kasir_mitra">0</h4>
                                 </div>
                                 <div class="widgets-icons bg-light-transparent text-white ms-auto"><i
                                         class="bx bxs-wallet"></i>
@@ -48,7 +48,7 @@
                             <div class="d-flex align-items-center">
                                 <div>
                                     <p class="mb-0 text-white">Total Visitors</p>
-                                    <h4 class="my-1 text-white">0</h4>
+                                    <h4 class="my-1 text-white" id="visitors_kasir_mitra">0</h4>
                                 </div>
                                 <div class="widgets-icons bg-light-transparent text-white ms-auto"><i
                                         class="bx bxs-binoculars"></i>
@@ -63,7 +63,7 @@
                             <div class="d-flex align-items-center justify-content-between">
                                 <div>
                                     <p class="mb-0 text-white">Total Transactions</p>
-                                    <h4 class="my-1 text-white">0</h4>
+                                    <h4 class="my-1 text-white" id="transactions_kasir_mitra">0</h4>
                                 </div>
                                 <div class="widgets-icons bg-light-transparent text-white"><i
                                         class="bx bx-line-chart-down"></i>
@@ -86,94 +86,86 @@
                             </div>
                         </div>
                         <div class="card-body">
-                            <div class="table-responsive">
-                                <table class="table table-striped table-bordered" style="width:130%"
-                                    id="tb_pesanan_list_detail">
-                                    <thead class="bg-success text-white">
-                                        <tr>
-                                            <th>
-                                                <input type="checkbox" ng-model="checkAll" ng-change="toggleAll()"
-                                                    class="form-check-input">
-                                            </th>
-                                            <th>#</th>
-                                            <th>Action</th>
-                                            <th>Status Food</th>
-                                            <th>No.Order</th>
-                                            <th>No.Meja</th>
-                                            <th>Category</th>
-                                            <th>List</th>
-                                            <th>Harga</th>
-                                            <th>Qty</th>
-                                            <th>Subtotal</th>
-                                            <th>Jenis</th>
-                                            <th>Owner</th>
-                                            <th>Time Request</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="td_pesanan_body_list_detail">
-                                        <tr ng-repeat="dt in LoadDataPesananDetail"
-                                            ng-if="LoadDataPesananDetail.length > 0">
-                                            <td>
-                                                <input type="checkbox" ng-model="dt.checked"
-                                                    ng-change="updateCheckedIds()" class="form-check-input">
-                                            </td>
-                                            <td>{{$index + 1}}</td>
-                                            <td>
-                                                <div class="btn-group input-group">
-                                                    <button type="button" class="btn btn-sm btn-dark"
-                                                        ng-if="dt.status=='1'"
-                                                        ng-click="TambahQtyPesananListDetail(dt)">
-                                                        <i class=" bx bx-plus"></i>
-                                                    </button>
-                                                    <button type="button" class="btn btn-sm btn-dark"
-                                                        ng-if="dt.status=='1'"
-                                                        ng-click="KurangQtyPesananListDetail(dt)">
-                                                        <i class=" bx bx-minus"></i>
-                                                    </button>
-                                                    <!-- <button type="button" class="btn btn-sm btn-danger"
-                                                        ng-click="DeleteListDetail(dt)" ng-if="dt.status=='1'">
-                                                        <i class="bx bx-trash"></i>
-                                                    </button> -->
-                                                </div>
-                                            </td>
-                                            <td>
-                                                <div ng-if="dt.status=='1'">
-                                                    <span class="badge bg-warning text-white">
-                                                        {{dt.status_food}}
-                                                    </span>
-                                                </div>
-                                                <div ng-if="dt.status=='2'">
-                                                    <span class="badge bg-info text-white">
-                                                        {{dt.status_food}}
-                                                    </span>
-                                                </div>
-                                                <div ng-if="dt.status=='3'">
-                                                    <span class="badge bg-info text-white">
-                                                        {{dt.status_food}}
-                                                    </span>
-                                                </div>
-                                                <div ng-if="dt.status=='4'">
-                                                    <span class="badge bg-success text-white">
-                                                        {{dt.status_food}}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td>{{dt.no_order}}</td>
-                                            <td>{{dt.no_meja}}</td>
-                                            <td>{{dt.kategori}}</td>
-                                            <td>{{dt.nama}}</td>
-                                            <td>{{dt.harga}}</td>
-                                            <td class="qty-cell-list-detail">{{dt.qty}}</td>
-                                            <td class="subtotal-cell-list-detail">{{dt.qty * dt.harga}}</td>
-                                            <td>{{dt.jenis}}</td>
-                                            <td>{{dt.owner}}</td>
-                                            <td>{{dt.created_at}}</td>
-                                        </tr>
-                                        <tr ng-if="LoadDataPesananDetail.length === 0">
-                                            <td colspan="12" class="text-center">No data available</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                            <div class="row pb-2">
+                                <div class="col-md-12">
+                                    <button class="btn btn-md btn-success" ng-click="UpdateCompleted()">
+                                        <i class="bx bx-edit"></i>
+                                        Completed
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12 col-lg-12 col-sm-12">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped table-bordered" style="width:130%"
+                                            id="tb_pesanan_list_detail">
+                                            <thead class="bg-success text-white">
+                                                <tr>
+                                                    <th>
+                                                        <input type="checkbox" ng-model="checkAll"
+                                                            ng-change="toggleAll()" class="form-check-input">
+                                                    </th>
+                                                    <th>#</th>
+                                                    <th>Status Food</th>
+                                                    <th>No.Order</th>
+                                                    <th>No.Meja</th>
+                                                    <th>Category</th>
+                                                    <th>List</th>
+
+                                                    <th>Qty</th>
+
+                                                    <th>Jenis</th>
+                                                    <th>Owner</th>
+                                                    <th>Time Request</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="td_pesanan_mitra">
+                                                <tr ng-repeat="dt in row_orders" ng-if="row_orders.length > 0">
+                                                    <td>
+                                                        <input type="checkbox" ng-model="dt.checked"
+                                                            ng-change="updateCheckedIds()" class="form-check-input">
+                                                    </td>
+                                                    <td>{{$index + 1}}</td>
+                                                    <td>
+                                                        <div ng-if="dt.status=='1'">
+                                                            <span class="badge bg-warning text-white">
+                                                                {{dt.status_food}}
+                                                            </span>
+                                                        </div>
+                                                        <div ng-if="dt.status=='2'">
+                                                            <span class="badge bg-info text-white">
+                                                                {{dt.status_food}}
+                                                            </span>
+                                                        </div>
+                                                        <div ng-if="dt.status=='3'">
+                                                            <span class="badge bg-info text-white">
+                                                                {{dt.status_food}}
+                                                            </span>
+                                                        </div>
+                                                        <div ng-if="dt.status=='4'">
+                                                            <span class="badge bg-success text-white">
+                                                                {{dt.status_food}}
+                                                            </span>
+                                                        </div>
+                                                    </td>
+                                                    <td>{{dt.no_order}}</td>
+                                                    <td>{{dt.no_meja}}</td>
+                                                    <td>{{dt.kategori}}</td>
+                                                    <td>{{dt.nama}}</td>
+                                                    <td class="qty-cell-list-detail text-center">
+                                                        <h5>{{dt.qty}}</h5>
+                                                    </td>
+                                                    <td>{{dt.jenis}}</td>
+                                                    <td>{{dt.owner}}</td>
+                                                    <td>{{dt.created_at}}</td>
+                                                </tr>
+                                                <tr ng-if="row_orders.length === 0">
+                                                    <td colspan="12" class="text-center">No data available</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -207,7 +199,7 @@
                                         <div class="input-group">
                                             <input type="date" name="end_date" id="end_date" class="form-control"
                                                 value="<?=date('Y-m-d')?>">
-                                            <button class="btn btn-md btn-dark" ng-click="FilterData()">
+                                            <button class="btn btn-md btn-dark" ng-click="FilterDataTransaksi()">
                                                 <i class='bx bx-search'></i>
                                                 Filter
                                             </button>
@@ -222,7 +214,6 @@
                                         <tr class="text-center">
                                             <th>#</th>
                                             <th>Invoice</th>
-                                            <th>Service Method</th>
                                             <th>Payment Method</th>
                                             <th>Date</th>
                                             <th>Substotal</th>
@@ -230,17 +221,13 @@
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr ng-repeat="dt in data_transaksi" ng-if="data_transaksi.length > 0">
+                                        <tr ng-repeat="dt in row_transaksi_mitra"
+                                            ng-if="row_transaksi_mitra.length > 0">
                                             <td>{{$index + 1}}</td>
                                             <td>
                                                 <span>Inv.Code : <b>{{dt.no_transaksi}}</b></span><br>
                                                 <span>Order No : <b>{{dt.no_order}}</b></span><br>
                                                 <span>No.Table : <b>{{dt.no_meja}}</b></span>
-                                            </td>
-                                            <td>
-                                                <span class="badge bg-success">
-                                                    {{dt.metode_service}}
-                                                </span>
                                             </td>
                                             <td>
                                                 <span class="badge bg-info" ng-if="dt.metode == 'Cash'">
@@ -261,19 +248,13 @@
                                             </td>
                                             <td>
                                                 <div class="button-group">
-                                                    <button class="btn btn-sm btn-dark" ng-click="printCard(dt)">
-                                                        <i class="bx bx-printer"></i>
-                                                    </button>
                                                     <button class="btn btn-sm btn-secondary" ng-click="showDetail(dt)">
                                                         <i class="bx bx-show"></i>
-                                                    </button>
-                                                    <button class="btn btn-sm btn-danger" ng-click="deleteData(dt.id)">
-                                                        <i class="bx bx-trash"></i>
                                                     </button>
                                                 </div>
                                             </td>
                                         </tr>
-                                        <tr ng-if="data_transaksi.length === 0">
+                                        <tr ng-if="row_transaksi_mitra.length === 0">
                                             <td colspan="11" class="text-center">No data available</td>
                                         </tr>
                                     </tbody>
@@ -321,18 +302,21 @@
                                 </div>
                             </div>
                             <ul class="list-group list-group-flush">
-                                <li
+                                <li ng-repeat="dt in menu_deskripsi"
+                                    ng-if="menu_deskripsi.length > 0 && dt.jenis == 'Makanan'"
                                     class="list-group-item d-flex justify-content-between align-items-center border-top">
-                                    Clothing
-                                    <span class="badge bg-primary rounded-pill">0</span>
+                                    {{dt.nama}}
+                                    <span class="badge bg-primary rounded-pill">
+                                        {{dt.jumlah | number:0}}
+                                    </span>
                                 </li>
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    Electronics
-                                    <span class="badge bg-success rounded-pill">0</span>
-                                </li>
-                                <li class="list-group-item d-flex justify-content-between align-items-center">
-                                    Furniture
-                                    <span class="badge bg-danger rounded-pill">0</span>
+                                <li ng-repeat="dt in menu_deskripsi"
+                                    ng-if="menu_deskripsi.length > 0 && dt.jenis == 'Minuman'"
+                                    class="list-group-item d-flex justify-content-between align-items-center">
+                                    {{dt.nama}}
+                                    <span class="badge bg-success rounded-pill">
+                                        {{dt.jumlah | number:0}}
+                                    </span>
                                 </li>
                             </ul>
                         </div>

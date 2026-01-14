@@ -3,16 +3,16 @@
         <nav class="navbar navbar-expand">
             <div class="topbar-logo-header">
                 <div class="">
-                    <img src="<?=base_url()?>public/assets/images/millennialpos-white.png" alt="logo icon">
+                    <img src="<?php echo base_url() ?>public/assets/images/millennialpos-white.png" alt="logo icon">
                 </div>
-                <div class="">
-                    <!-- <h4 class="logo-text">App The'Coffe</h4> -->
-                </div>
+                <!-- <div class="">
+                    <img src="<?php echo base_url() ?>public/assets/images/millennialpos-white.png" alt="logo icon">
+                </div> -->
             </div>
             <div class="mobile-toggle-menu"><i class='bx bx-menu'></i></div>
-            <div class="search-bar flex-grow-1" style="display: none;">
+            <div class="search-bar flex-grow-1">
                 <div class="position-relative search-bar-box">
-                    <input type="text" class="form-control search-control" placeholder="Type to search...">
+                    <!-- <input type="text" class="form-control search-control" placeholder="Type to search..."> -->
                     <span class="position-absolute top-50 search-show translate-middle-y"><i
                             class='bx bx-search'></i></span>
                     <span class="position-absolute top-50 search-close translate-middle-y"><i
@@ -21,11 +21,21 @@
             </div>
             <div class="top-menu ms-auto">
                 <ul class="navbar-nav align-items-center">
+                    <li class="nav-item mobile-search-icon" style="display: none;">
+                        <a class="nav-link" href="#"> <i class='bx bx-search'></i>
+                        </a>
+                    </li>
+                    <audio id="notif-sound" src="<?php echo base_url() ?>public/assets/sounds/notif1.mp3"
+                        preload="auto"></audio>
+                    <?php if ($this->session->userdata('level') == 'Mitra'): ?>
 
-                    <li class="nav-item dropdown dropdown-large">
+                    <li class="nav-item dropdown dropdown-large" id="notifyAppMitraDivMitra"
+                        ng-controller="notifyAppMitraController">
                         <a class="nav-link dropdown-toggle dropdown-toggle-nocaret position-relative" href="#"
-                            role="button" data-bs-toggle="dropdown" aria-expanded="false"> <span
-                                class="alert-count">7</span>
+                            role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                            <span class="alert-count" id="lb_qty_notification_mitra">
+                                {{qty_notification}}
+                            </span>
                             <i class='bx bx-bell'></i>
                         </a>
                         <div class="dropdown-menu dropdown-menu-end">
@@ -36,115 +46,54 @@
                                 </div>
                             </a>
                             <div class="header-notifications-list">
-                                <a class="dropdown-item" href="javascript:;">
-                                    <div class="d-flex align-items-center">
-                                        <div class="notify bg-light-primary text-primary"><i class="bx bx-group"></i>
+                                <div ng-repeat="dt in notify_mitra">
+                                    <a class="dropdown-item" href="javascript:;" ng-click="markAsReadNotifMitra(dt)">
+                                        <div class="d-flex align-items-center">
+                                            <div class="notify bg-light-danger text-danger">
+                                                <i class="bx bx-cart-alt"></i>
+                                            </div>
+                                            <div class="flex-grow-1">
+                                                <h7 class="msg-name">New Orders : {{dt.no_order}}
+                                                    <span class="msg-time float-end">{{ timeAgo(dt.created_at) }}</span>
+                                                </h7>
+                                                <p class="msg-info">Pada No.Meja {{dt.no_meja}} baru</p>
+                                            </div>
                                         </div>
-                                        <div class="flex-grow-1">
-                                            <h6 class="msg-name">New Customers<span class="msg-time float-end">14 Sec
-                                                    ago</span></h6>
-                                            <p class="msg-info">5 new user registered</p>
-                                        </div>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item" href="javascript:;">
-                                    <div class="d-flex align-items-center">
-                                        <div class="notify bg-light-danger text-danger"><i class="bx bx-cart-alt"></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <h6 class="msg-name">New Orders <span class="msg-time float-end">2 min
-                                                    ago</span></h6>
-                                            <p class="msg-info">You have recived new orders</p>
-                                        </div>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item" href="javascript:;">
-                                    <div class="d-flex align-items-center">
-                                        <div class="notify bg-light-success text-success"><i class="bx bx-file"></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <h6 class="msg-name">24 PDF File<span class="msg-time float-end">19 min
-                                                    ago</span></h6>
-                                            <p class="msg-info">The pdf files generated</p>
-                                        </div>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item" href="javascript:;">
-                                    <div class="d-flex align-items-center">
-                                        <div class="notify bg-light-warning text-warning"><i class="bx bx-send"></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <h6 class="msg-name">Time Response <span class="msg-time float-end">28 min
-                                                    ago</span></h6>
-                                            <p class="msg-info">5.1 min avarage time response</p>
-                                        </div>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item" href="javascript:;">
-                                    <div class="d-flex align-items-center">
-                                        <div class="notify bg-light-info text-info"><i class="bx bx-home-circle"></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <h6 class="msg-name">New Product Approved <span class="msg-time float-end">2
-                                                    hrs ago</span></h6>
-                                            <p class="msg-info">Your new product has approved</p>
-                                        </div>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item" href="javascript:;">
-                                    <div class="d-flex align-items-center">
-                                        <div class="notify bg-light-danger text-danger"><i
-                                                class="bx bx-message-detail"></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <h6 class="msg-name">New Comments <span class="msg-time float-end">4 hrs
-                                                    ago</span></h6>
-                                            <p class="msg-info">New customer comments recived</p>
-                                        </div>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item" href="javascript:;">
-                                    <div class="d-flex align-items-center">
-                                        <div class="notify bg-light-success text-success"><i
-                                                class='bx bx-check-square'></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <h6 class="msg-name">Your item is shipped <span class="msg-time float-end">5
-                                                    hrs
-                                                    ago</span></h6>
-                                            <p class="msg-info">Successfully shipped your item</p>
-                                        </div>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item" href="javascript:;">
-                                    <div class="d-flex align-items-center">
-                                        <div class="notify bg-light-primary text-primary"><i class='bx bx-user-pin'></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <h6 class="msg-name">New 24 authors<span class="msg-time float-end">1 day
-                                                    ago</span></h6>
-                                            <p class="msg-info">24 new authors joined last week</p>
-                                        </div>
-                                    </div>
-                                </a>
-                                <a class="dropdown-item" href="javascript:;">
-                                    <div class="d-flex align-items-center">
-                                        <div class="notify bg-light-warning text-warning"><i
-                                                class='bx bx-door-open'></i>
-                                        </div>
-                                        <div class="flex-grow-1">
-                                            <h6 class="msg-name">Defense Alerts <span class="msg-time float-end">2 weeks
-                                                    ago</span></h6>
-                                            <p class="msg-info">45% less alerts last 4 weeks</p>
-                                        </div>
-                                    </div>
-                                </a>
+                                    </a>
+                                </div>
                             </div>
                             <a href="javascript:;">
                                 <div class="text-center msg-footer">View All Notifications</div>
                             </a>
                         </div>
                     </li>
+
+                    <?php endif; ?>
+
+
+                    <?php if ($this->session->userdata('level') == 'Super Admin' || $this->session->userdata('level') == 'Kasir'): ?>
+                    <li class="nav-item dropdown dropdown-large">
+                        <a class="nav-link dropdown-toggle dropdown-toggle-nocaret position-relative" href="#"
+                            role="button" data-bs-toggle="dropdown" aria-expanded="false"> <span
+                                class="alert-count">0</span>
+                            <i class='bx bx-bell'></i>
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end">
+                            <a href="javascript:;">
+                                <div class="msg-header">
+                                    <p class="msg-header-title">Notifications</p>
+                                    <p class="msg-header-clear ms-auto">Marks all as read</p>
+                                </div>
+                            </a>
+                            <div class="header-notifications-list">
+
+                            </div>
+                            <a href="javascript:;">
+                                <div class="text-center msg-footer">View All Notifications</div>
+                            </a>
+                        </div>
+                    </li>
+                    <?php endif; ?>
                     <li class="nav-item dropdown dropdown-large" style="display: none;">
                         <a class="nav-link dropdown-toggle dropdown-toggle-nocaret position-relative" href="#"
                             role="button" data-bs-toggle="dropdown" aria-expanded="false"> <span
@@ -162,8 +111,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-1.png"
-                                                class="msg-avatar" alt="user avatar">
+                                            <img src="assets/images/avatars/avatar-1.png" class="msg-avatar"
+                                                alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">Daisy Anderson <span class="msg-time float-end">5 sec
@@ -175,8 +124,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-2.png"
-                                                class="msg-avatar" alt="user avatar">
+                                            <img src="assets/images/avatars/avatar-2.png" class="msg-avatar"
+                                                alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">Althea Cabardo <span class="msg-time float-end">14
@@ -188,8 +137,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-3.png"
-                                                class="msg-avatar" alt="user avatar">
+                                            <img src="assets/images/avatars/avatar-3.png" class="msg-avatar"
+                                                alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">Oscar Garner <span class="msg-time float-end">8 min
@@ -201,8 +150,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-4.png"
-                                                class="msg-avatar" alt="user avatar">
+                                            <img src="assets/images/avatars/avatar-4.png" class="msg-avatar"
+                                                alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">Katherine Pechon <span class="msg-time float-end">15
@@ -214,8 +163,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-5.png"
-                                                class="msg-avatar" alt="user avatar">
+                                            <img src="assets/images/avatars/avatar-5.png" class="msg-avatar"
+                                                alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">Amelia Doe <span class="msg-time float-end">22 min
@@ -227,8 +176,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-6.png"
-                                                class="msg-avatar" alt="user avatar">
+                                            <img src="assets/images/avatars/avatar-6.png" class="msg-avatar"
+                                                alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">Cristina Jhons <span class="msg-time float-end">2 hrs
@@ -240,8 +189,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-7.png"
-                                                class="msg-avatar" alt="user avatar">
+                                            <img src="assets/images/avatars/avatar-7.png" class="msg-avatar"
+                                                alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">James Caviness <span class="msg-time float-end">4 hrs
@@ -253,8 +202,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-8.png"
-                                                class="msg-avatar" alt="user avatar">
+                                            <img src="assets/images/avatars/avatar-8.png" class="msg-avatar"
+                                                alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">Peter Costanzo <span class="msg-time float-end">6 hrs
@@ -266,8 +215,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-9.png"
-                                                class="msg-avatar" alt="user avatar">
+                                            <img src="assets/images/avatars/avatar-9.png" class="msg-avatar"
+                                                alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">David Buckley <span class="msg-time float-end">2 hrs
@@ -279,8 +228,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-10.png"
-                                                class="msg-avatar" alt="user avatar">
+                                            <img src="assets/images/avatars/avatar-10.png" class="msg-avatar"
+                                                alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">Thomas Wheeler <span class="msg-time float-end">2 days
@@ -292,8 +241,8 @@
                                 <a class="dropdown-item" href="javascript:;">
                                     <div class="d-flex align-items-center">
                                         <div class="user-online">
-                                            <img src="<?=base_url()?>public/assets/images/avatars/avatar-11.png"
-                                                class="msg-avatar" alt="user avatar">
+                                            <img src="assets/images/avatars/avatar-11.png" class="msg-avatar"
+                                                alt="user avatar">
                                         </div>
                                         <div class="flex-grow-1">
                                             <h6 class="msg-name">Johnny Seitz <span class="msg-time float-end">5 days
@@ -313,12 +262,12 @@
             <div class="user-box dropdown">
                 <a class="d-flex align-items-center nav-link dropdown-toggle dropdown-toggle-nocaret" href="#"
                     role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="<?=base_url()?>public/assets/images/avatars/avatar-2.png" class="user-img"
+                    <img src="<?php echo base_url() ?>public/assets/images/avatars/avatar-2.png" class="user-img"
                         alt="user avatar">
                     <div class="user-info ps-3">
-                        <div id="userdata" data-fullname="<?=$this->session->userdata('fullname');?>"></div>
-                        <p class="user-name mb-0"><?=$this->session->userdata('fullname');?></p>
-                        <p class="designattion mb-0"><?=$this->session->userdata('level');?></p>
+                        <div id="userdata" data-fullname="<?php echo $this->session->userdata('fullname'); ?>"></div>
+                        <p class="user-name mb-0"><?php echo $this->session->userdata('fullname'); ?></p>
+                        <p class="designattion mb-0"><?php echo $this->session->userdata('level'); ?></p>
                     </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
@@ -332,9 +281,10 @@
                     <li>
                         <div class="dropdown-divider mb-0"></div>
                     </li>
-                    <li><a class="dropdown-item" href="<?=base_url('auth/login/logout')?>"><i
+                    <li><a class="dropdown-item" href="<?php echo base_url('auth/login/logout') ?>"><i
                                 class='bx bx-log-out-circle'></i><span>Logout</span></a>
                     </li>
+
                 </ul>
             </div>
         </nav>

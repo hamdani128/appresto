@@ -154,7 +154,10 @@ class Makanan extends CI_Controller
 
     public function data_makanan()
     {
-        if ($this->session->userdata('level') == "Super Admin" && $this->session->userdata('level') == "Kasir") {
+        if (
+            $this->session->userdata('level') == "Super Admin" ||
+            $this->session->userdata('level') == "Kasir"
+            ) {
             $SQL = "SELECT
                     a.id AS id,
                     b.id AS kategori_id,
@@ -187,6 +190,7 @@ class Makanan extends CI_Controller
                 WHERE a.owner = '" . $this->session->userdata('username') . "'
                 ";
         }
+
         $query = $this->db->query($SQL)->result();
         $this->output
             ->set_content_type('application/json')

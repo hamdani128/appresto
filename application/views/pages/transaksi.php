@@ -23,28 +23,42 @@
             <hr />
             <div class="card">
                 <div class="card-body">
-                    <div class="row pb-5">
-                        <div class="col-md-2 col-lg-2 col-sm-2 col-12">
+                    <div class="row pb-5 g-3">
+                        <div class="col-md-4 col-12">
                             <div class="form-group">
-                                <label for="">Start Date</label>
+                                <label for="start_date">Start Date</label>
                                 <input type="date" name="start_date" id="start_date" class="form-control"
-                                    value="<?=date('Y-m-d')?>">
+                                    value="<?php echo date('Y-m-d') ?>">
                             </div>
                         </div>
-                        <div class="col-md-3 col-lg-3 col-sm-3 col-12">
+
+                        <div class="col-md-4 col-12">
                             <div class="form-group">
-                                <label for="">End Date</label>
+                                <label for="end_date">End Date</label>
+                                <input type="date" name="end_date" id="end_date" class="form-control"
+                                    value="<?php echo date('Y-m-d') ?>">
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 col-12">
+                            <div class="form-group">
+                                <label for="type_transaction">Type Transaction</label>
                                 <div class="input-group">
-                                    <input type="date" name="end_date" id="end_date" class="form-control"
-                                        value="<?=date('Y-m-d')?>">
-                                    <button class="btn btn-md btn-dark" ng-click="FilterData()">
-                                        <i class='bx bx-search'></i>
-                                        Filter
+                                    <select class="form-select" id="type_transaction" name="type_transaction">
+                                        <option value="">All</option>
+                                        <option value="Owner">Owner</option>
+                                        <div ng-repeat="dt in ComboMitraData">
+                                            <option value="{{dt.kode}}">{{dt.kode}} - {{dt.nama}}</option>
+                                        </div>
+                                    </select>
+                                    <button class="btn btn-dark" ng-click="FilterData()">
+                                        <i class='bx bx-search'></i> Filter
                                     </button>
                                 </div>
                             </div>
                         </div>
                     </div>
+
                     <div class="table-responsive">
                         <table datatable="ng" dt-options="vm.dtOptions" class="table table-striped table-bordered"
                             style="width:100%">
@@ -130,8 +144,8 @@
                         <div class="card-body" id="printArea2">
                             <div>
                                 <div class="text-center bold" style="font-size: 14px;margin-top: 0px;">
-                                    <img src="<?=base_url()?>public/assets/images/millennialpos.png" alt="">
-                                    <h5>ROEMAH PREMIUM KOPI</h5>
+                                    <img src="<?php echo base_url() ?>public/assets/images/millennialpos.png" alt="">
+                                    <h5>GARAGE KOPI</h5>
                                 </div>
                                 <div class="text-center">
                                     Jl. STM Jl. Sakti Lubis No.SIMPANG,

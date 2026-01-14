@@ -92,14 +92,32 @@ class M_pesanan extends CI_Model
 
     public function TotalTransaksiByOrder($orderan)
     {
-        $SQL = "SELECT SUM(harga * qty) as total FROM order_detail WHERE no_order='" . $orderan . "'";
+        $SQL   = "SELECT SUM(harga * qty) as total FROM order_detail WHERE no_order='" . $orderan . "'";
         $query = $this->db->query($SQL)->row()->total;
         return $query;
     }
 
     public function GetTransaksi($date_start, $date_end)
     {
-        $SQL = "SELECT * FROM invoice WHERE tanggal BETWEEN '" . $date_start . "' AND '" . $date_end . "'";
+        $SQL   = "SELECT * FROM invoice WHERE tanggal BETWEEN '" . $date_start . "' AND '" . $date_end . "'";
+        $query = $this->db->query($SQL)->result();
+        return $query;
+    }
+
+    public function GetPeriodeTransaksi($date_start, $date_end)
+    {
+        date_default_timezone_set('Asia/Jakarta');
+        $SQL = "SELECT
+				a.jenis,
+				a.kategori,
+				a.nama,
+				a.harga,
+				SUM(a.qty) as qty,
+				(a.harga * SUM(a.qty)) as subtotal
+				FROM invoice_detail a
+				WHERE a.tanggal BETWEEN '" . $date_start . "' AND '" . $date_end . "'
+				GROUP BY 1,2,3,4
+				ORDER BY 1 ASC";
         $query = $this->db->query($SQL)->result();
         return $query;
     }
