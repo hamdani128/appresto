@@ -24,6 +24,99 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 	$scope.global_makanan = "";
 	$scope.global_minuman = "";
 
+	$scope.saldo_awal = "";
+
+	$scope.CheckSaldoAwalToday = function () {
+		$http
+			.get(base_url("opr/kasir/check_saldo_awal"))
+			.then(function (response) {
+				$scope.saldo_awal = response.data;
+			})
+			.catch(function (error) {
+				console.error("Terjadi kesalahan:", error);
+			});
+	};
+
+	$scope.CheckSaldoAwalToday();
+
+	$scope.SaldoAwalEntry = function () {
+		$("#my-modal-saldo-awal").modal("show");
+	};
+
+	$scope.SubmitSaldoAwal = function () {
+		var nominal = $("#saldo_awal_entry").val();
+		var keterangan = $("#keterangan_saldo_awal").val();
+
+		if (nominal == "" || keterangan == "") {
+			Swal.fire({
+				title: "Error",
+				text: "Nominal dan Keterangan Tidak Boleh Kosong",
+				icon: "error",
+			});
+			return false;
+		} else {
+			var formdata = {
+				nominal: unformatNumber(nominal),
+				keterangan: keterangan,
+			};
+			$http
+				.post(base_url("opr/kasir/saldo_awal_entry"), formdata)
+				.then(function (response) {
+					if (response.data.status == "success") {
+						Swal.fire({
+							title: "Success",
+							text: "Data Berhasil Disimpan",
+							icon: "success",
+						});
+						$("#my-modal-saldo-awal").modal("hide");
+						$scope.CheckSaldoAwalToday();
+					}
+				})
+				.catch(function (error) {
+					console.error("Terjadi kesalahan:", error);
+				});
+		}
+	};
+
+	$scope.TarikUang = function () {
+		$("#my-modal-tarik-uang").modal("show");
+	};
+
+	$scope.SubmitPenarikan = function () {
+		var nominal = $("#saldo_tarik_uang").val();
+		var keterangan = $("#keterangan_tarik_uang").val();
+
+		if (nominal == "" || keterangan == "") {
+			Swal.fire({
+				title: "Error",
+				text: "Nominal dan Keterangan Tidak Boleh Kosong",
+				icon: "error",
+			});
+			return false;
+		} else {
+			var formdata = {
+				nominal: unformatNumber_New(nominal),
+				keterangan: keterangan,
+			};
+			$http
+				.post(base_url("opr/kasir/tarik_uang"), formdata)
+				.then(function (response) {
+					if (response.data.status == "success") {
+						$scope.OpenCashDrawerPenarikan();
+						Swal.fire({
+							title: "Success",
+							text: "Data Berhasil Disimpan",
+							icon: "success",
+						});
+						$("#my-modal-tarik-uang").modal("hide");
+					}
+				})
+				.catch(function (error) {
+					console.error("Terjadi kesalahan:", error);
+				});
+		}
+	};
+
 	$scope.DataMeja = function () {
 		$http
 			.get(base_url("opr/kasir/getdata_meja"))
@@ -61,7 +154,7 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 		$http
 			.get(base_url("opr/kasir/getdata_transaksi_today"))
 			.then(function (response) {
-				$scope.LoadDataTransaksi = response.data;
+				$scope.LoadDataRowTransaksi = response.data;
 			})
 			.catch(function (error) {
 				console.error("Terjadi kesalahan:", error);
@@ -396,7 +489,7 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 			: 0;
 
 		var discount_value = Math.floor(
-			total_harga * (discount_nominal_global / 100)
+			total_harga * (discount_nominal_global / 100),
 		);
 
 		var nominal_total = total_harga - discount_value;
@@ -465,10 +558,10 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 				if (result.isConfirmed) {
 					var OrderDetail = [];
 					var no_booking = document.getElementById(
-						"lb_tambahan_no_order"
+						"lb_tambahan_no_order",
 					).innerHTML;
 					var no_meja = document.getElementById(
-						"lb_tambahan_no_meja"
+						"lb_tambahan_no_meja",
 					).innerHTML;
 					// Ada baris di dalam tabel, lanjutkan dengan logika penyimpanan atau tindakan lainnya
 					for (var i = 0; i < rows.length; i++) {
@@ -662,7 +755,7 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 			$http
 				.post(
 					base_url("opr/kasir/update_qty_pesanan_list_detail_hapus"),
-					formdata
+					formdata,
 				)
 				.then(function (response) {
 					console.log("Data dihapus:", response.data);
@@ -686,7 +779,7 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 		$http
 			.post(
 				base_url("opr/kasir/update_qty_pesanan_list_detail_hapus"),
-				formdata
+				formdata,
 			)
 			.then(function (response) {
 				console.log("Data dihapus:", response.data);
@@ -750,7 +843,7 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 				$scope.DetailMenuList(
 					$scope.global_no_booking,
 					$scope.global_no_meja,
-					$scope.global_makanan
+					$scope.global_makanan,
 				);
 			})
 			.catch(function (error) {
@@ -778,7 +871,7 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 				$scope.DetailMenuList(
 					$scope.global_no_booking,
 					$scope.global_no_meja,
-					$scope.global_makanan
+					$scope.global_makanan,
 				);
 			})
 			.catch(function (error) {
@@ -806,7 +899,7 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 				$scope.DetailMenuList(
 					$scope.global_no_booking,
 					$scope.global_no_meja,
-					$scope.global_makanan
+					$scope.global_makanan,
 				);
 			})
 			.catch(function (error) {
@@ -816,10 +909,10 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 
 	$scope.PindahMeja = function () {
 		$scope.global_no_booking = document.getElementById(
-			"lb_tambahan_no_order"
+			"lb_tambahan_no_order",
 		).innerHTML;
 		$scope.global_no_meja = document.getElementById(
-			"lb_tambahan_no_meja"
+			"lb_tambahan_no_meja",
 		).innerHTML;
 		document.getElementById("lb_no_booking_pindah_meja").innerHTML =
 			$scope.global_no_booking;
@@ -854,10 +947,10 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 
 	$scope.PindahMejaSubmit = function () {
 		$scope.global_no_booking = document.getElementById(
-			"lb_tambahan_no_order"
+			"lb_tambahan_no_order",
 		).innerHTML;
 		$scope.global_no_meja = document.getElementById(
-			"lb_tambahan_no_meja"
+			"lb_tambahan_no_meja",
 		).innerHTML;
 		var no_meja_baru = $("#combo_pindah_meja").val();
 		if (no_meja_baru === "") {
@@ -1067,10 +1160,10 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 
 	$scope.pay_before_service = function () {
 		$scope.global_no_booking = document.getElementById(
-			"lb_tambahan_no_order"
+			"lb_tambahan_no_order",
 		).innerHTML;
 		$scope.global_no_meja = document.getElementById(
-			"lb_tambahan_no_meja"
+			"lb_tambahan_no_meja",
 		).innerHTML;
 		document.getElementById("lb_no_booking_payment_before_service").innerHTML =
 			$scope.global_no_booking;
@@ -1106,10 +1199,10 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 
 	$scope.pay_after_service = function () {
 		$scope.global_no_booking = document.getElementById(
-			"lb_tambahan_no_order"
+			"lb_tambahan_no_order",
 		).innerHTML;
 		$scope.global_no_meja = document.getElementById(
-			"lb_tambahan_no_meja"
+			"lb_tambahan_no_meja",
 		).innerHTML;
 		document.getElementById("lb_no_booking_payment_After_service").innerHTML =
 			$scope.global_no_booking;
@@ -1153,7 +1246,7 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 		var no_booking = document.getElementById("lb_tambahan_no_order").innerHTML;
 		var fullname = document.getElementById("userdata").dataset.fullname;
 		var created_at = document.getElementById(
-			"lb_tambahan_created_at"
+			"lb_tambahan_created_at",
 		).innerHTML;
 		$scope.DaftarMejaTerisi(no_meja);
 		$scope.DetailPesanan(no_booking, no_meja);
@@ -1174,7 +1267,7 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 
 	$scope.UpdateGabungAll = function () {
 		$scope.LoadDataPesananDetailAll = $scope.LoadDataPesananDetail.concat(
-			$scope.LoadDataPesananGabungSementara
+			$scope.LoadDataPesananGabungSementara,
 		);
 
 		// FIX PENTING → Pindahin ke $timeout supaya Angular selesai render DOM dulu
@@ -1227,7 +1320,7 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 
 		// Loop data pesanan
 		var dataGabungan = $scope.LoadDataPesananDetail.concat(
-			$scope.LoadDataPesananGabungSementara
+			$scope.LoadDataPesananGabungSementara,
 		);
 		for (var i = 0; i < dataGabungan.length; i++) {
 			var item = dataGabungan[i];
@@ -1286,7 +1379,7 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 	$scope.groupPesananByOrder = function () {
 		$scope.groupedOrders = [];
 		const dataGabungan = $scope.LoadDataPesananDetail.concat(
-			$scope.LoadDataPesananGabungSementara
+			$scope.LoadDataPesananGabungSementara,
 		);
 
 		dataGabungan.sort((a, b) => a.no_meja.localeCompare(b.no_meja)); // Sort by no_meja
@@ -1311,39 +1404,39 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 	// Payment Before Service
 	$scope.PaymentBeforeServiceSubmit = function () {
 		var no_booking = document.getElementById(
-			"lb_no_booking_payment_before_service"
+			"lb_no_booking_payment_before_service",
 		).innerHTML;
 		var no_meja = document.getElementById(
-			"lb_no_meja_payment_before_service"
+			"lb_no_meja_payment_before_service",
 		).innerHTML;
 		var qty = unformatNumber(
-			document.getElementById("total-qty-payment-before-service").innerHTML
+			document.getElementById("total-qty-payment-before-service").innerHTML,
 		);
 		var subtotal = unformatNumber(
-			document.getElementById("subtotal-payment-before-service").innerHTML
+			document.getElementById("subtotal-payment-before-service").innerHTML,
 		);
 		var discount_text = unformatNumber(
-			document.getElementById("lb-discount-before-service").innerHTML
+			document.getElementById("lb-discount-before-service").innerHTML,
 		);
 		var discount = unformatNumber(
-			document.getElementById("Discount-before-service").innerHTML
+			document.getElementById("Discount-before-service").innerHTML,
 		);
 
 		var ppn_text = unformatNumber(
-			document.getElementById("ppn-text-payment-before-service").innerHTML
+			document.getElementById("ppn-text-payment-before-service").innerHTML,
 		);
 		var ppn = unformatNumber(
-			document.getElementById("ppn-payment-before-service").innerHTML
+			document.getElementById("ppn-payment-before-service").innerHTML,
 		);
 		var grand_total = unformatNumber(
-			document.getElementById("grand-total-payment-before-service").innerHTML
+			document.getElementById("grand-total-payment-before-service").innerHTML,
 		);
 		var metode_payment = $("#combo-payment-before-service").val();
 		var jumlah_dibayar = unformatNumber(
-			$("#jumlah-dibayar-payment-before-service").val()
+			$("#jumlah-dibayar-payment-before-service").val(),
 		);
 		var kembalian = unformatNumber(
-			document.getElementById("kembalian-payment-before-service").innerHTML
+			document.getElementById("kembalian-payment-before-service").innerHTML,
 		);
 		var refrence_payment = $("#combo-reference-payment-before-service").val();
 		var refrence_number = $("#reference-number-payment-before-service").val();
@@ -1399,38 +1492,38 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 	// Payment After Service
 	$scope.PaymentAfterServiceSubmit = function () {
 		var no_booking = document.getElementById(
-			"lb_no_booking_payment_After_service"
+			"lb_no_booking_payment_After_service",
 		).innerHTML;
 		var no_meja = document.getElementById(
-			"lb_no_meja_payment_After_service"
+			"lb_no_meja_payment_After_service",
 		).innerHTML;
 		var qty = unformatNumber(
-			document.getElementById("total-qty-payment-After-service").innerHTML
+			document.getElementById("total-qty-payment-After-service").innerHTML,
 		);
 		var subtotal = unformatNumber(
-			document.getElementById("subtotal-payment-After-service").innerHTML
+			document.getElementById("subtotal-payment-After-service").innerHTML,
 		);
 		var discount_text = unformatNumber(
-			document.getElementById("lb-discount-After-service").innerHTML
+			document.getElementById("lb-discount-After-service").innerHTML,
 		);
 		var discount = unformatNumber(
-			document.getElementById("Discount-After-service").innerHTML
+			document.getElementById("Discount-After-service").innerHTML,
 		);
 		var ppn_text = unformatNumber(
-			document.getElementById("ppn-text-payment-After-service").innerHTML
+			document.getElementById("ppn-text-payment-After-service").innerHTML,
 		);
 		var ppn = unformatNumber(
-			document.getElementById("ppn-payment-After-service").innerHTML
+			document.getElementById("ppn-payment-After-service").innerHTML,
 		);
 		var grand_total = unformatNumber(
-			document.getElementById("grand-total-payment-After-service").innerHTML
+			document.getElementById("grand-total-payment-After-service").innerHTML,
 		);
 		var metode_payment = $("#combo-payment-After-service").val();
 		var jumlah_dibayar = unformatNumber(
-			$("#jumlah-dibayar-payment-After-service").val()
+			$("#jumlah-dibayar-payment-After-service").val(),
 		);
 		var kembalian = unformatNumber(
-			document.getElementById("kembalian-payment-After-service").innerHTML
+			document.getElementById("kembalian-payment-After-service").innerHTML,
 		);
 		var refrence_payment = $("#combo-reference-payment-After-service").val();
 		var refrence_number = $("#reference-number-payment-After-service").val();
@@ -1496,24 +1589,24 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 
 	$scope.CalculatePaymentGabung = function () {
 		var total_qty = unformatNumber(
-			document.getElementById("qty-total-gabung").value
+			document.getElementById("qty-total-gabung").value,
 		);
 		var subtoal = unformatNumber($("#amount-total-gabung").val());
 		var ppn_text = unformatNumber($("#ppn-select-gabung").val());
 		var ppn_value = unformatNumber(
-			document.getElementById("amount-ppn-gabung").value
+			document.getElementById("amount-ppn-gabung").value,
 		);
 		var discount_text = unformatNumber(
-			document.getElementById("discount-nominal-gabung").value
+			document.getElementById("discount-nominal-gabung").value,
 		);
 		var discount_value = unformatNumber(
-			document.getElementById("discount-value-gabung").value
+			document.getElementById("discount-value-gabung").value,
 		);
 		var grand_total = unformatNumber(
-			document.getElementById("grand-total-gabung").value
+			document.getElementById("grand-total-gabung").value,
 		);
 		document.getElementById(
-			"total-qty-payment-BillGabungan-service"
+			"total-qty-payment-BillGabungan-service",
 		).innerHTML = formatNumber(total_qty);
 
 		document.getElementById("subtotal-payment-BillGabungan-service").innerHTML =
@@ -1538,53 +1631,55 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 			formatNumber(ppn_value);
 
 		document.getElementById(
-			"grand-total-payment-BillGabungan-service"
+			"grand-total-payment-BillGabungan-service",
 		).innerHTML = formatNumber(grand_total);
 	};
 
 	$scope.PaymentBillGabunganSubmit = function () {
 		var qty = unformatNumber(
 			document.getElementById("total-qty-payment-BillGabungan-service")
-				.innerHTML
+				.innerHTML,
 		);
 		var subtotal = unformatNumber(
-			document.getElementById("subtotal-payment-BillGabungan-service").innerHTML
+			document.getElementById("subtotal-payment-BillGabungan-service")
+				.innerHTML,
 		);
 
 		var discount_text = unformatNumber(
-			document.getElementById("bill_discount_persen_gabungan").innerHTML
+			document.getElementById("bill_discount_persen_gabungan").innerHTML,
 		);
 
 		var discount_value = unformatNumber(
-			document.getElementById("bill_discount_value_gabungan").innerHTML
+			document.getElementById("bill_discount_value_gabungan").innerHTML,
 		);
 
 		var ppn_text = unformatNumber(
-			document.getElementById("ppn-text-payment-BillGabungan-service").innerHTML
+			document.getElementById("ppn-text-payment-BillGabungan-service")
+				.innerHTML,
 		);
 
 		var ppn = unformatNumber(
-			document.getElementById("ppn-payment-BillGabungan-service").innerHTML
+			document.getElementById("ppn-payment-BillGabungan-service").innerHTML,
 		);
 
 		var grand_total = unformatNumber(
 			document.getElementById("grand-total-payment-BillGabungan-service")
-				.innerHTML
+				.innerHTML,
 		);
 
 		var metode_payment = $("#combo-payment-BillGabungan-service").val();
 		var jumlah_dibayar = unformatNumber(
-			$("#jumlah-dibayar-payment-BillGabungan-service").val()
+			$("#jumlah-dibayar-payment-BillGabungan-service").val(),
 		);
 		var kembalian = unformatNumber(
 			document.getElementById("kembalian-payment-BillGabungan-service")
-				.innerHTML
+				.innerHTML,
 		);
 		var refrence_payment = $(
-			"#combo-reference-payment-BillGabungan-service"
+			"#combo-reference-payment-BillGabungan-service",
 		).val();
 		var refrence_number = $(
-			"#reference-number-payment-BillGabungan-service"
+			"#reference-number-payment-BillGabungan-service",
 		).val();
 		var Metode_Service = "Pay Gabung Bill";
 
@@ -1635,12 +1730,13 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 		var no_booking = dt.no_order;
 		var no_meja = dt.no_meja;
 		var no_transaksi = dt.no_transaksi;
+		var no_split = dt.no_split;
 
 		document.getElementById("lb_bill_billing_no_pesanan").innerHTML =
 			no_booking;
 		document.getElementById("lb_bill_billing_no_meja").innerHTML = no_meja;
 
-		$scope.DetailPesananBilling(no_booking, no_meja, no_transaksi);
+		$scope.DetailPesananBilling(no_booking, no_meja, no_transaksi, no_split);
 
 		// // Unbind event dulu biar tidak dobel
 		// $("#my-modal-bill-billing")
@@ -1651,54 +1747,83 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 
 		// Tampilkan modal
 		$("#my-modal-bill-billing").modal("show");
+	};
+
+	$scope.printBillinvoiceBluetooth = function () {
 		printEppposAfterPayment();
 	};
 
+	$scope.printBillinvoiceUSB = function () {
+		printEppposAfterPaymentUSB();
+	};
+
 	//
-	$scope.DetailPesananBilling = function (no_booking, no_meja, no_transaksi) {
+	$scope.DetailPesananBilling = function (
+		no_booking,
+		no_meja,
+		no_transaksi,
+		no_split,
+	) {
 		var formdata = {
 			no_booking: no_booking,
 			no_meja: no_meja,
 			no_transaksi: no_transaksi,
+			no_split: no_split,
 		};
-		$scope.LoadDataPesananDetail = [];
-		$scope.LoadDataPesananGabungSementara = [];
-		$scope.LoadDataPesananDetailAll = [];
 
 		$http
 			.post(base_url("transaksi/invoice/get_detail_transaksi"), formdata)
 			.then(function (response) {
-				var data = response.data.transaksi;
+				const data = response.data.transaksi;
+
 				document.getElementById("bill_billing_date_show").innerHTML =
-					data.created_at;
+					data.tanggal;
 				document.getElementById("bill_billing_chasier_show").innerHTML =
-					data.created_by;
+					data.fullname;
 				document.getElementById("bill_billing_no_order_show").innerHTML =
 					data.no_order;
-				document.getElementById("bill_billing_qty_show").innerHTML =
-					formatNumber(data.qty);
+				document.getElementById("bill_billing_no_invoice").innerHTML =
+					data.no_transaksi;
+				document.getElementById("bill_billing_qty_show").innerHTML = data.qty;
 				document.getElementById("bill_billing_subtotal_show").innerHTML =
-					formatRupiah(data.subtotal);
-
-				document.getElementById("bill_billing_discount_persen").innerHTML =
-					formatNumber(data.discount);
+					formatNumber(data.subtotal);
+				document.getElementById("bill_billing_discount_persen").innerHTML = 0;
 				document.getElementById("bill_billing_discount_show").innerHTML =
-					formatRupiah(data.potongan);
+					formatNumber(data.potongan);
+				document.getElementById("bill_billing_ppn_percen_show").innerHTML =
+					data.ppn_text;
 				document.getElementById("bill_billing_ppn_show").innerHTML =
-					formatRupiah(data.ppn);
-
+					formatNumber(data.ppn);
 				document.getElementById("bill_billing_grand_total_show").innerHTML =
-					formatRupiah(data.amount_total);
+					formatNumber(data.amount_total);
 				document.getElementById("bill_billing_metode_show").innerHTML =
 					data.metode;
 				document.getElementById("bill_billing_jumlah_dibayar_show").innerHTML =
-					formatRupiah(data.dibayar);
+					formatNumber(data.dibayar);
 				document.getElementById("bill_billing_kembalian_show").innerHTML =
-					formatRupiah(data.kembalian);
+					formatNumber(data.kembalian);
 				document.getElementById("bill_billing_service_metode_show").innerHTML =
 					data.metode_service;
-				$scope.LoadDataPesananDetail = response.data.detail_transaksi;
-				$scope.UpdateGabungAll();
+
+				$scope.billingData = data;
+				$scope.detailItems = response.data.detail_transaksi;
+
+				// 🔥 GROUP BERDASARKAN MEJA
+				let grouped = {};
+
+				response.data.detail_transaksi.forEach(function (item) {
+					if (!grouped[item.no_meja]) {
+						grouped[item.no_meja] = {
+							no_meja: item.no_meja,
+							items: [],
+						};
+					}
+
+					grouped[item.no_meja].items.push(item);
+				});
+
+				// ubah object jadi array
+				$scope.groupedOrders = Object.values(grouped);
 			});
 	};
 
@@ -1727,7 +1852,7 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 			});
 		} else {
 			var no_order = document.getElementById(
-				"lb_no_booking_split_bill"
+				"lb_no_booking_split_bill",
 			).innerHTML;
 			var no_meja = document.getElementById("lb_no_meja_split_bill").innerHTML;
 			var total_qty = 0;
@@ -1799,10 +1924,10 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 	// camcel order
 	$scope.cancel_order = function () {
 		$scope.cancel.no_booking = document.getElementById(
-			"lb_tambahan_no_order"
+			"lb_tambahan_no_order",
 		).innerHTML;
 		$scope.cancel.no_meja = document.getElementById(
-			"lb_tambahan_no_meja"
+			"lb_tambahan_no_meja",
 		).innerHTML;
 		$scope.cancel.reason = "";
 		$scope.cancel.password = "";
@@ -1851,6 +1976,30 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 			.finally(function () {
 				$scope.cancel.loading = false;
 			});
+	};
+
+	$scope.OpenCashDrawerPenarikan = async function () {
+		try {
+			// connect jika belum
+			if (!qz.websocket.isActive()) {
+				await qz.websocket.connect();
+			}
+
+			const printer = await qz.printers.getDefault();
+			const config = qz.configs.create(printer);
+
+			await qz.print(config, [
+				{
+					type: "raw",
+					format: "command",
+					data: "\x1B\x70\x00\x3C\xFF",
+				},
+			]);
+
+			console.log("Cash drawer terbuka");
+		} catch (err) {
+			console.error("Gagal buka cash drawer", err);
+		}
 	};
 });
 
@@ -2123,7 +2272,7 @@ function unformatNumber_New(str) {
 	return parseInt(str.toString().replace(/\./g, "").replace(/,/g, ""), 10) || 0;
 }
 const inputBayar = document.getElementById(
-	"jumlah-dibayar-payment-before-service"
+	"jumlah-dibayar-payment-before-service",
 );
 
 inputBayar.addEventListener("input", function (e) {
@@ -2141,7 +2290,7 @@ inputBayar.addEventListener("keydown", function (e) {
 		e.preventDefault();
 
 		let grand_Total = document.getElementById(
-			"grand-total-payment-before-service"
+			"grand-total-payment-before-service",
 		).innerHTML;
 		let jumlahBayar = unformatNumber(this.value);
 		let totalTagihan = unformatNumber(grand_Total);
@@ -2177,23 +2326,21 @@ function changePaymentBeforeService() {
 	if (combo_methode == "Cash") {
 		$("#display_jumlah_dibayar_payment_before_service").css(
 			"display",
-			"table-row"
+			"table-row",
 		);
 		$("#display_kembalian_payment_before_service").css("display", "table-row");
 
 		document.getElementById("jumlah-dibayar-payment-before-service").value = "";
 		document.getElementById("kembalian-payment-before-service").innerHTML = "0";
 
-		document.getElementById(
-			"jumlah-dibayar-payment-before-service"
-		).readOnly = false;
-		document.getElementById(
-			"kembalian-payment-before-service"
-		).readOnly = false;
+		document.getElementById("jumlah-dibayar-payment-before-service").readOnly =
+			false;
+		document.getElementById("kembalian-payment-before-service").readOnly =
+			false;
 	} else if (combo_methode == "QRIS") {
 		$("#display_jumlah_dibayar_payment_before_service").css(
 			"display",
-			"table-row"
+			"table-row",
 		);
 		$("#display_kembalian_payment_before_service").css("display", "table-row");
 		$("#display_reference_payment_before_service").css("display", "table-row");
@@ -2202,29 +2349,27 @@ function changePaymentBeforeService() {
 		document.getElementById("jumlah-dibayar-payment-before-service").value = "";
 		document.getElementById("kembalian-payment-before-service").innerHTML = "0";
 
-		document.getElementById(
-			"jumlah-dibayar-payment-before-service"
-		).readOnly = true;
+		document.getElementById("jumlah-dibayar-payment-before-service").readOnly =
+			true;
 		document.getElementById("kembalian-payment-before-service").readOnly = true;
 	} else if (combo_methode == "Bank Transfer") {
 		$("#display_jumlah_dibayar_payment_before_service").css(
 			"display",
-			"table-row"
+			"table-row",
 		);
 		$("#display_kembalian_payment_before_service").css("display", "table-row");
 		$("#display_reference_payment_before_service").css("display", "table-row");
 		$("#display_reference_number_payment_before_service").css(
 			"display",
-			"table-row"
+			"table-row",
 		);
 
 		combo_insert_bank_tambahan("combo-reference-payment-before-service");
 		document.getElementById("jumlah-dibayar-payment-before-service").value = "";
 		document.getElementById("kembalian-payment-before-service").innerHTML = "0";
 
-		document.getElementById(
-			"jumlah-dibayar-payment-before-service"
-		).readOnly = true;
+		document.getElementById("jumlah-dibayar-payment-before-service").readOnly =
+			true;
 		document.getElementById("kembalian-payment-before-service").readOnly = true;
 	}
 }
@@ -2277,13 +2422,13 @@ function combo_insert_bank_tambahan(combo) {
 
 function changeReferencePaymentBeforeService() {
 	let grand_Total = document.getElementById(
-		"grand-total-payment-before-service"
+		"grand-total-payment-before-service",
 	).innerHTML;
 	let totalTagihan = unformatNumber(grand_Total);
 	document.getElementById("jumlah-dibayar-payment-before-service").value =
 		formatNumber(totalTagihan);
 	var jumlahBayar = unformatNumber(
-		document.getElementById("jumlah-dibayar-payment-before-service").value
+		document.getElementById("jumlah-dibayar-payment-before-service").value,
 	);
 	let kembalian = jumlahBayar - totalTagihan;
 	document.getElementById("kembalian-payment-before-service").innerHTML =
@@ -2301,21 +2446,20 @@ function changePaymentAfterService() {
 	if (combo_methode == "Cash") {
 		$("#display_jumlah_dibayar_payment_After_service").css(
 			"display",
-			"table-row"
+			"table-row",
 		);
 		$("#display_kembalian_payment_After_service").css("display", "table-row");
 
 		document.getElementById("jumlah-dibayar-payment-After-service").value = "";
 		document.getElementById("kembalian-payment-After-service").innerHTML = "0";
 
-		document.getElementById(
-			"jumlah-dibayar-payment-After-service"
-		).readOnly = false;
+		document.getElementById("jumlah-dibayar-payment-After-service").readOnly =
+			false;
 		document.getElementById("kembalian-payment-After-service").readOnly = false;
 	} else if (combo_methode == "QRIS") {
 		$("#display_jumlah_dibayar_payment_After_service").css(
 			"display",
-			"table-row"
+			"table-row",
 		);
 		$("#display_kembalian_payment_After_service").css("display", "table-row");
 		$("#display_reference_payment_After_service").css("display", "table-row");
@@ -2324,42 +2468,40 @@ function changePaymentAfterService() {
 		document.getElementById("jumlah-dibayar-payment-After-service").value = "";
 		document.getElementById("kembalian-payment-After-service").innerHTML = "0";
 
-		document.getElementById(
-			"jumlah-dibayar-payment-After-service"
-		).readOnly = true;
+		document.getElementById("jumlah-dibayar-payment-After-service").readOnly =
+			true;
 		document.getElementById("kembalian-payment-After-service").readOnly = true;
 	} else if (combo_methode == "Bank Transfer") {
 		$("#display_jumlah_dibayar_payment_After_service").css(
 			"display",
-			"table-row"
+			"table-row",
 		);
 		$("#display_kembalian_payment_After_service").css("display", "table-row");
 		$("#display_reference_payment_After_service").css("display", "table-row");
 		$("#display_reference_number_payment_After_service").css(
 			"display",
-			"table-row"
+			"table-row",
 		);
 
 		combo_insert_bank_tambahan("combo-reference-payment-After-service");
 		document.getElementById("jumlah-dibayar-payment-After-service").value = "";
 		document.getElementById("kembalian-payment-After-service").innerHTML = "0";
 
-		document.getElementById(
-			"jumlah-dibayar-payment-After-service"
-		).readOnly = true;
+		document.getElementById("jumlah-dibayar-payment-After-service").readOnly =
+			true;
 		document.getElementById("kembalian-payment-After-service").readOnly = true;
 	}
 }
 
 function changeReferencePaymentAfterService() {
 	let grand_Total = document.getElementById(
-		"grand-total-payment-After-service"
+		"grand-total-payment-After-service",
 	).innerHTML;
 	let totalTagihan = unformatNumber(grand_Total);
 	document.getElementById("jumlah-dibayar-payment-After-service").value =
 		formatNumber(totalTagihan);
 	var jumlahBayar = unformatNumber(
-		document.getElementById("jumlah-dibayar-payment-After-service").value
+		document.getElementById("jumlah-dibayar-payment-After-service").value,
 	);
 	let kembalian = jumlahBayar - totalTagihan;
 	document.getElementById("kembalian-payment-Ater-service").innerHTML =
@@ -2367,7 +2509,7 @@ function changeReferencePaymentAfterService() {
 }
 
 const inputBayar2 = document.getElementById(
-	"jumlah-dibayar-payment-After-service"
+	"jumlah-dibayar-payment-After-service",
 );
 
 inputBayar2.addEventListener("input", function (e) {
@@ -2385,7 +2527,7 @@ inputBayar2.addEventListener("keydown", function (e) {
 		e.preventDefault();
 
 		let grand_Total = document.getElementById(
-			"grand-total-payment-After-service"
+			"grand-total-payment-After-service",
 		).innerHTML;
 		let jumlahBayar = unformatNumber(this.value);
 		let totalTagihan = unformatNumber(grand_Total);
@@ -2415,103 +2557,100 @@ function changePaymentBillGabunganService() {
 
 	$("#display_jumlah_dibayar_payment_BillGabungan_service").css(
 		"display",
-		"none"
+		"none",
 	);
 	$("#display_kembalian_payment_BillGabungan_service").css("display", "none");
 	$("#display_reference_payment_BillGabungan_service").css("display", "none");
 	$("#display_reference_number_payment_BillGabungan_service").css(
 		"display",
-		"none"
+		"none",
 	);
 
 	if (combo_methode == "Cash") {
 		$("#display_jumlah_dibayar_payment_BillGabungan_service").css(
 			"display",
-			"table-row"
+			"table-row",
 		);
 		$("#display_kembalian_payment_BillGabungan_service").css(
 			"display",
-			"table-row"
+			"table-row",
 		);
 
 		document.getElementById(
-			"jumlah-dibayar-payment-BillGabungan-service"
+			"jumlah-dibayar-payment-BillGabungan-service",
 		).value = "";
 		document.getElementById(
-			"kembalian-payment-BillGabungan-service"
+			"kembalian-payment-BillGabungan-service",
 		).innerHTML = "0";
 
 		document.getElementById(
-			"jumlah-dibayar-payment-BillGabungan-service"
+			"jumlah-dibayar-payment-BillGabungan-service",
 		).readOnly = false;
-		document.getElementById(
-			"kembalian-payment-BillGabungan-service"
-		).readOnly = false;
+		document.getElementById("kembalian-payment-BillGabungan-service").readOnly =
+			false;
 	} else if (combo_methode == "QRIS") {
 		$("#display_jumlah_dibayar_payment_BillGabungan_service").css(
 			"display",
-			"table-row"
+			"table-row",
 		);
 		$("#display_kembalian_payment_BillGabungan_service").css(
 			"display",
-			"table-row"
+			"table-row",
 		);
 		$("#display_reference_payment_BillGabungan_service").css(
 			"display",
-			"table-row"
+			"table-row",
 		);
 
 		combo_insert_qr_code("combo-reference-payment-BillGabungan-service");
 		document.getElementById(
-			"jumlah-dibayar-payment-BillGabungan-service"
+			"jumlah-dibayar-payment-BillGabungan-service",
 		).value = "";
 		document.getElementById(
-			"kembalian-payment-BillGabungan-service"
+			"kembalian-payment-BillGabungan-service",
 		).innerHTML = "0";
 
 		document.getElementById(
-			"jumlah-dibayar-payment-BillGabungan-service"
+			"jumlah-dibayar-payment-BillGabungan-service",
 		).readOnly = true;
-		document.getElementById(
-			"kembalian-payment-BillGabungan-service"
-		).readOnly = true;
+		document.getElementById("kembalian-payment-BillGabungan-service").readOnly =
+			true;
 	} else if (combo_methode == "Bank Transfer") {
 		$("#display_jumlah_dibayar_payment_BillGabungan_service").css(
 			"display",
-			"table-row"
+			"table-row",
 		);
 		$("#display_kembalian_payment_BillGabungan_service").css(
 			"display",
-			"table-row"
+			"table-row",
 		);
 		$("#display_reference_payment_BillGabungan_service").css(
 			"display",
-			"table-row"
+			"table-row",
 		);
 		$("#display_reference_number_payment_BillGabungan_service").css(
 			"display",
-			"table-row"
+			"table-row",
 		);
 
 		combo_insert_bank_tambahan("combo-reference-payment-BillGabungan-service");
 		document.getElementById(
-			"jumlah-dibayar-payment-BillGabungan-service"
+			"jumlah-dibayar-payment-BillGabungan-service",
 		).value = "";
 		document.getElementById(
-			"kembalian-payment-BillGabungan-service"
+			"kembalian-payment-BillGabungan-service",
 		).innerHTML = "0";
 
 		document.getElementById(
-			"jumlah-dibayar-payment-BillGabungan-service"
+			"jumlah-dibayar-payment-BillGabungan-service",
 		).readOnly = true;
-		document.getElementById(
-			"kembalian-payment-BillGabungan-service"
-		).readOnly = true;
+		document.getElementById("kembalian-payment-BillGabungan-service").readOnly =
+			true;
 	}
 }
 
 const inputBayar3 = document.getElementById(
-	"jumlah-dibayar-payment-BillGabungan-service"
+	"jumlah-dibayar-payment-BillGabungan-service",
 );
 
 inputBayar3.addEventListener("input", function (e) {
@@ -2529,7 +2668,7 @@ inputBayar3.addEventListener("keydown", function (e) {
 		e.preventDefault();
 
 		let grand_Total = document.getElementById(
-			"grand-total-payment-BillGabungan-service"
+			"grand-total-payment-BillGabungan-service",
 		).innerHTML;
 		let jumlahBayar = unformatNumber(this.value);
 		let totalTagihan = unformatNumber(grand_Total);
@@ -2543,29 +2682,30 @@ inputBayar3.addEventListener("keydown", function (e) {
 				icon: "error",
 			});
 			document.getElementById(
-				"jumlah-dibayar-payment-BillGabungan-service"
+				"jumlah-dibayar-payment-BillGabungan-service",
 			).value = "";
 			document.getElementById(
-				"kembalian-payment-BillGabungan-service"
+				"kembalian-payment-BillGabungan-service",
 			).innerHTML = "Rp 0";
 			return;
 		}
 
 		document.getElementById(
-			"kembalian-payment-BillGabungan-service"
+			"kembalian-payment-BillGabungan-service",
 		).innerHTML = formatRupiah(kembalian.toString());
 	}
 });
 
 function changeReferencePaymentBillGabunganService() {
 	let grand_Total = document.getElementById(
-		"grand-total-payment-BillGabungan-service"
+		"grand-total-payment-BillGabungan-service",
 	).innerHTML;
 	let totalTagihan = unformatNumber(grand_Total);
 	document.getElementById("jumlah-dibayar-payment-BillGabungan-service").value =
 		formatNumber(totalTagihan);
 	var jumlahBayar = unformatNumber(
-		document.getElementById("jumlah-dibayar-payment-BillGabungan-service").value
+		document.getElementById("jumlah-dibayar-payment-BillGabungan-service")
+			.value,
 	);
 	let kembalian = jumlahBayar - totalTagihan;
 	document.getElementById("kembalian-payment-BillGabungan-service").innerHTML =
@@ -2601,11 +2741,22 @@ async function getPrinterChar() {
 // GLOBAL
 
 let BTPrinter = null;
+let USBPrinter = null;
 
 document.addEventListener("DOMContentLoaded", () => {
 	BTPrinter = new ThermalPrinter();
 	console.log("BTPrinter siap");
 });
+
+async function connectUSBPrinter() {
+	USBPrinter = await navigator.usb.requestDevice({
+		filters: [], // contoh vendorId, nanti bisa dikosongkan
+	});
+
+	await USBPrinter.open();
+	await USBPrinter.selectConfiguration(1);
+	await USBPrinter.claimInterface(0);
+}
 
 // async function printEpppos() {
 // 	try {
@@ -2650,6 +2801,8 @@ async function printEpppos() {
 		await printChunked(BTPrinter, text);
 		// await BTPrinter.print(data); // ✅ sekarang BENAR
 
+		// buka laci
+		await openCashDrawer(BTPrinter);
 		showNotification("Berhasil cetak", "success");
 	} catch (err) {
 		console.error(err);
@@ -2661,11 +2814,10 @@ function buildBillText() {
 	let text = "";
 
 	// ===== HEADER TEXT =====
-	text += "        SHAMROCK COFFEE        \n";
-	text += "Jl. STM Komplek SBC Block O No.9-12 i\n";
-	text += "Suka Maju, Kec. Medan Johor\n";
-	text += "Kota Medan - Sumatera Utara\n";
-	text += "Telp: 082320103919\n";
+	text += "   RUMAH KOPI DINDA  \n";
+	text += "Jl. RS Haji NO. 45 A\n";
+	text += "MEDAN - SUMATERA UTARA\n";
+	text += "Telp: 085260207471\n";
 	text += "--------------------------------\n";
 
 	// ===== INFO TRANSAKSI =====
@@ -2702,6 +2854,45 @@ function buildBillText() {
 	text += " tidak dapat dikembalikan\n\n\n";
 
 	return text;
+}
+
+async function openCashDrawer(printer) {
+	const openDrawer = new Uint8Array([27, 112, 1, 25, 250]);
+	await printer.print(openDrawer);
+}
+
+function OpenCashLaci() {
+	openCashDrawer();
+}
+
+async function connectQZ() {
+	if (!qz.websocket.isActive()) {
+		await qz.websocket.connect();
+	}
+}
+
+async function PrintCetakUSB() {
+	try {
+		await connectQZ();
+
+		// Ambil printer default Windows
+		const printerName = await qz.printers.getDefault();
+
+		const config = qz.configs.create(printerName);
+
+		const text = buildBillText();
+
+		const openDrawer = "\x1B\x70\x00\x19\xFA";
+
+		const data = [text, openDrawer];
+
+		await qz.print(config, data);
+
+		showNotification("Cetak via: " + printerName, "success");
+	} catch (err) {
+		console.error(err);
+		showNotification("Gagal cetak USB", "error");
+	}
 }
 
 async function imageToEscPosBytes(imgUrl, options = {}) {
@@ -2767,7 +2958,7 @@ async function buildBillEscpos() {
 
 	// LOGO
 	const logoBytes = await imageToEscPosBytes(
-		base_url("public/assets/images/millennialpos.png")
+		base_url("public/assets/images/millennialpos.png"),
 	);
 	bytes.push(...logoBytes);
 
@@ -2809,30 +3000,77 @@ async function printEppposAfterPayment() {
 	}
 }
 
+async function printEppposAfterPaymentUSB() {
+	try {
+		await connectQZ();
+
+		// Ambil printer default Windows
+		const printerName = await qz.printers.getDefault();
+
+		const config = qz.configs.create(printerName);
+
+		const text = buildBillTextAfterPayment();
+
+		const openDrawer = "\x1B\x70\x00\x19\xFA";
+
+		const data = [text, openDrawer];
+
+		await qz.print(config, data);
+
+		showNotification("Cetak via: " + printerName, "success");
+	} catch (err) {
+		console.error(err);
+		showNotification("Gagal cetak USB", "error");
+	}
+	// try {
+	// 	if (!BTPrinter) throw "Bluetooth belum siap";
+
+	// 	await BTPrinter.connect();
+
+	// 	const text = buildBillTextAfterPayment();
+
+	// 	// 🔥 FIX UTAMA: encode string → bytes
+	// 	const encoder = new TextEncoder();
+	// 	const data = encoder.encode(text); // Uint8Array
+	// 	await printChunked(BTPrinter, text);
+	// 	// await BTPrinter.print(data); // ✅ sekarang BENAR
+
+	// 	showNotification("Berhasil cetak", "success");
+	// } catch (err) {
+	// 	console.error(err);
+	// 	showNotification("Gagal cetak Bluetooth", "error");
+	// }
+}
+
 function buildBillTextAfterPayment() {
+	const scope = angular.element(document.getElementById("printArea3")).scope();
+	const data = scope.billingData;
+	const groupedOrders = scope.groupedOrders || [];
+
+	if (!data) {
+		console.error("Data billing belum tersedia");
+		return "";
+	}
+
 	let text = "";
 
 	// ===== HEADER =====
-	text += "        SHAMROCK COFFEE        \n";
-	text += "Jl. STM Komplek SBC Block O No.9-12 i\n";
-	text += "Suka Maju, Kec. Medan Johor\n";
-	text += "Kota Medan - Sumatera Utara\n";
-	text += "Telp: 082320103919\n";
+	text += "   RUMAH KOPI DINDA  \n";
+	text += "Jl. RS Haji NO. 45 A\n";
+	text += "MEDAN - SUMATERA UTARA\n";
+	text += "Telp: 085260207471\n";
 	text += "--------------------------------\n";
 
 	// ===== INFO TRANSAKSI =====
-	text += "Tanggal : " + bill_billing_date_show.innerText + "\n";
-	text += "Kasir   : " + bill_billing_chasier_show.innerText + "\n";
-	text += "No.Order: " + bill_billing_no_order_show.innerText + "\n";
+	text += "Tanggal   : " + data.created_at + "\n";
+	text += "Kasir     : " + data.created_by + "\n";
+	text += "No.Order  : " + data.no_order + "\n";
+	text += "No.Invoice: " + data.no_transaksi + "\n";
 	text += "--------------------------------\n";
 
-	// ===== ITEM PER MEJA =====
-	const scope = angular.element(document.getElementById("printArea3")).scope();
-
-	const groupedOrders = scope.groupedOrders || [];
-
+	// ===== ITEM =====
 	groupedOrders.forEach((group) => {
-		text += `MEJA : ${group.no_meja}\n`;
+		text += "MEJA : " + group.no_meja + "\n";
 		text += "--------------------------------\n";
 
 		group.items.forEach((item) => {
@@ -2848,22 +3086,19 @@ function buildBillTextAfterPayment() {
 		text += "--------------------------------\n";
 	});
 
-	// ===== TOTAL & PAYMENT =====
-	text += `Qty        : ${bill_billing_qty_show.innerText}\n`;
-	text += `Subtotal   : ${bill_billing_subtotal_show.innerText}\n`;
-	text += `Discount   : ${bill_billing_discount_show.innerText}\n`;
-	text += `PPN 10%    : ${bill_billing_ppn_show.innerText}\n`;
+	// ===== TOTAL =====
+	text += `Qty         : ${data.qty}\n`;
+	text += `Subtotal    : ${formatRupiah(data.subtotal)}\n`;
+	text += `Discount    : ${formatRupiah(data.potongan)}\n`;
+	text += `PPN 10%     : ${formatRupiah(data.ppn)}\n`;
 	text += "--------------------------------\n";
+	text += `GRAND TOTAL : ${formatRupiah(data.amount_total)}\n`;
+	text += `Metode      : ${data.metode}\n`;
+	text += `Dibayar     : ${formatRupiah(data.dibayar)}\n`;
+	text += `Kembalian   : ${formatRupiah(data.kembalian)}\n`;
 
-	text += `GRAND TOTAL  : ${bill_billing_grand_total_show.innerText}\n`;
-	text += `Metode Bayar : ${bill_billing_metode_show.innerText}\n`;
-	text += `Dibayar      : ${bill_billing_jumlah_dibayar_show.innerText}\n`;
-	text += `Kembalian    : ${bill_billing_kembalian_show.innerText}\n`;
-
-	// OPTIONAL (kadang kosong)
-	const serviceMetode = bill_billing_service_metode_show.innerText.trim();
-	if (serviceMetode !== "") {
-		text += `Service    : ${serviceMetode}\n`;
+	if (data.metode_service) {
+		text += `Service     : ${data.metode_service}\n`;
 	}
 
 	text += "--------------------------------\n";
@@ -2897,15 +3132,38 @@ async function printEppposBillGabung() {
 	}
 }
 
+async function printEppposBillGabungUSB() {
+	try {
+		await connectQZ();
+
+		// Ambil printer default Windows
+		const printerName = await qz.printers.getDefault();
+
+		const config = qz.configs.create(printerName);
+
+		const text = buildBillTextBillGabung();
+
+		const openDrawer = "\x1B\x70\x00\x19\xFA";
+
+		const data = [text, openDrawer];
+
+		await qz.print(config, data);
+
+		showNotification("Cetak via: " + printerName, "success");
+	} catch (err) {
+		console.error(err);
+		showNotification("Gagal cetak USB", "error");
+	}
+}
+
 function buildBillTextBillGabung() {
 	let text = "";
 
 	// ===== HEADER =====
-	text += "        SHAMROCK COFFEE        \n";
-	text += "Jl. STM Komplek SBC Block O No.9-12 i\n";
-	text += "Suka Maju, Kec. Medan Johor\n";
-	text += "Kota Medan - Sumatera Utara\n";
-	text += "Telp: 082320103919\n";
+	text += "   RUMAH KOPI DINDA  \n";
+	text += "Jl. RS Haji NO. 45 A\n";
+	text += "MEDAN - SUMATERA UTARA\n";
+	text += "Telp: 085260207471\n";
 	text += "--------------------------------\n";
 
 	// ===== INFO TRANSAKSI =====

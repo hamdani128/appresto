@@ -19,6 +19,70 @@ class Kasir extends CI_Controller
         $this->load->model("M_pesanan");
     }
 
+    public function check_saldo_awal()
+    {
+        date_default_timezone_set("Asia/Jakarta");
+        $query = $this->db->where('tanggal', date('Y-m-d'))->get("saldo_awal")->row();
+        if (empty($query->saldo)) {
+            $saldo = "0";
+        } else {
+            $saldo = $query->saldo;
+        }
+        $this->output
+            ->set_content_type('application/json')
+            ->set_output(json_encode($saldo));
+    }
+
+    public function saldo_awal_entry()
+    {
+        date_default_timezone_set("Asia/Jakarta");
+        $input      = json_decode(file_get_contents("php://input"), true);
+        $saldo      = $input['nominal'];
+        $keterangan = $input['keterangan'];
+        $data       = [
+            'tanggal'    => date('Y-m-d'),
+            'saldo'      => $saldo,
+            'keterangan' => $keterangan,
+            'created_at' => date('Y-m-d H:i:s'),
+            'created_by' => $this->session->userdata('username'),
+        ];
+        $query = $this->db->insert('saldo_awal', $data);
+        if ($query) {
+            $this->output
+                ->set_content_type('application/json')
+                ->set_output(json_encode(['status' => 'success']));
+        } else {
+            $this->output
+                ->set_content_type('application/json')
+                ->set_output(json_encode(['status' => 'failed']));
+        }
+    }
+
+    public function tarik_uang()
+    {
+        date_default_timezone_set("Asia/Jakarta");
+        $input      = json_decode(file_get_contents("php://input"), true);
+        $saldo      = $input['nominal'];
+        $keterangan = $input['keterangan'];
+        $data       = [
+            'tanggal'    => date('Y-m-d'),
+            'amount'     => $saldo,
+            'keterangan' => $keterangan,
+            'created_at' => date('Y-m-d H:i:s'),
+            'created_by' => $this->session->userdata('username'),
+        ];
+        $query = $this->db->insert('pengeluaran', $data);
+        if ($query) {
+            $this->output
+                ->set_content_type('application/json')
+                ->set_output(json_encode(['status' => 'success']));
+        } else {
+            $this->output
+                ->set_content_type('application/json')
+                ->set_output(json_encode(['status' => 'failed']));
+        }
+    }
+
     public function getdata_meja()
     {
         $query = $this->db->get("daftar_meja")->result();
@@ -510,14 +574,15 @@ class Kasir extends CI_Controller
     public function payment_before_service()
     {
         date_default_timezone_set("Asia/Jakarta");
-        $input = json_decode(file_get_contents("php://input"), true);
+        $input        = json_decode(file_get_contents("php://input"), true);
+        $no_transaksi = $this->get_number_invoice();
         if ($input['discount_text'] == '' || $input['discount'] == 0) {
             $desc_discount = '-';
         } else {
             $desc_discount = 'Discount';
         }
         $data1 = [
-            'no_transaksi'      => $this->get_number_invoice(),
+            'no_transaksi'      => $no_transaksi,
             'no_order'          => $input['no_order'],
             'no_meja'           => $input['no_meja'],
             'tanggal'           => date('Y-m-d'),
@@ -542,7 +607,7 @@ class Kasir extends CI_Controller
         $data2            = [];
         foreach ($row_order_detail as $row) {
             $data2[] = [
-                'no_transaksi' => $this->get_number_invoice(),
+                'no_transaksi' => $no_transaksi,
                 'no_order'     => $row->no_order,
                 'no_meja'      => $row->no_meja,
                 'tanggal'      => $row->tanggal,
@@ -583,14 +648,15 @@ class Kasir extends CI_Controller
     public function payment_after_service()
     {
         date_default_timezone_set("Asia/Jakarta");
-        $input = json_decode(file_get_contents("php://input"), true);
+        $input        = json_decode(file_get_contents("php://input"), true);
+        $no_transaksi = $this->get_number_invoice();
         if ($input['discount_text'] == '' || $input['discount'] == 0) {
             $desc_discount = '-';
         } else {
             $desc_discount = 'Discount';
         }
         $data1 = [
-            'no_transaksi'      => $this->get_number_invoice(),
+            'no_transaksi'      => $no_transaksi,
             'no_order'          => $input['no_order'],
             'no_meja'           => $input['no_meja'],
             'tanggal'           => date('Y-m-d'),
@@ -615,7 +681,7 @@ class Kasir extends CI_Controller
         $data2            = [];
         foreach ($row_order_detail as $row) {
             $data2[] = [
-                'no_transaksi' => $this->get_number_invoice(),
+                'no_transaksi' => $no_transaksi,
                 'no_order'     => $row->no_order,
                 'no_meja'      => $row->no_meja,
                 'tanggal'      => $row->tanggal,

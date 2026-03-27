@@ -15,6 +15,7 @@ function base_url(string_url) {
 var app = angular.module("ReportPeriodeApp", ["datatables"]);
 app.controller("ReportPeriodeController", function ($scope, $http, $timeout) {
 	let BTPrinter = null;
+	$scope.detail_item = [];
 
 	$scope.CheckBluetoothPrinter = async function () {
 		BTPrinter = new ThermalPrinter();
@@ -38,7 +39,7 @@ app.controller("ReportPeriodeController", function ($scope, $http, $timeout) {
 		try {
 			const response = await $http.post(
 				base_url("transaksi/invoice/get_transaksi_periode"),
-				{ date_start: startDate, date_end: EndDate }
+				{ date_start: startDate, date_end: EndDate },
 			);
 
 			const reportData = response.data;
@@ -59,51 +60,307 @@ app.controller("ReportPeriodeController", function ($scope, $http, $timeout) {
 		}
 	};
 
+	$scope.CheckFilter = function () {
+		var startDate = $("#start_date").val();
+		var EndDate = $("#end_date").val();
+
+		if (startDate == "" || EndDate == "") {
+			Swal.fire({
+				title: "Perhatian!",
+				text: "Tanggal awal dan akhir harus diisi!",
+				icon: "warning",
+				confirmButtonText: "Oke",
+			});
+
+			return;
+		}
+
+		var formdata = {
+			date_start: startDate,
+			date_end: EndDate,
+		};
+
+		$http
+			.post(
+				base_url("transaksi/invoice/get_transaksi_periode_summary"),
+				formdata,
+			)
+			.then(function (response) {
+				var data = response.data;
+
+				$scope.start_date = startDate;
+				$scope.end_date = EndDate;
+
+				// =====================
+				// DEFAULT
+				// =====================
+
+				var cash = 0;
+				var qris = 0;
+				var transfer = 0;
+
+				// =====================
+				// METODE PEMBAYARAN
+				// =====================
+
+				if (data.metode && data.metode.length > 0) {
+					angular.forEach(data.metode, function (item) {
+						if (item.metode == "Cash") {
+							cash = parseInt(item.total) || 0;
+						}
+
+						if (item.metode == "QRIS") {
+							qris = parseInt(item.total) || 0;
+						}
+
+						if (item.metode == "Bank Transfer") {
+							transfer = parseInt(item.total) || 0;
+						}
+					});
+				}
+
+				// =====================
+				// DATA LAPORAN
+				// =====================
+
+				$scope.report = {
+					cash: cash,
+					qris: qris,
+					transfer: transfer,
+
+					saldo_awal: parseInt(data.saldo_awal.total) || 0,
+					pengeluaran: parseInt(data.pengeluaran.total) || 0,
+
+					detail: data.detail,
+				};
+
+				// =====================
+				// TOTAL BELANJA
+				// =====================
+
+				$scope.total_belanja = cash + qris + transfer;
+
+				// =====================
+				// TOTAL LACI
+				// =====================
+
+				$scope.total_laci =
+					$scope.report.saldo_awal + cash - $scope.report.pengeluaran;
+
+				// =====================
+				// PENDAPATAN BERSIH
+				// =====================
+
+				$scope.pendapatan_bersih =
+					$scope.total_belanja - $scope.report.pengeluaran;
+			});
+	};
+
 	$scope.BuilTextReport = function (date_start, date_end, data) {
 		let text = "\x1B\x40";
-		let lastGroup = "";
-		let grandTotal = 0;
 
-		const formatRupiah = (angka) =>
-			angka.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+		const LINE = "--------------------------------\n";
+		const TITLE = "================================\n";
 
-		const padLeft = (str, len) => str.toString().padStart(len);
+		const formatRupiah = (angka) => Number(angka || 0).toLocaleString("id-ID");
 
-		text += "        SHAMROCK COFFEE        \n";
-		text += "Jl. STM Komplek SBC Block O No.9-12 i\n";
-		text += "Suka Maju, Kec. Medan Johor\n";
-		text += "Kota Medan - Sumatera Utara\n";
-		text += "Telp: 082320103919\n";
-		text += "--------------------------------\n";
+		const leftRight = (left, right, width = 32) => {
+			let space = width - (left.length + right.length);
+			return left + " ".repeat(space > 0 ? space : 1) + right + "\n";
+		};
+
+		// =====================
+		// HEADER
+		// =====================
+
+		text += "\x1B\x61\x01"; // center
+		text += "RUMAH KOPI DINDA\n";
+		text += "Jl. RS Haji No 45A\n";
+		text += "Medan - Sumut\n";
+		text += "Telp: 085260207471\n";
+
+		text += "\x1B\x61\x00"; // left
+
+		text += LINE;
 		text += "Periode : " + date_start + "\n";
 		text += "     s/d " + date_end + "\n";
-		text += "Kasir   : " + (data.kasir || "-") + "\n";
-		text += "--------------------------------\n";
+		text += LINE;
 
-		data.detail.forEach(function (item) {
-			let group = item.jenis + " - " + item.kategori;
+		// =====================
+		// GROUP DATA PER MITRA
+		// =====================
 
-			if (group !== lastGroup) {
-				text += group + "\n";
-				lastGroup = group;
+		let ownerMap = {};
+		let total_penjualan = 0;
+
+		data.detail.forEach((item) => {
+			let owner = item.owner_name || "UMUM";
+
+			if (!ownerMap[owner]) {
+				ownerMap[owner] = [];
 			}
 
-			let subtotal = item.qty * item.harga;
-			grandTotal += subtotal;
-
-			text += "  " + item.nama + "\n";
-			text +=
-				"           x" +
-				padLeft(item.qty, 2) +
-				padLeft(formatRupiah(subtotal), 17) +
-				"\n\n";
+			ownerMap[owner].push(item);
 		});
 
-		text += "--------------------------------\n";
-		text += "TOTAL".padEnd(20) + formatRupiah(grandTotal).padStart(12) + "\n";
-		text += "--------------------------------\n\n\n";
+		// =====================
+		// LOOP MITRA
+		// =====================
+
+		Object.keys(ownerMap).forEach((owner) => {
+			text += "\n";
+			text += TITLE;
+			text += "MITRA : " + owner + "\n";
+			text += TITLE;
+
+			let ownerTotal = 0;
+			let lastGroup = "";
+
+			ownerMap[owner].forEach((item) => {
+				let group = item.jenis + " - " + item.kategori;
+
+				if (group !== lastGroup) {
+					text += group + "\n";
+
+					lastGroup = group;
+				}
+
+				let subtotal = item.qty * item.harga;
+
+				ownerTotal += subtotal;
+
+				text += "  " + item.nama + "\n";
+
+				text += leftRight(
+					"    " + item.qty + " x " + formatRupiah(item.harga),
+					formatRupiah(subtotal),
+				);
+			});
+
+			text += "\n";
+
+			// bold ON
+			text += "\x1B\x45\x01";
+
+			text += leftRight("SUBTOTAL MITRA", formatRupiah(ownerTotal));
+
+			// bold OFF
+			text += "\x1B\x45\x00";
+
+			text += LINE;
+
+			total_penjualan += ownerTotal;
+		});
+
+		// =====================
+		// TOTAL PENJUALAN
+		// =====================
+
+		text += "\n";
+
+		text += "\x1B\x45\x01"; // bold
+		text += leftRight("TOTAL PENJUALAN", formatRupiah(total_penjualan));
+		text += "\x1B\x45\x00"; // normal
+
+		text += LINE;
+
+		// =====================
+		// PEMBAYARAN
+		// =====================
+
+		text += "PEMBAYARAN\n";
+
+		text += leftRight("Cash", formatRupiah(data.cash));
+		text += leftRight("QRIS", formatRupiah(data.qris));
+		text += leftRight("Transfer", formatRupiah(data.transfer));
+
+		text += LINE;
+
+		// =====================
+		// KAS LACI
+		// =====================
+
+		let total_laci =
+			(data.saldo_awal || 0) + (data.cash || 0) - (data.pengeluaran || 0);
+
+		text += "KAS LACI\n";
+
+		text += leftRight("Saldo Awal", formatRupiah(data.saldo_awal));
+		text += leftRight("Cash Masuk", formatRupiah(data.cash));
+		text += leftRight("Tarik Uang", "-" + formatRupiah(data.pengeluaran));
+
+		text += LINE;
+
+		text += "\x1B\x45\x01";
+		text += leftRight("TOTAL LACI", formatRupiah(total_laci));
+		text += "\x1B\x45\x00";
+
+		text += LINE;
+
+		// =====================
+		// PENDAPATAN BERSIH
+		// =====================
+
+		let pendapatan_bersih = total_penjualan - (data.pengeluaran || 0);
+
+		text += "\x1B\x45\x01";
+		text += leftRight("PENDAPATAN BERSIH", formatRupiah(pendapatan_bersih));
+		text += "\x1B\x45\x00";
+
+		text += LINE;
+
+		text += "\n\n\n";
 
 		return text;
+	};
+
+	$scope.printLaporanBluetooth = async function () {
+		try {
+			if (!BTPrinter) throw "Bluetooth belum siap";
+
+			await BTPrinter.connect();
+
+			const text = $scope.BuilTextReport(
+				$scope.start_date,
+				$scope.end_date,
+				$scope.report,
+			);
+
+			await printChunked(BTPrinter, text);
+
+			showNotification("Berhasil cetak", "success");
+		} catch (err) {
+			console.error(err);
+
+			showNotification("Gagal cetak Bluetooth", "error");
+		}
+	};
+
+	$scope.printLaporanUSB = async function () {
+		try {
+			await connectQZ();
+
+			// Ambil printer default Windows
+			const printerName = await qz.printers.getDefault();
+
+			const config = qz.configs.create(printerName);
+
+			const text = $scope.BuilTextReport(
+				$scope.start_date,
+				$scope.end_date,
+				$scope.report,
+			);
+			const openDrawer = "\x1B\x70\x00\x19\xFA";
+
+			const data = [text, openDrawer];
+
+			await qz.print(config, data);
+
+			showNotification("Cetak via: " + printerName, "success");
+		} catch (err) {
+			console.error(err);
+			showNotification("Gagal cetak USB", "error");
+		}
 	};
 });
 

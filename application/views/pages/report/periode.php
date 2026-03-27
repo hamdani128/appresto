@@ -21,34 +21,151 @@
             <!--end breadcrumb-->
             <h6 class="mb-0 text-uppercase">Informasi Data Report Periode Detail</h6>
             <hr />
-            <div class="card">
+            <div class="card shadow-sm border-0">
+
                 <div class="card-body">
-                    <div class="row pb-5">
-                        <div class="col-md-2 col-lg-2 col-sm-2 col-12">
-                            <div class="form-group">
-                                <label for="">Start Date</label>
-                                <input type="date" name="start_date" id="start_date" class="form-control"
+
+                    <!-- FILTER -->
+                    <div class="row pb-4">
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">Start Date</label>
+                            <input type="date" name="start_date" id="start_date" class="form-control"
+                                value="<?php echo date('Y-m-d') ?>">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label class="form-label fw-semibold">End Date</label>
+                            <div class="input-group">
+
+                                <input type="date" name="end_date" id="end_date" class="form-control"
                                     value="<?php echo date('Y-m-d') ?>">
+
+                                <button class="btn btn-dark" ng-click="CheckFilter()">
+                                    <i class="bx bx-search"></i>
+                                    Check Report
+                                </button>
+
                             </div>
                         </div>
-                        <div class="col-md-3 col-lg-3 col-sm-3 col-12">
-                            <div class="form-group">
-                                <label for="">End Date</label>
-                                <div class="input-group">
-                                    <input type="date" name="end_date" id="end_date" class="form-control"
-                                        value="<?php echo date('Y-m-d') ?>">
-                                    <button class="btn btn-md btn-dark" ng-click="CetakPeriodeDetail()">
-                                        <i class='bx bx-printer'></i>
-                                        Cetak
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="table-responsive">
 
                     </div>
+
+                    <!-- HEADER LAPORAN -->
+                    <div class="text-center mb-3">
+
+                        <h4 class="fw-bold mb-0">
+                            LAPORAN KASIR
+                        </h4>
+
+                        <small class="text-muted">
+                            Periode
+                            {{start_date}} s/d {{end_date}}
+                        </small>
+
+                    </div>
+
+
+                    <!-- TABLE LAPORAN -->
+                    <div class="table-responsive">
+
+                        <table class="table table-bordered align-middle">
+
+                            <tbody>
+
+                                <tr class="table-primary fw-bold">
+                                    <td colspan="2">Total Belanja</td>
+                                    <td class="text-end fs-5">
+                                        {{ total_belanja | currency:'Rp '}}
+                                    </td>
+                                </tr>
+
+                                <tr class="table-secondary fw-bold">
+                                    <td colspan="3">Rincian Pembayaran</td>
+                                </tr>
+
+                                <tr>
+                                    <td width="40"></td>
+                                    <td>Tunai / Cash</td>
+                                    <td class="text-end">
+                                        {{ report.cash | currency:'Rp '}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td></td>
+                                    <td>QRIS</td>
+                                    <td class="text-end">
+                                        {{ report.qris | currency:'Rp '}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td></td>
+                                    <td>Transfer</td>
+                                    <td class="text-end">
+                                        {{ report.transfer | currency:'Rp '}}
+                                    </td>
+                                </tr>
+
+                                <tr class="table-warning fw-bold">
+                                    <td colspan="3">Uang Tunai Dalam Laci</td>
+                                </tr>
+
+                                <tr>
+                                    <td></td>
+                                    <td>Uang Awal</td>
+                                    <td class="text-end">
+                                        {{ report.saldo_awal | currency:'Rp '}}
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td></td>
+                                    <td>Tarik Uang</td>
+                                    <td class="text-end text-danger">
+                                        - {{ report.pengeluaran | currency:'Rp '}}
+                                    </td>
+                                </tr>
+
+                                <tr class="table-success fw-bold">
+                                    <td></td>
+                                    <td>Total Kas Dalam Laci</td>
+                                    <td class="text-end fs-5">
+                                        {{ total_laci | currency:'Rp '}}
+                                    </td>
+                                </tr>
+
+                                <tr class="table-dark fw-bold">
+                                    <td></td>
+                                    <td>Pendapatan Bersih</td>
+                                    <td class="text-end fs-5">
+                                        {{ pendapatan_bersih | currency:'Rp '}}
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+
+                    </div>
+
+
+                    <!-- ACTION BUTTON -->
+                    <div class="text-center mt-4">
+
+                        <button class="btn btn-success me-2" type="button" ng-click="printLaporanUSB()">
+                            <i class="bx bx-printer"></i>
+                            Cetak Laporan USB
+                        </button>
+
+                        <button class="btn btn-info text-white me-2" type="button" ng-click="printLaporanBluetooth()">
+                            <i class="bx bx-printer"></i>
+                            Cetak Bluetooth
+                        </button>
+                    </div>
+
                 </div>
+
             </div>
         </div>
     </div>

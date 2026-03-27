@@ -1,39 +1,152 @@
-<div ng-app="KasirApp" ng-controller="KasirAppController">
+<div ng-app="KasirApp" ng-controller="KasirAppController" class="kasir-pos-page">
     <div class="page-wrapper">
         <div class="page-content">
-            <div class="row">
-                <div class="col-12 col-sm-5 col-md-5 col-lg-5 col-xl-5 d-flex">
-                    <div class="card radius-10 w-100" style="border: 1px solid #e3e6f0;">
-                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center"
-                            style="background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%);">
-                            <h5 class="mb-0 text-white d-flex align-items-center gap-2">
-                                <i class="bx bx-table"></i>
-                                Table List
-                            </h5>
-                            <div class="d-flex align-items-center gap-2">
-                                <span class="badge bg-light text-dark fw-normal" style="font-size: 0.9rem;">
-                                    Total: {{LoadData.length}} Tables
-                                </span>
+
+            <!-- Tombol untuk membuka daftar meja (muncul di layar < 992px, yaitu mobile dan tablet) -->
+            <div class="d-lg-none mb-3">
+                <button class="btn kasir-mobile-table-toggle w-100" type="button" data-bs-toggle="offcanvas"
+                    data-bs-target="#offcanvasTables">
+                    <span class="d-flex align-items-center justify-content-between gap-3">
+                        <span class="d-inline-flex align-items-center gap-2">
+                            <i class="bx bx-table"></i>
+                            <span>Daftar Meja</span>
+                        </span>
+                        <span class="kasir-mobile-table-count">{{LoadData.length}}</span>
+                    </span>
+                </button>
+            </div>
+
+            <!-- Offcanvas untuk daftar meja di mobile & tablet -->
+            <div class="offcanvas offcanvas-start kasir-table-offcanvas" tabindex="-1" id="offcanvasTables"
+                aria-labelledby="offcanvasTablesLabel">
+                <div class="offcanvas-header kasir-offcanvas-header">
+                    <div>
+                        <h5 class="offcanvas-title mb-1" id="offcanvasTablesLabel">Daftar Meja</h5>
+                        <small>Pilih meja kosong untuk booking baru atau buka order yang aktif.</small>
+                    </div>
+                    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <div class="kasir-table-summary mb-3">
+                        <span class="kasir-status-pill kasir-status-pill-available">
+                            <i class="bx bx-check-circle"></i>
+                            Available {{(LoadData | filter:{status:'0'}).length}}
+                        </span>
+                        <span class="kasir-status-pill kasir-status-pill-occupied">
+                            <i class="bx bx-receipt"></i>
+                            Occupied {{(LoadData | filter:{status:'1'}).length}}
+                        </span>
+                    </div>
+                    <div class="row g-3">
+                        <div class="col-6 col-sm-4" ng-repeat="dt in LoadData" ng-if="LoadData.length > 0">
+                            <!-- Meja kosong -->
+                            <div class="card kasir-table-card bg-secondary" id="bg_mobile_{{$index}}"
+                                ng-if="dt.status === '0'"
+                                ng-click="SelectedMeja('bg_mobile_' + $index, dt); hideOffcanvas()">
+                                <div class="card-body">
+                                    <div class="kasir-table-card-head">
+                                        <span class="kasir-table-state">
+                                            <i class="bx bx-plus-circle"></i> Ready
+                                        </span>
+                                        <i class="bx bx-chair kasir-table-icon"></i>
+                                    </div>
+                                    <h3 class="kasir-table-number">{{dt.no_meja}}</h3>
+                                    <p class="kasir-table-caption">Tap to create a new booking</p>
+                                    <span class="kasir-table-badge">Available</span>
+                                </div>
+                            </div>
+                            <!-- Meja terisi -->
+                            <div class="card kasir-table-card bg-primary" ng-if="dt.status === '1'"
+                                ng-click="ShowListBelanja(dt); hideOffcanvas()">
+                                <div class="card-body">
+                                    <div class="kasir-table-card-head">
+                                        <span class="kasir-table-state">
+                                            <i class="bx bx-receipt"></i> Active
+                                        </span>
+                                        <i class="bx bx-food-menu kasir-table-icon"></i>
+                                    </div>
+                                    <h3 class="kasir-table-number">{{dt.no_meja}}</h3>
+                                    <p class="kasir-table-caption">Open active order and payment</p>
+                                    <span class="kasir-table-badge">Occupied</span>
+                                </div>
                             </div>
                         </div>
-                        <div class="card-body" style="background-color: #f8f9fc; min-height: 200px;">
-                            <div class="row">
-                                <div class="col-md-4" ng-repeat="dt in LoadData" ng-if="LoadData.length > 0">
-                                    <div class="card bg-secondary" id="bg_{{$index}}" ng-if="dt.status === '0'"
-                                        ng-click="SelectedMeja('bg_' + $index, dt)">
+                        <div class="col-12" ng-if="LoadData.length === 0">
+                            <div class="kasir-empty-state kasir-empty-state-compact">
+                                <i class="bx bx-grid-alt"></i>
+                                <h6 class="mb-1">Tidak ada meja aktif</h6>
+                                <small>Data meja belum tersedia untuk ditampilkan.</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Grid utama: untuk layar lg ke atas, tampilkan sidebar + konten -->
+            <div class="row g-4">
+                <!-- Sidebar daftar meja untuk desktop (≥992px) -->
+                <div class="col-lg-3 d-none d-lg-block">
+                    <div class="card radius-10 w-100 kasir-table-sidebar">
+                        <div class="card-header kasir-table-sidebar-header">
+                            <div>
+                                <span class="kasir-shell-eyebrow">Dining Floor</span>
+                                <h5 class="mb-1 text-white d-flex align-items-center gap-2">
+                                    <i class="bx bx-table"></i> Table List
+                                </h5>
+                                <p class="mb-0 kasir-shell-subtitle">Monitor meja kosong dan order yang sedang berjalan.</p>
+                            </div>
+                            <span class="kasir-header-count">{{LoadData.length}}</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="kasir-table-summary mb-3">
+                                <span class="kasir-status-pill kasir-status-pill-available">
+                                    <i class="bx bx-check-circle"></i>
+                                    Available {{(LoadData | filter:{status:'0'}).length}}
+                                </span>
+                                <span class="kasir-status-pill kasir-status-pill-occupied">
+                                    <i class="bx bx-receipt"></i>
+                                    Occupied {{(LoadData | filter:{status:'1'}).length}}
+                                </span>
+                            </div>
+                            <div class="row g-3">
+                                <div class="col-6" ng-repeat="dt in LoadData" ng-if="LoadData.length > 0">
+                                    <!-- Meja kosong -->
+                                    <div class="card kasir-table-card bg-secondary" id="bg_desktop_{{$index}}"
+                                        ng-if="dt.status === '0'"
+                                        ng-click="SelectedMeja('bg_desktop_' + $index, dt)">
                                         <div class="card-body">
-                                            <h2 class="card-title text-white">{{dt.no_meja}}
-                                            </h2>
-                                            <p class="card-text text-white">{{dt.nama_meja}}</p>
+                                            <div class="kasir-table-card-head">
+                                                <span class="kasir-table-state">
+                                                    <i class="bx bx-plus-circle"></i> Ready
+                                                </span>
+                                                <i class="bx bx-chair kasir-table-icon"></i>
+                                            </div>
+                                            <h3 class="kasir-table-number">{{dt.no_meja}}</h3>
+                                            <p class="kasir-table-caption">Create a new dine-in booking</p>
+                                            <span class="kasir-table-badge">Available</span>
                                         </div>
                                     </div>
-                                    <div class="card bg-primary" ng-if="dt.status === '1'"
+                                    <!-- Meja terisi -->
+                                    <div class="card kasir-table-card bg-primary" ng-if="dt.status === '1'"
                                         ng-click="ShowListBelanja(dt)">
                                         <div class="card-body">
-                                            <h2 class="card-title text-white">{{dt.no_meja}}</h2>
-                                            <p class="card-text text-white">{{dt.nama_meja}}</p>
-                                            <!-- <p class="card-text text-white">{{dt.no_order}}</p> -->
+                                            <div class="kasir-table-card-head">
+                                                <span class="kasir-table-state">
+                                                    <i class="bx bx-receipt"></i> Active
+                                                </span>
+                                                <i class="bx bx-food-menu kasir-table-icon"></i>
+                                            </div>
+                                            <h3 class="kasir-table-number">{{dt.no_meja}}</h3>
+                                            <p class="kasir-table-caption">Review active order and payment</p>
+                                            <span class="kasir-table-badge">Occupied</span>
                                         </div>
+                                    </div>
+                                </div>
+                                <div class="col-12" ng-if="LoadData.length === 0">
+                                    <div class="kasir-empty-state kasir-empty-state-compact">
+                                        <i class="bx bx-grid-alt"></i>
+                                        <h6 class="mb-1">Tidak ada meja aktif</h6>
+                                        <small>Daftar meja akan muncul di panel ini.</small>
                                     </div>
                                 </div>
                             </div>
@@ -41,102 +154,117 @@
                     </div>
                 </div>
 
-
-
-                <!-- Order -->
-                <div class="col-12 col-sm-7 col-md-7 col-lg-7 col-xl7 d-flex">
-
-                    <div class="card radius-10 overflow-hidden w-100 shadow-sm" style="border: 1px solid #e3e6f0;">
-                        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center"
-                            style="background: linear-gradient(135deg, #2c3e50 0%, #4a6491 100%) !important; border-bottom: 0;">
-                            <h5 class="mb-0 text-white d-flex align-items-center gap-2" style="font-weight: 600;">
-                                <i class="bx bx-slider-alt" style="font-size: 1.3rem;"></i>
-                                Operation Dashboard
-                            </h5>
-                            <button class="btn btn-light btn-md" id="btn_refresh" ng-click="BackToHome()"
-                                style="border-radius: 6px; padding: 8px 16px; font-weight: 500; transition: all 0.3s;">
-                                <i class="bx bx-home"></i> Dashboard
-                            </button>
+                <!-- Konten Utama (Operasional) - lebar penuh di mobile/tablet, 9 kolom di desktop -->
+                <div class="col-12 col-lg-9">
+                    <div class="card radius-10 overflow-hidden w-100 shadow-sm kasir-shell-card">
+                        <div class="card-header kasir-shell-header d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="kasir-shell-eyebrow">Dine In Cashier</span>
+                                <h5 class="mb-1 text-white d-flex align-items-center gap-2 fw-semibold">
+                                    <i class="bx bx-slider-alt fs-5"></i> Operation Dashboard
+                                </h5>
+                                <p class="mb-0 kasir-shell-subtitle">
+                                    Pilih meja, buat booking, lalu lanjutkan ke order dan pembayaran dari satu layar.
+                                </p>
+                            </div>
+                            <div class="d-flex gap-2">
+                                <button class="btn kasir-dashboard-btn" ng-click="BackToHome()">
+                                    <i class="bx bx-home me-1"></i> Dashboard
+                                </button>
+                            </div>
                         </div>
-                        <div class="card-body" style="background-color: #f8f9fc;">
+                        <div class="card-body kasir-shell-body">
                             <!-- Transactions Table -->
                             <div class="row" id="table_row_order" style="display: block;">
-                                <div class="col-12 col-md-12 col-lg-12 col-xl-12">
-                                    <div class="card shadow-sm border-0 mb-4">
-                                        <div class="card-header bg-white border-0 py-3">
-                                            <h6 class="mb-0 text-dark" style="font-weight: 600;">
-                                                <i class="bx bx-receipt me-2"></i>Recent Transactions
-                                            </h6>
+                                <div class="col-12">
+                                    <div class="card kasir-section-card mb-4">
+                                        <div class="card-header kasir-section-header">
+
+                                            <div>
+                                                <h6 class="mb-1 text-dark fw-semibold">
+                                                    <i class="bx bx-receipt me-2"></i>Recent Transactions
+                                                </h6>
+                                                <small>Riwayat transaksi dine in yang selesai hari ini.</small>
+                                            </div>
+
+                                            <div class="kasir-toolbar-actions">
+                                                <button class="btn kasir-toolbar-btn kasir-toolbar-btn-dark" type="button"
+                                                    ng-click="OpenCashDrawerPenarikan()">
+                                                    <i class='bx bx-box me-1'></i>
+                                                    Open Drawer
+                                                </button>
+                                                <button ng-if="saldo_awal === '0'"
+                                                    class="btn kasir-toolbar-btn kasir-toolbar-btn-warning"
+                                                    ng-click="SaldoAwalEntry()">
+                                                    <i class="bx bx-wallet me-1"></i> Saldo Awal
+                                                </button>
+
+                                                <button class="btn kasir-toolbar-btn kasir-toolbar-btn-danger"
+                                                    ng-click="TarikUang()">
+                                                    <i class="bx bx-money me-1"></i> Tarik Uang
+                                                </button>
+                                            </div>
+
                                         </div>
                                         <div class="card-body p-0">
-                                            <div class="table-responsive">
+                                            <div class="table-responsive kasir-transaction-wrap">
                                                 <table datatable="ng" dt-options="vm.dtOptions"
-                                                    class="table table-hover mb-0" style="width:100%">
-                                                    <thead class="text-white text-center"
-                                                        style="background: linear-gradient(90deg, #4e54c8, #8f94fb);">
+                                                    class="table table-hover mb-0 kasir-transaction-table"
+                                                    style="width:100%">
+                                                    <thead>
                                                         <tr>
-                                                            <th style="width: 5%; padding: 12px 10px;">#</th>
-                                                            <th style="width: 30%; padding: 12px 10px;">Transaction
-                                                            </th>
-                                                            <th style="width: 15%; padding: 12px 10px;">Metode</th>
-                                                            <th style="width: 20%; padding: 12px 10px;">Tanggal</th>
-                                                            <th style="width: 15%; padding: 12px 10px;">Status</th>
-                                                            <th style="width: 15%; padding: 12px 10px;">Action</th>
+                                                            <th>#</th>
+                                                            <th>Transaction</th>
+                                                            <th class="d-none d-sm-table-cell">Metode</th>
+                                                            <th class="d-none d-sm-table-cell">Tanggal</th>
+                                                            <th>Status</th>
+                                                            <th>Action</th>
                                                         </tr>
                                                     </thead>
                                                     <tbody>
-                                                        <tr ng-repeat="dt in LoadDataTransaksi"
-                                                            ng-if="LoadDataTransaksi.length > 0"
-                                                            style="cursor: pointer; transition: background-color 0.2s;"
-                                                            onmouseover="this.style.backgroundColor='#f5f7fb'"
-                                                            onmouseout="this.style.backgroundColor=''">
-                                                            <td class="text-center"
-                                                                style="padding: 12px 10px; font-weight: 500;">
+                                                        <tr ng-repeat="dt in LoadDataRowTransaksi"
+                                                            ng-if="LoadDataRowTransaksi.length > 0"
+                                                            class="kasir-transaction-row">
+                                                            <td class="text-center">
                                                                 {{$index + 1}}</td>
-                                                            <td style="padding: 12px 10px;">
-                                                                <div style="font-weight: 600; color: #2c3e50;">
+                                                            <td>
+                                                                <div class="kasir-transaction-title">
                                                                     {{dt.no_transaksi}}
-                                                                    <span ng-if="dt.no_split" class="badge"
-                                                                        style="background: #e3f2fd; color: #d25a19ff; font-weight: 500; padding: 4px 10px;">
+                                                                    <span ng-if="dt.no_split" class="badge kasir-split-badge">
                                                                         {{dt.no_split}}
                                                                     </span>
                                                                 </div>
-                                                                <div style="font-size: 0.85rem; color: #6c757d;">
+                                                                <div class="kasir-transaction-meta">
                                                                     Order: {{dt.no_order}} • Table: {{dt.no_meja}}
                                                                 </div>
                                                             </td>
-                                                            <td style="padding: 12px 10px;">
-                                                                <span class="badge"
-                                                                    style="background: #e3f2fd; color: #1976d2; font-weight: 500; padding: 4px 10px;">
+                                                            <td class="d-none d-sm-table-cell">
+                                                                <span class="badge kasir-soft-badge kasir-soft-badge-info">
                                                                     {{dt.metode}}
                                                                 </span>
                                                             </td>
-                                                            <td style="padding: 12px 10px; color: #5a5c69;">
-                                                                <i class="bx bx-calendar me-1"></i>
-                                                                {{dt.created_at}}
+                                                            <td class="d-none d-sm-table-cell kasir-transaction-date">
+                                                                <i class="bx bx-calendar me-1"></i> {{dt.created_at}}
                                                             </td>
-                                                            <td style="padding: 12px 10px;">
-                                                                <span class="badge rounded-pill"
-                                                                    style="background: #d4edda; color: #155724; padding: 5px 12px; font-weight: 500;">
+                                                            <td>
+                                                                <span class="badge rounded-pill kasir-soft-badge kasir-soft-badge-success">
                                                                     <i class="bx bx-check-circle me-1"></i> Complete
                                                                 </span>
                                                             </td>
-                                                            <td class="text-center" style="padding: 12px 10px;">
-                                                                <button class="btn btn-sm"
-                                                                    ng-click="ShowDetailTransaksi(dt)"
-                                                                    style="background: #4e54c8; color: white; border-radius: 5px; padding: 6px 12px; transition: all 0.3s;"
-                                                                    onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 8px rgba(78, 84, 200, 0.3)'"
-                                                                    onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
+                                                            <td class="text-center">
+                                                                <button class="btn btn-sm kasir-table-action-btn"
+                                                                    ng-click="ShowDetailTransaksi(dt)">
                                                                     <i class="bx bx-printer"></i> Print
                                                                 </button>
                                                             </td>
                                                         </tr>
-                                                        <tr ng-if="LoadDataTransaksi.length === 0">
-                                                            <td colspan="6" class="text-center"
-                                                                style="padding: 40px 20px; color: #6c757d;">
-                                                                <i class="bx bx-package"
-                                                                    style="font-size: 3rem; color: #dee2e6; margin-bottom: 10px; display: block;"></i>
-                                                                No transactions available
+                                                        <tr ng-if="LoadDataRowTransaksi.length === 0">
+                                                            <td colspan="6" class="text-center">
+                                                                <div class="kasir-empty-state">
+                                                                    <i class="bx bx-package"></i>
+                                                                    <h6 class="mb-1">No transactions available</h6>
+                                                                    <small>Transaksi terbaru akan tampil otomatis di sini.</small>
+                                                                </div>
                                                             </td>
                                                         </tr>
                                                     </tbody>
@@ -147,19 +275,13 @@
                                 </div>
                             </div>
 
-                            <!-- Action Buttons -->
+                            <!-- Action Buttons (New Booking) -->
                             <div class="row mb-4">
                                 <div class="col-md-12">
                                     <div class="input-group button-group">
-                                        <button class="btn btn-md w-100" id="btn_booking" ng-click="Create_Booking()"
-                                            style="display: none;
-                        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                        color: white; border: none; border-radius: 8px; padding: 12px;
-                        font-weight: 600; transition: all 0.3s;"
-                                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 12px rgba(102, 126, 234, 0.4)'"
-                                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                                            <i class="bx bx-plus-circle me-2"></i>
-                                            New Booking
+                                        <button class="btn btn-md w-100 kasir-primary-cta" id="btn_booking"
+                                            ng-click="Create_Booking()" style="display: none;">
+                                            <i class="bx bx-plus-circle me-2"></i> New Booking
                                         </button>
                                     </div>
                                 </div>
@@ -167,29 +289,34 @@
 
                             <!-- Booking Info -->
                             <div id="row_no_meja" style="display: none;">
-                                <div class="row pt-3">
+                                <div class="kasir-subsection-heading pt-2">
+                                    <div>
+                                        <h6 class="mb-1">Active Booking</h6>
+                                        <small>Nomor booking dan meja yang saat ini sedang dipilih.</small>
+                                    </div>
+                                </div>
+                                <div class="row g-3 pt-1">
                                     <div class="col-md-6">
-                                        <div class="card border-0 shadow-sm h-100" style="background: white;">
+                                        <div class="card kasir-info-card kasir-info-card-primary h-100">
                                             <div class="card-body">
-                                                <div class="d-flex align-items-center mb-3">
-                                                    <div class="bg-primary rounded-circle p-2 me-3">
-                                                        <i class="bx bx-calendar-check text-white"></i>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="kasir-info-icon">
+                                                        <i class="bx bx-calendar-check"></i>
                                                     </div>
                                                     <div>
                                                         <h6 class="mb-0 text-muted">Booking Number</h6>
-                                                        <h5 class="mb-0 text-dark fw-bold mt-1" id="no_booking">-
-                                                        </h5>
+                                                        <h5 class="mb-0 text-dark fw-bold mt-1" id="no_booking">-</h5>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
                                     <div class="col-md-6">
-                                        <div class="card border-0 shadow-sm h-100" style="background: white;">
+                                        <div class="card kasir-info-card kasir-info-card-success h-100">
                                             <div class="card-body">
-                                                <div class="d-flex align-items-center mb-3">
-                                                    <div class="bg-success rounded-circle p-2 me-3">
-                                                        <i class="bx bx-table text-white"></i>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="kasir-info-icon">
+                                                        <i class="bx bx-table"></i>
                                                     </div>
                                                     <div>
                                                         <h6 class="mb-0 text-muted">Table Number</h6>
@@ -205,31 +332,27 @@
                             <!-- Operation Buttons -->
                             <div class="row mb-4">
                                 <div class="col-md-12">
-                                    <div class="d-flex gap-3">
-                                        <button class="btn btn-md flex-fill" id="btn_pindah_meja" style="display: none; background: #ff6b6b; color: white; border: none;
-                        border-radius: 8px; padding: 15px; font-weight: 600; transition: all 0.3s;"
-                                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(255, 107, 107, 0.3)'"
-                                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+                                    <div class="kasir-ops-grid kasir-ops-grid-main">
+                                        <button class="btn kasir-op-button kasir-op-button-move" id="btn_pindah_meja"
+                                            style="display: none;"
                                             ng-click="PindahMeja()">
-                                            <i class="bx bx-move me-2"></i>
-                                            Move Table
+                                            <i class="bx bx-move"></i>
+                                            <span class="kasir-button-title">Move Table</span>
+                                            <small>Pindahkan order ke meja lain</small>
                                         </button>
-                                        <button class="btn btn-md flex-fill" id="btn_gabung_bill" style="display: none; background: #ffa502; color: white; border: none;
-                        border-radius: 8px; padding: 15px; font-weight: 600; transition: all 0.3s;"
-                                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(255, 165, 2, 0.3)'"
-                                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+                                        <button class="btn kasir-op-button kasir-op-button-merge" id="btn_gabung_bill"
+                                            style="display: none;"
                                             ng-click="GabungBill()">
-                                            <i class="bx bx-merge me-2"></i>
-                                            Merge Bill
+                                            <i class="bx bx-merge"></i>
+                                            <span class="kasir-button-title">Merge Bill</span>
+                                            <small>Gabungkan tagihan yang terkait</small>
                                         </button>
-                                        <button class="btn btn-md flex-fill" id="btn_tambah_pesanan" style="display: none; background: linear-gradient(135deg, #36d1dc 0%, #5b86e5 100%);
-                        color: white; border: none; border-radius: 8px; padding: 15px; font-weight: 600;
-                        transition: all 0.3s; flex: 2;"
-                                            onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 15px rgba(91, 134, 229, 0.4)'"
-                                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'"
+                                        <button class="btn kasir-op-button kasir-op-button-add" id="btn_tambah_pesanan"
+                                            style="display: none;"
                                             ng-click="TambahPesanan()">
-                                            <i class="bx bx-plus-circle me-2"></i>
-                                            Add Order Items
+                                            <i class="bx bx-plus-circle"></i>
+                                            <span class="kasir-button-title">Add Order Items</span>
+                                            <small>Tambahkan menu ke order aktif</small>
                                         </button>
                                     </div>
                                 </div>
@@ -237,39 +360,31 @@
 
                             <!-- Order Count -->
                             <div class="pt-2" id="row_count_pesanan" style="display: none;">
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <div class="card border-0 shadow-sm"
-                                            style="background: linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%);">
-                                            <div class="card-body text-center p-4">
-                                                <div class="d-flex align-items-center justify-content-center mb-3">
-                                                    <div class="bg-white rounded-circle p-3 me-3">
-                                                        <i class="bx bx-food-menu text-danger"
-                                                            style="font-size: 1.5rem;"></i>
-                                                    </div>
-                                                    <div>
-                                                        <h5 class="text-dark mb-0">FOOD ITEMS</h5>
-                                                        <h2 class="text-dark fw-bold mt-2 mb-0"
-                                                            id="lb_makanan_list_pesanan">0</h2>
-                                                    </div>
+                                <div class="row g-3">
+                                    <div class="col-12 col-md-6">
+                                        <div class="card kasir-counter-card kasir-counter-card-food h-100">
+                                            <div class="card-body">
+                                                <div class="kasir-counter-icon">
+                                                    <i class="bx bx-food-menu"></i>
+                                                </div>
+                                                <div class="kasir-counter-copy">
+                                                    <span class="kasir-counter-label">FOOD</span>
+                                                    <h4 class="mb-0" id="lb_makanan_list_pesanan">0</h4>
+                                                    <small class="kasir-counter-note">Total item makanan aktif</small>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="col-md-6 mb-3">
-                                        <div class="card border-0 shadow-sm"
-                                            style="background: linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%);">
-                                            <div class="card-body text-center p-4">
-                                                <div class="d-flex align-items-center justify-content-center mb-3">
-                                                    <div class="bg-white rounded-circle p-3 me-3">
-                                                        <i class="bx bx-drink text-primary"
-                                                            style="font-size: 1.5rem;"></i>
-                                                    </div>
-                                                    <div>
-                                                        <h5 class="text-dark mb-0">DRINK ITEMS</h5>
-                                                        <h2 class="text-dark fw-bold mt-2 mb-0"
-                                                            id="lb_minuman_list_pesanan">0</h2>
-                                                    </div>
+                                    <div class="col-12 col-md-6">
+                                        <div class="card kasir-counter-card kasir-counter-card-drink h-100">
+                                            <div class="card-body">
+                                                <div class="kasir-counter-icon">
+                                                    <i class="bx bx-drink"></i>
+                                                </div>
+                                                <div class="kasir-counter-copy">
+                                                    <span class="kasir-counter-label">DRINK</span>
+                                                    <h4 class="mb-0" id="lb_minuman_list_pesanan">0</h4>
+                                                    <small class="kasir-counter-note">Total item minuman aktif</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -279,2185 +394,273 @@
 
                             <!-- Order Details -->
                             <div id="row_list_pesanan" style="display: none;">
-                                <div class="card shadow-sm border-0 mb-4">
-                                    <div class="card-header bg-white border-0 py-3">
-                                        <h5 class="mb-0 text-dark d-flex align-items-center" style="font-weight: 600;">
-                                            <i class="bx bx-detail me-2"></i>Order Details
-                                        </h5>
+                                <div class="card kasir-order-shell mb-4">
+                                    <div class="card-header kasir-section-header">
+                                        <div>
+                                            <h5 class="mb-1 text-dark d-flex align-items-center">
+                                                <i class="bx bx-detail me-2"></i>Order Details
+                                            </h5>
+                                            <small>Kelola item dine in dan hitung pembayaran sebelum checkout.</small>
+                                        </div>
+                                        <span class="kasir-count-badge">
+                                            {{(LoadDataPesananList && LoadDataPesananList.length) || 0}}
+                                        </span>
                                     </div>
                                     <div class="card-body">
-                                        <!-- Order Information -->
-                                        <div class="row mb-4">
-                                            <div class="col-md-4">
-                                                <div class="d-flex align-items-center p-3 rounded"
-                                                    style="background: #f8f9fa;">
-                                                    <i class="bx bx-table text-primary me-3"
-                                                        style="font-size: 1.5rem;"></i>
-                                                    <div>
-                                                        <small class="text-muted d-block">Table No</small>
-                                                        <strong id="lb_tambahan_no_meja" class="text-dark">-</strong>
+                                        <div class="row g-3 mb-4">
+                                            <div class="col-12 col-md-4">
+                                                <div class="card kasir-detail-info-card h-100">
+                                                    <div class="card-body">
+                                                        <div class="kasir-detail-icon kasir-detail-icon-blue">
+                                                            <i class="bx bx-table"></i>
+                                                        </div>
+                                                        <div>
+                                                            <small class="kasir-detail-label">Table No</small>
+                                                            <strong id="lb_tambahan_no_meja" class="kasir-detail-value">-</strong>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
-                                                <div class="d-flex align-items-center p-3 rounded"
-                                                    style="background: #f8f9fa;">
-                                                    <i class="bx bx-receipt text-success me-3"
-                                                        style="font-size: 1.5rem;"></i>
-                                                    <div>
-                                                        <small class="text-muted d-block">Order No</small>
-                                                        <strong id="lb_tambahan_no_order" class="text-dark">-</strong>
+                                            <div class="col-12 col-md-4">
+                                                <div class="card kasir-detail-info-card h-100">
+                                                    <div class="card-body">
+                                                        <div class="kasir-detail-icon kasir-detail-icon-green">
+                                                            <i class="bx bx-receipt"></i>
+                                                        </div>
+                                                        <div>
+                                                            <small class="kasir-detail-label">Order No</small>
+                                                            <strong id="lb_tambahan_no_order" class="kasir-detail-value">-</strong>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
-                                                <div class="d-flex align-items-center p-3 rounded"
-                                                    style="background: #f8f9fa;">
-                                                    <i class="bx bx-calendar text-warning me-3"
-                                                        style="font-size: 1.5rem;"></i>
-                                                    <div>
-                                                        <small class="text-muted d-block">Created At</small>
-                                                        <strong id="lb_tambahan_created_at" class="text-dark">-</strong>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Order Items Table -->
-                                        <div class="row pt-2">
-                                            <div class="table-responsive">
-                                                <table class="table table-hover mb-0" style="width:110%"
-                                                    id="tb_pesanan_list">
-                                                    <thead class="text-white"
-                                                        style="background: linear-gradient(90deg, #2c3e50, #4a6491);">
-                                                        <tr>
-                                                            <th style="width: 2%; padding: 12px;">#</th>
-                                                            <th style="width: 5%; padding: 12px;">Category</th>
-                                                            <th style="width: 15%; padding: 12px;">Item</th>
-                                                            <th style="width: 10%; padding: 12px;">Price</th>
-                                                            <th style="width: 10%; padding: 12px;">Qty</th>
-                                                            <th style="width: 10%; padding: 12px;">Subtotal</th>
-                                                            <th style="width: 10%; padding: 12px;">Type</th>
-                                                            <th style="width: 10%; padding: 12px;">Discount Amt</th>
-                                                            <th style="width: 8%; padding: 12px;">Disc. %</th>
-                                                            <th style="width: 5%; padding: 12px;">Action</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody id="tb_pesanan_list_body_menu">
-                                                        <tr ng-repeat="dt in LoadDataPesananList"
-                                                            ng-if="LoadDataPesananList.length > 0"
-                                                            style="transition: all 0.2s;"
-                                                            onmouseover="this.style.backgroundColor='#f8f9fa'">
-                                                            <td style="padding: 12px; font-weight: 500;">
-                                                                {{$index + 1}}
-                                                            </td>
-                                                            <td style="padding: 12px;">
-                                                                <span class="badge rounded-pill"
-                                                                    style="background: #e8f4fd; color: #0369a1; padding: 4px 10px;">
-                                                                    {{dt.kategori}}
-                                                                </span>
-                                                            </td>
-                                                            <td style="padding: 12px; font-weight: 500;">
-                                                                {{ dt.nama }}
-                                                            </td>
-                                                            <td style="padding: 12px;">
-                                                                {{ dt.harga | currency:"Rp. ":0 }}</td>
-                                                            <td style="padding: 12px;">
-                                                                <span class="badge"
-                                                                    style="background: #f0f9ff; color: #0369a1; padding: 6px 12px; font-weight: 600;">
-                                                                    {{ dt.qty }}
-                                                                </span>
-                                                            </td>
-                                                            <td
-                                                                style="padding: 12px; font-weight: 600; color: #2c3e50;">
-                                                                {{ dt.subtotal | currency:"Rp. ":0 }}
-                                                            </td>
-                                                            <td style="padding: 12px;">
-                                                                <span class="badge"
-                                                                    style="background: #f0fdf4; color: #166534; padding: 4px 10px;">
-                                                                    {{dt.jenis}}
-                                                                </span>
-                                                            </td>
-                                                            <td style="padding: 12px; color: #dc2626;">
-                                                                {{ dt.potongan | currency:"Rp. ":0 }}</td>
-                                                            <td style="padding: 12px;">
-                                                                <input type="text" class="form-control text-center"
-                                                                    ng-model="dt.discount"
-                                                                    ng-change="CalculateRowSubtotal(dt)"
-                                                                    style="border: 1px solid #d1d5db; border-radius: 6px; padding: 6px;">
-                                                            </td>
-                                                            <td style="padding: 12px;">
-                                                                <button class="btn btn-sm"
-                                                                    ng-click="ShowDetailPesanan(dt)"
-                                                                    style="background: #4f46e5; color: white; border-radius: 5px; padding: 6px 10px;">
-                                                                    <i class="bx bx-show"></i>
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                        <tr ng-if="LoadDataPesananList.length === 0">
-                                                            <td colspan="10" class="text-center"
-                                                                style="padding: 40px 20px; color: #6c757d;">
-                                                                <i class="bx bx-cart"
-                                                                    style="font-size: 3rem; color: #dee2e6; margin-bottom: 10px; display: block;"></i>
-                                                                No order items available
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-
-                                        <!-- Calculation Card -->
-                                        <div class="card mt-4 border-0 shadow-sm" style="background: white;">
-                                            <div class="card-header bg-white border-0 pb-0">
-                                                <h6 class="mb-0 text-dark" style="font-weight: 600;">
-                                                    <i class="bx bx-calculator me-2"></i>Payment Calculation
-                                                </h6>
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="row mb-3">
-                                                    <div class="col-md-8 text-end fw-bold" style="color: #4b5563;">
-                                                        Total Quantity
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <input type="text" class="form-control text-end fw-bold"
-                                                            id="qty-total" value="0" readonly
-                                                            style="background: #f9fafb; border: 1px solid #e5e7eb; color: #111827;">
-                                                    </div>
-                                                </div>
-
-                                                <div class="row mb-3">
-                                                    <div class="col-md-8 text-end fw-bold" style="color: #4b5563;">
-                                                        Subtotal
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <input type="text" class="form-control text-end fw-bold"
-                                                            ng-model="amount_total" id="amount-total" readonly
-                                                            style="background: #f0f9ff; border: 1px solid #bae6fd; color: #0369a1;">
-                                                    </div>
-                                                </div>
-
-                                                <div class="row mb-3">
-                                                    <div class="col-md-8 text-end fw-bold" style="color: #4b5563;">
-                                                        Discount (%)
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <input type="text" class="form-control text-end mb-2"
-                                                            name="discount-nominal" id="discount-nominal"
-                                                            onkeyup="angular.element(this).scope().CalculateTotal()"
-                                                            placeholder="e.g. 10" style="border: 1px solid #d1d5db;">
-                                                        <input type="text" class="form-control text-end"
-                                                            name="discount-value" id="discount-value"
-                                                            style="background: #fef2f2; border: 1px solid #fecaca; color: #dc2626;"
-                                                            value="0" readonly>
-                                                    </div>
-                                                </div>
-
-                                                <div class="row mb-3 align-items-center">
-                                                    <div class="col-md-8 text-end fw-bold" style="color: #4b5563;">
-                                                        Tax (PPN)
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <select class="form-control" id="ppn-select"
-                                                            ng-model="ppn_percent"
-                                                            onchange="angular.element(this).scope().CalculateTotal()"
-                                                            style="border: 1px solid #d1d5db;">
-                                                            <option value="">Select Tax</option>
-                                                            <option value="10">10%</option>
-                                                            <option value="11">11%</option>
-                                                        </select>
-                                                    </div>
-                                                </div>
-
-                                                <div class="row mb-4">
-                                                    <div class="col-md-8 text-end fw-bold" style="color: #4b5563;">
-                                                        Tax Amount
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <input type="text" class="form-control text-end" id="amount-ppn"
-                                                            ng-model="ppn_amount" readonly
-                                                            style="background: #fef3c7; border: 1px solid #fde68a; color: #92400e;">
-                                                    </div>
-                                                </div>
-
-                                                <hr style="border-color: #e5e7eb;">
-
-                                                <div class="row">
-                                                    <div class="col-md-8 text-end fs-5 fw-bold" style="color: #2c3e50;">
-                                                        GRAND TOTAL
-                                                    </div>
-                                                    <div class="col-md-4">
-                                                        <input type="text" class="form-control text-end fw-bold fs-5"
-                                                            id="grand-total" ng-model="grand_total" readonly style="background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%);
-                                                  border: 2px solid #86efac; color: #166534;">
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <!-- Payment Action Buttons -->
-                                        <div class="row pt-4">
-                                            <div class="col-md-12">
-                                                <div class="row g-3" id="payment-action-buttons">
-                                                    <!-- Print Bill -->
-                                                    <div class="col-12 col-sm-6 col-lg-3">
-                                                        <button
-                                                            class="btn btn-success btn-md w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3"
-                                                            ng-click="CetakBill()" style="border-radius: 10px; border: none;
-                           background: linear-gradient(135deg, #67f2f7 0%, #128fc9 100%);
-                           transition: all 0.3s; min-height: 100px;"
-                                                            onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 16px rgba(16, 185, 129, 0.3)'"
-                                                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                                                            <i class="bx bx-printer mb-2"
-                                                                style="font-size: clamp(1.5rem, 4vw, 1.8rem);"></i>
-                                                            <span class="text-center"
-                                                                style="font-size: clamp(0.8rem, 2.5vw, 0.9rem); font-weight: 600;">
-                                                                Print Bill
-                                                            </span>
-                                                        </button>
-                                                    </div>
-
-                                                    <!-- Split Bill -->
-                                                    <div class="col-12 col-sm-6 col-lg-3">
-                                                        <button
-                                                            class="btn btn-primary btn-md w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3"
-                                                            ng-click="SplitBill()" style="border-radius: 10px; border: none;
-                           background: linear-gradient(135deg, #8aa5d8 0%, #12548a 100%);
-                           transition: all 0.3s; min-height: 100px;"
-                                                            onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 16px rgba(59, 130, 246, 0.3)'"
-                                                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                                                            <i class="bx bx-credit-card mb-2"
-                                                                style="font-size: clamp(1.5rem, 4vw, 1.8rem);"></i>
-                                                            <span class="text-center"
-                                                                style="font-size: clamp(0.8rem, 2.5vw, 0.9rem); font-weight: 600;">
-                                                                Split Bill
-                                                            </span>
-                                                        </button>
-                                                    </div>
-
-                                                    <!-- Pay Later -->
-                                                    <div class="col-12 col-sm-6 col-lg-3">
-                                                        <button
-                                                            class="btn btn-info btn-md w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3"
-                                                            ng-click="pay_after_service()" style="border-radius: 10px; border: none;
-                           background: linear-gradient(135deg, #57f057 0%, #022c13 100%);
-                           transition: all 0.3s; min-height: 100px;"
-                                                            onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 16px rgba(6, 182, 212, 0.3)'"
-                                                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                                                            <i class="bx bx-time-five mb-2"
-                                                                style="font-size: clamp(1.5rem, 4vw, 1.8rem);"></i>
-                                                            <span class="text-center"
-                                                                style="font-size: clamp(0.8rem, 2.5vw, 0.9rem); font-weight: 600;">
-                                                                Pay Now
-                                                            </span>
-                                                        </button>
-                                                    </div>
-
-                                                    <!-- Pay Now -->
-                                                    <!-- <div class="col-12 col-sm-6 col-lg-3">
-                                                        <button
-                                                            class="btn btn-dark btn-md w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3"
-                                                            ng-click="pay_before_service()" style="border-radius: 10px; border: none;
-                           background: linear-gradient(135deg, #6b7280 0%, #374151 100%);
-                           transition: all 0.3s; min-height: 100px;"
-                                                            onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 16px rgba(107, 114, 128, 0.3)'"
-                                                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                                                            <i class="bx bx-money mb-2"
-                                                                style="font-size: clamp(1.5rem, 4vw, 1.8rem);"></i>
-                                                            <span class="text-center"
-                                                                style="font-size: clamp(0.8rem, 2.5vw, 0.9rem); font-weight: 600;">
-                                                                Pay Now
-                                                            </span>
-                                                        </button>
-                                                    </div> -->
-
-
-                                                    <!-- cancel Order -->
-                                                    <div class="col-12 col-sm-6 col-lg-3">
-                                                        <button
-                                                            class="btn btn-dark btn-md w-100 h-100 d-flex flex-column align-items-center justify-content-center p-3"
-                                                            ng-click="cancel_order()" style="border-radius: 10px; border: none;
-                           background: linear-gradient(135deg, #eb817e 0%, #da1818 100%);
-                           transition: all 0.3s; min-height: 100px;"
-                                                            onmouseover="this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 16px rgba(107, 114, 128, 0.3)'"
-                                                            onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">
-                                                            <i class="bx bx-money mb-2"
-                                                                style="font-size: clamp(1.5rem, 4vw, 1.8rem);"></i>
-                                                            <span class="text-center"
-                                                                style="font-size: clamp(0.8rem, 2.5vw, 0.9rem); font-weight: 600;">
-                                                                Cancel Order
-                                                            </span>
-                                                        </button>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-                <!-- End Order -->
-            </div>
-            <!-- End List Pesanan -->
-        </div>
-    </div>
-
-
-
-
-    <!-- Modal Booking Responsive -->
-    <div class="modal fade modal-right" id="my-modal-booking" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable modal-fullscreen modal-xl">
-            <div class="modal-content">
-                <div class="modal-header bg-dark">
-                    <h5 class="modal-title text-white">
-                        No.Pesanan <label id="lb_no_booking"></label> | No.Meja <label id="lb_no_meja"></label>
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-
-                <div class="modal-body">
-                    <div class="row g-3">
-                        <!-- LEFT PANEL: Menu -->
-                        <div class="col-12 col-lg-6">
-                            <div class="card bg-light h-100">
-                                <div class="card-body">
-                                    <!-- Search & Category -->
-                                    <div class="row g-3">
-                                        <div class="col-12 col-md-6">
-                                            <label>Pencarian Data :</label>
-                                            <input type="text" class="form-control" ng-model="keywordMenu"
-                                                ng-change="searchMenu()" placeholder="Masukkan Data . .">
-                                        </div>
-                                        <div class="col-12 col-md-6">
-                                            <label>Category :</label>
-                                            <select name="cmb_jenis_pesanan" id="cmb_jenis_pesanan" class="form-control"
-                                                ng-model="selectedCategory" ng-change="searchMenu()"
-                                                ng-options="c.kategori as c.kategori for c in categories">
-                                                <option value="">Pilih Category :</option>
-                                                <!-- default placeholder -->
-                                            </select>
-                                        </div>
-                                    </div>
-
-                                    <!-- Menu List -->
-                                    <div class="row g-2 mt-3 card-menu-scroll">
-                                        <div class="col-6 col-md-4 mb-3" ng-repeat="dt in filteredMenu">
-                                            <div class="card h-100">
-                                                <a href="javascript:;" ng-click="PilihMenu(dt)"
-                                                    class="list-group-item list-group-item-action p-2">
-                                                    <div class="d-flex w-100 justify-content-between">
-                                                        <h5 class="mb-1 text-black">{{dt.jenis}}</h5>
-                                                        <span class="badge bg-info text-white"
-                                                            ng-if="dt.status_food=='1'">Ready</span>
-                                                        <span class="badge bg-danger text-white"
-                                                            ng-if="dt.status_food=='0'">Close</span>
-                                                    </div>
-                                                    <div class="pt-2">
-                                                        <img ng-if="dt.jenis=='Makanan' && !dt.img"
-                                                            src="<?php echo base_url('public/assets/images/foodbar.png') ?>"
-                                                            alt=""
-                                                            style="width: 100%; height: 120px; object-fit: cover;">
-                                                        <img ng-if="dt.jenis=='Makanan' && dt.img"
-                                                            src="<?php echo base_url('public/upload/{{dt.img}}') ?>"
-                                                            alt=""
-                                                            style="width: 100%; height: 120px; object-fit: cover;">
-                                                        <img ng-if="dt.jenis=='Minuman' && !dt.img"
-                                                            src="<?php echo base_url('public/assets/images/refreshments.png') ?>"
-                                                            alt=""
-                                                            style="width: 100%; height: 120px; object-fit: cover;">
-                                                        <img ng-if="dt.jenis=='Minuman' && dt.img"
-                                                            src="<?php echo base_url('public/upload/{{dt.img}}') ?>"
-                                                            alt=""
-                                                            style="width: 100%; height: 120px; object-fit: cover;">
-                                                    </div>
-                                                    <div class="pt-2">
-                                                        <h6>{{dt.nama}}</h6>
-                                                        <h5>Rp.{{dt.harga}}</h5>
-                                                    </div>
-                                                </a>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- RIGHT PANEL: Daftar Pesanan -->
-                        <div class="col-12 col-lg-6">
-                            <div class="row g-3">
-                                <div class="col-12">
-                                    <div class="card h-100">
-                                        <div class="card-header bg-info">
-                                            <h5 class="text-white">List Daftar Pesanan :</h5>
-                                        </div>
-                                        <div class="card-body table-responsive"
-                                            style="max-height: 55vh; overflow-y: auto;">
-                                            <table class="table table-striped table-bordered" style="width:100%"
-                                                id="tb_pesanan">
-                                                <thead class="bg-dark text-white">
-                                                    <tr>
-                                                        <th>#</th>
-                                                        <th>Cat.</th>
-                                                        <th>List</th>
-                                                        <th>Harga</th>
-                                                        <th>Qty</th>
-                                                        <th>Jenis</th>
-                                                        <th>Owner</th>
-                                                        <th>Action</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody id="tb_pesanan_body"></tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <!-- Tombol Simpan -->
-                                <div class="col-12">
-                                    <button class="btn btn-primary w-100" ng-click="SimpanDataOrder()">
-                                        <i class="bx bx-save"></i> Simpan
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div> <!-- modal-body -->
-            </div> <!-- modal-content -->
-        </div> <!-- modal-dialog -->
-    </div> <!-- modal -->
-
-
-    <!-- Modal Tambah Pesanan -->
-    <div class="modal fade modal-right" id="my-modal-tambah-pesanan" tabindex="-1" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-scrollable modal-fullscreen modal-xl">
-            <div class="modal-content">
-                <div class="modal-header bg-primary">
-                    <h5 class="modal-title text-white">No.Pesanan <label id="lb_no_booking_tambahan"></label> |
-                        No.Meja
-                        <label id="lb_no_meja_tambah_pesanan"></label>
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <div class="form-group">
-                                                <label for="">Pencarian Data :</label>
-                                                <div class="input-group">
-                                                    <input type="text" class="form-control" name="" id=""
-                                                        ng-model="keywordMenu" ng-change="searchMenu()"
-                                                        placeholder="Masukkan Data . .">
-                                                    <select name="" id="" class="form-control">
-                                                        <option value="">Filter By :</option>
-                                                        <option value="Makanan">Makanan</option>
-                                                        <option value="Minuman">Minuman</option>
-                                                    </select>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="row pt-2">
-                                        <div class="col-md-12">
-                                            <div class="card">
-                                                <div class="row">
-                                                    <div class="col-md-4" ng-repeat="dt in filteredMenu"
-                                                        ng-if="filteredMenu.length > 0">
-                                                        <div class="card">
-                                                            <div class="card-body">
-                                                                <a href="javascript:;" ng-click="PilihMenuTambahan(dt)"
-                                                                    class="list-group-item list-group-item-action"
-                                                                    aria-current="true">
-                                                                    <div class="d-flex w-100 justify-content-between">
-                                                                        <h5 class="mb-1 text-black">
-                                                                            {{dt.jenis}}
-                                                                        </h5>
-                                                                        <span class="badge bg-info text-white"
-                                                                            ng-if="dt.status_food == '1'">
-                                                                            Ready
-                                                                        </span>
-                                                                        <span class="badge bg-danger text-white"
-                                                                            ng-if="dt.status_food == '0'">
-                                                                            Close
-                                                                        </span>
-
-                                                                    </div>
-                                                                    <div class="row d-flex pt-2">
-                                                                        <div class="col-md-12">
-                                                                            <img src="<?php echo base_url('public/assets/images/foodbar.png') ?>"
-                                                                                alt=""
-                                                                                style="width: 100%;height: 120px;"
-                                                                                ng-if="dt.jenis=='Makanan' && !dt.img">
-
-                                                                            <img src="<?php echo base_url('public/upload/{{dt.img}}') ?>"
-                                                                                alt=""
-                                                                                style="width: 100%;height: 120px;"
-                                                                                ng-if="dt.jenis=='Makanan' && dt.img">
-
-                                                                            <img src="<?php echo base_url('public/assets/images/refreshments.png') ?>"
-                                                                                alt=""
-                                                                                style="width: 100%;height: 120px;"
-                                                                                ng-if="dt.jenis=='Minuman' && !dt.img">
-
-                                                                            <img src="<?php echo base_url('public/upload/{{dt.img}}') ?>"
-                                                                                alt=""
-                                                                                style="width: 100%;height: 120px;"
-                                                                                ng-if="dt.jenis=='Minuman' && dt.img">
-                                                                        </div>
-                                                                        <div class="col-md-12 pt-2">
-                                                                            <h6>{{dt.nama}}</small>
-                                                                                <h5>Rp.{{dt.harga}}</h5>
-                                                                        </div>
-                                                                    </div>
-                                                                </a>
-                                                            </div>
+                                            <div class="col-12 col-md-4">
+                                                <div class="card kasir-detail-info-card h-100">
+                                                    <div class="card-body">
+                                                        <div class="kasir-detail-icon kasir-detail-icon-amber">
+                                                            <i class="bx bx-calendar"></i>
+                                                        </div>
+                                                        <div>
+                                                            <small class="kasir-detail-label">Created At</small>
+                                                            <strong id="lb_tambahan_created_at" class="kasir-detail-value">-</strong>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
                                         </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card-body">
-                                <div class="row">
-                                    <div class="card">
-                                        <div class="card-header bg-info">
-                                            <h5 class="text-white">List Daftar Pesanan :</h5>
-                                        </div>
-                                        <div class="card-body">
-                                            <div class="table-responsive">
-                                                <table class="table table-striped table-bordered" style="width:100%"
-                                                    id="tb_pesanan">
-                                                    <thead class="bg-dark text-white">
-                                                        <tr>
-                                                            <th>#</th>
-                                                            <th>Cat.</th>
-                                                            <th>List</th>
-                                                            <th>Harga</th>
-                                                            <th>Qty</th>
-                                                            <th>Jenis</th>
-                                                            <th>Owner</th>
-                                                            <th>Action</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody id="tb_pesanan_body_tambahan">
-                                                    </tbody>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="card">
-                                        <div class="card-body">
-                                            <div class="col-md-12">
-                                                <div class="row">
-                                                    <button class="btn btn-md btn-primary"
-                                                        ng-click="SimpanDataOrderTambahan()">
-                                                        <i class="bx bx-save"></i>
-                                                        Tambah Pesanan
-                                                    </button>
+
+                                        <div class="row g-3">
+                                            <div class="col-12 col-xl-8">
+                                                <div class="card kasir-order-panel-card h-100">
+                                                    <div class="card-header kasir-panel-header">
+                                                        <div>
+                                                            <h6 class="mb-1">Order Items</h6>
+                                                            <small>Semua item yang aktif pada meja ini.</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-body p-0">
+                                                        <div class="table-responsive kasir-order-table-wrap">
+                                                            <table class="table kasir-order-table mb-0"
+                                                                id="tb_pesanan_list">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>#</th>
+                                                                        <th>Category</th>
+                                                                        <th>Item</th>
+                                                                        <th class="d-none d-sm-table-cell text-end">
+                                                                            Price</th>
+                                                                        <th>Qty</th>
+                                                                        <th class="d-none d-sm-table-cell text-end">
+                                                                            Subtotal</th>
+                                                                        <th class="d-none d-sm-table-cell">Type</th>
+                                                                        <th class="d-none d-sm-table-cell text-end">
+                                                                            Discount Amt</th>
+                                                                        <th>Disc. %</th>
+                                                                        <th>Action</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody id="tb_pesanan_list_body_menu">
+                                                                    <tr ng-repeat="dt in LoadDataPesananList"
+                                                                        ng-if="LoadDataPesananList.length > 0">
+                                                                        <td>{{$index + 1}}</td>
+                                                                        <td>
+                                                                            <span class="kasir-badge kasir-badge-blue">
+                                                                                {{dt.kategori}}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td class="kasir-order-item-name">
+                                                                            {{ dt.nama }}
+                                                                        </td>
+                                                                        <td
+                                                                            class="d-none d-sm-table-cell text-end fw-semibold">
+                                                                            {{ dt.harga | currency:"Rp. ":0 }}
+                                                                        </td>
+                                                                        <td>
+                                                                            <span class="kasir-qty-pill">{{ dt.qty }}</span>
+                                                                        </td>
+                                                                        <td
+                                                                            class="d-none d-sm-table-cell text-end fw-semibold">
+                                                                            {{ dt.subtotal | currency:"Rp. ":0 }}
+                                                                        </td>
+                                                                        <td class="d-none d-sm-table-cell">
+                                                                            <span class="kasir-badge kasir-badge-green">
+                                                                                {{dt.jenis}}
+                                                                            </span>
+                                                                        </td>
+                                                                        <td
+                                                                            class="d-none d-sm-table-cell text-end text-danger fw-semibold">
+                                                                            {{ dt.potongan | currency:"Rp. ":0 }}
+                                                                        </td>
+                                                                        <td>
+                                                                            <input type="text"
+                                                                                class="form-control form-control-sm text-center kasir-discount-input"
+                                                                                ng-model="dt.discount"
+                                                                                ng-change="CalculateRowSubtotal(dt)">
+                                                                        </td>
+                                                                        <td class="text-center">
+                                                                            <button
+                                                                                class="btn btn-sm kasir-order-detail-btn"
+                                                                                ng-click="ShowDetailPesanan(dt)">
+                                                                                <i class="bx bx-show"></i>
+                                                                            </button>
+                                                                        </td>
+                                                                    </tr>
+                                                                    <tr ng-if="LoadDataPesananList.length === 0">
+                                                                        <td colspan="10" class="text-center">
+                                                                            <div
+                                                                                class="kasir-empty-state kasir-empty-state-compact">
+                                                                                <i class="bx bx-cart"></i>
+                                                                                <h6 class="mb-1">No order items available
+                                                                                </h6>
+                                                                                <small>Item yang aktif akan muncul di panel
+                                                                                    ini.</small>
+                                                                            </div>
+                                                                        </td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
                                                 </div>
                                             </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- End Tambah Pesanan -->
 
-    <!-- List Pesanan Detail -->
-    <div id="my-modal-list-detail" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="my-modal-title"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-info">
-                    <h5 class="modal-title text-white">No.Pesanan <label id="lb_no_booking_list"></label> | No.Meja
-                        <label id="lb_no_meja_list"></label>
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row pb-2">
-                        <div class="col-md-12">
-                            <button class="btn btn-md btn-primary" ng-click="UpdateServed()">
-                                <i class="bx bx-edit"></i>
-                                Served
-                            </button>
-                            <button class="btn btn-md btn-info" ng-click="UpdateDelivered()">
-                                <i class="bx bx-edit"></i>
-                                Delivered
-                            </button>
-                            <button class="btn btn-md btn-success" ng-click="UpdateCompleted()">
-                                <i class="bx bx-edit"></i>
-                                Completed
-                            </button>
-                        </div>
-                    </div>
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="table-responsive">
-                                <table class="table table-striped table-bordered" style="width:130%"
-                                    id="tb_pesanan_list_detail">
-                                    <thead class="bg-dark text-white">
-                                        <tr>
-                                            <th>
-                                                <input type="checkbox" ng-model="checkAll" ng-change="toggleAll()"
-                                                    class="form-check-input">
-                                            </th>
-                                            <th>#</th>
-                                            <th>Action</th>
-                                            <th>Status Food</th>
-                                            <th>No.Order</th>
-                                            <th>No.Meja</th>
-                                            <th>Category</th>
-                                            <th>List</th>
-                                            <th>Harga</th>
-                                            <th>Qty</th>
-                                            <th>Subtotal</th>
-                                            <th>Potongan</th>
-                                            <th>Disc(%)</th>
-                                            <th>Jenis</th>
-                                            <th>Owner</th>
-                                            <th>Time Request</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="td_pesanan_body_list_detail">
-                                        <tr ng-repeat="dt in LoadDataPesananDetail"
-                                            ng-if="LoadDataPesananDetail.length > 0" style="text-align: center;">
-                                            <td>
-                                                <input type="checkbox" ng-model="dt.checked"
-                                                    ng-change="updateCheckedIds()" class="form-check-input">
-                                            </td>
-                                            <td>{{$index + 1}}</td>
-                                            <td>
-                                                <div class="btn-group input-group">
-                                                    <button type="button" class="btn btn-sm btn-dark"
-                                                        ng-if="dt.status=='1'"
-                                                        ng-click="TambahQtyPesananListDetail(dt)">
-                                                        <i class=" bx bx-plus"></i>
-                                                    </button>
-                                                    <button type="button" class="btn btn-sm btn-dark"
-                                                        ng-if="dt.status=='1'"
-                                                        ng-click="KurangQtyPesananListDetail(dt)">
-                                                        <i class=" bx bx-minus"></i>
-                                                    </button>
-                                                    <!-- <button type="button" class="btn btn-sm btn-danger"
-                                                        ng-click="DeleteListDetail(dt)" ng-if="dt.status=='1'">
-                                                        <i class="bx bx-trash"></i>
-                                                    </button> -->
+                                            <div class="col-12 col-xl-4">
+                                                <div class="card kasir-payment-card h-100">
+                                                    <div class="card-header kasir-panel-header">
+                                                        <div>
+                                                            <h6 class="mb-1"><i
+                                                                    class="bx bx-calculator me-2"></i>Payment Calculation
+                                                            </h6>
+                                                            <small>Ringkasan tagihan sebelum proses pembayaran.</small>
+                                                        </div>
+                                                    </div>
+                                                    <div class="card-body">
+                                                        <div class="kasir-summary-row">
+                                                            <span>Total Quantity</span>
+                                                            <div class="kasir-summary-field">
+                                                                <input type="text"
+                                                                    class="form-control form-control-sm text-end fw-bold"
+                                                                    id="qty-total" value="0" readonly>
+                                                            </div>
+                                                        </div>
+                                                        <div class="kasir-summary-row">
+                                                            <span>Subtotal</span>
+                                                            <div class="kasir-summary-field">
+                                                                <input type="text"
+                                                                    class="form-control form-control-sm text-end fw-bold"
+                                                                    ng-model="amount_total" id="amount-total" readonly>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="kasir-summary-group">
+                                                            <label for="discount-nominal">Discount (%)</label>
+                                                            <input type="text"
+                                                                class="form-control form-control-sm text-end"
+                                                                name="discount-nominal" id="discount-nominal"
+                                                                onkeyup="angular.element(this).scope().CalculateTotal()"
+                                                                placeholder="%">
+                                                            <input type="text"
+                                                                class="form-control form-control-sm text-end"
+                                                                name="discount-value" id="discount-value" value="0"
+                                                                readonly>
+                                                        </div>
+
+                                                        <div class="kasir-summary-group">
+                                                            <label for="ppn-select">Tax (PPN)</label>
+                                                            <select class="form-select form-select-sm" id="ppn-select"
+                                                                ng-model="ppn_percent"
+                                                                onchange="angular.element(this).scope().CalculateTotal()">
+                                                                <option value="">Select</option>
+                                                                <option value="10">10%</option>
+                                                                <option value="11">11%</option>
+                                                            </select>
+                                                        </div>
+
+                                                        <div class="kasir-summary-row">
+                                                            <span>Tax Amount</span>
+                                                            <div class="kasir-summary-field">
+                                                                <input type="text"
+                                                                    class="form-control form-control-sm text-end"
+                                                                    id="amount-ppn" ng-model="ppn_amount" readonly>
+                                                            </div>
+                                                        </div>
+
+                                                        <div class="kasir-grand-total-card">
+                                                            <span>Grand Total</span>
+                                                            <input type="text"
+                                                                class="form-control form-control-sm text-end fw-bold fs-6 kasir-grand-total-input"
+                                                                id="grand-total" ng-model="grand_total" readonly>
+                                                        </div>
+                                                    </div>
                                                 </div>
-                                            </td>
-                                            <td>
-                                                <div ng-if="dt.status=='1'">
-                                                    <span class="badge bg-warning text-white">
-                                                        {{dt.status_food}}
-                                                    </span>
-                                                </div>
-                                                <div ng-if="dt.status=='2'">
-                                                    <span class="badge bg-info text-white">
-                                                        {{dt.status_food}}
-                                                    </span>
-                                                </div>
-                                                <div ng-if="dt.status=='3'">
-                                                    <span class="badge bg-info text-white">
-                                                        {{dt.status_food}}
-                                                    </span>
-                                                </div>
-                                                <div ng-if="dt.status=='4'">
-                                                    <span class="badge bg-success text-white">
-                                                        {{dt.status_food}}
-                                                    </span>
-                                                </div>
-                                            </td>
-                                            <td>{{dt.no_order}}</td>
-                                            <td>{{dt.no_meja}}</td>
-                                            <td>{{dt.kategori}}</td>
-                                            <td>{{dt.nama}}</td>
-                                            <td>{{dt.harga | currency:"":0}}</td>
-                                            <td class="qty-cell-list-detail" style="font-size: 14pt;font-weight: 400;">
-                                                {{dt.qty | number:0}}
-                                            </td>
-                                            <td class="subtotal-cell-list-detail">
-                                                {{(dt.qty * dt.harga) - dt.potongan | currency:"":0}}</td>
-                                            <td class="subtotal-cell-list-detail">{{ dt.potongan | currency:"":0}}
-                                            </td>
-                                            <td>{{dt.discount | number:0}}</td>
-                                            <td>{{dt.jenis}}</td>
-                                            <td>{{dt.owner}}</td>
-                                            <td>{{dt.created_at}}</td>
-                                        </tr>
-                                        <tr ng-if="LoadDataPesananDetail.length === 0">
-                                            <td colspan="12" class="text-center">No data available</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <!-- <div class="modal-footer">
-                    Footer
-                </div> -->
-            </div>
-        </div>
-    </div>
-    <!-- End List Pesanan Detail -->
-
-    <!-- Pindah Meja -->
-    <div id="my-modal-pindah-meja" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="my-modal-title"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-danger">
-                    <h5 class="modal-title text-white">No.Pesanan <label id="lb_no_booking_pindah_meja"></label> |
-                        No.Meja
-                        <label id="lb_no_meja_pindah_meja"></label>
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="form-grou">
-                                <label for="">Tujuan No.Meja Pindah :</label>
-                                <select class="form-control" id="combo_pindah_meja"></select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <div class="row">
-                        <div class="col-md-12">
-                            <button class="btn btn-md btn-danger btn-block w-100" ng-click="PindahMejaSubmit()">
-                                <i class="bx bx-paper-plane"></i>
-                                Submit
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- End Pindah Meja -->
-
-    <!-- Modal Pembayaran Uang Cash -->
-    <div id="my-modal-payment-before-service" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false"
-        tabindex="-1" role="dialog" aria-labelledby="my-modal-title" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-dark">
-                    <h5 class="modal-title text-white">
-                        <i class="bx bx-receipt"></i>
-                        No.Pesanan <span id="lb_no_booking_payment_before_service"></span>
-                        <small class="ms-2">| Meja <span id="lb_no_meja_payment_before_service"></span></small>
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-
-                <div class="modal-body">
-
-                    <!-- SUMMARY -->
-                    <div class="card shadow-sm mb-3">
-                        <div class="card-body">
-
-                            <div class="row mb-2">
-                                <div class="col-6 fw-bold">Total Qty</div>
-                                <div class="col-6 text-end fs-5">
-                                    <span id="total-qty-payment-before-service">0</span>
-                                </div>
-                            </div>
-
-                            <div class="row mb-2">
-                                <div class="col-6 fw-bold">Subtotal</div>
-                                <div class="col-6 text-end fs-5">
-                                    <span id="subtotal-payment-before-service">0</span>
-                                </div>
-                            </div>
-
-                            <div class="row mb-2">
-                                <div class="col-6 fw-bold">
-                                    Discount (<span id="lb-discount-before-service"></span>%)
-                                </div>
-                                <div class="col-6 text-end fs-5 text-danger">
-                                    <span id="Discount-before-service">0</span>
-                                </div>
-                            </div>
-
-                            <div class="row mb-2">
-                                <div class="col-6 fw-bold">
-                                    PPN <span id="ppn-text-payment-before-service"></span>%
-                                </div>
-                                <div class="col-6 text-end fs-5">
-                                    <span id="ppn-payment-before-service">0</span>
-                                </div>
-                            </div>
-
-                            <hr>
-
-                            <div class="row">
-                                <div class="col-6 fw-bold fs-4">Grand Total</div>
-                                <div class="col-6 text-end fs-3 fw-bold text-success">
-                                    <span id="grand-total-payment-before-service">0</span>
-                                </div>
-                            </div>
-
-                        </div>
-                    </div>
-
-                    <!-- PAYMENT METHOD -->
-                    <!-- PAYMENT METHOD -->
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-
-                            <!-- Metode Pembayaran -->
-                            <div class="row">
-                                <div class="mb-3">
-                                    <label for="combo-payment-before-service" class="form-label fw-bold">Metode
-                                        Pembayaran</label>
-                                    <select id="combo-payment-before-service" class="form-select form-select-lg"
-                                        onchange="changePaymentBeforeService()">
-                                        <option value="">Pilih</option>
-                                        <option value="Cash">Cash</option>
-                                        <option value="QRIS">QRIS</option>
-                                        <option value="Bank Transfer">Bank Transfer</option>
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Reference Payment -->
-                            <div class="row">
-                                <div id="display_reference_payment_before_service" class="mb-3" style="display:none;">
-                                    <label for="combo-reference-payment-before-service"
-                                        class="form-label fw-bold">Reference
-                                        Payment</label>
-                                    <select id="combo-reference-payment-before-service"
-                                        class="form-select form-select-lg"
-                                        onchange="changeReferencePaymentBeforeService()">
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Reference Number -->
-                            <div class="row">
-                                <div id="display_reference_number_payment_before_service" class="mb-3"
-                                    style="display:none;">
-                                    <label for="reference-number-payment-before-service"
-                                        class="form-label fw-bold">Reference Number</label>
-                                    <input type="text" id="reference-number-payment-before-service"
-                                        class="form-control form-control-lg" placeholder="Masukkan nomor referensi">
-                                </div>
-                            </div>
-
-                            <!-- Jumlah Dibayar -->
-                            <div class="row">
-                                <div id="display_jumlah_dibayar_payment_before_service" class="mb-3"
-                                    style="display:none;">
-                                    <label for="jumlah-dibayar-payment-before-service" class="form-label fw-bold">Jumlah
-                                        Dibayar</label>
-                                    <input type="text" id="jumlah-dibayar-payment-before-service"
-                                        class="form-control form-control-lg text-end" placeholder="0">
-                                </div>
-                            </div>
-
-
-                            <!-- Kembalian -->
-                            <div class="row">
-                                <div id="display_kembalian_payment_before_service" class="mb-3" style="display:none;">
-                                    <label class="form-label fw-bold">Kembalian</label>
-                                    <div class="fs-4 fw-bold text-danger text-end">
-                                        <span id="kembalian-payment-before-service">0</span>
-                                    </div>
-                                </div>
-                            </div>
-
-
-
-                        </div>
-                    </div>
-
-
-                </div>
-
-                <div class="modal-footer p-0">
-                    <button class="btn btn-success w-100 fw-bold" style="height:80px;font-size:22px;"
-                        ng-click="PaymentBeforeServiceSubmit()">
-                        <i class="bx bx-paper-plane"></i>
-                        SUBMIT PAYMENT
-                    </button>
-                </div>
-
-            </div>
-        </div>
-    </div>
-    <!-- End Modal -->
-
-
-    <!-- Modal Pembayaran Uang  -->
-    <!-- PAYMENT AFTER SERVICE MODAL - POS STYLE -->
-    <div id="my-modal-payment-After-service" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false"
-        tabindex="-1" role="dialog" aria-labelledby="my-modal-title" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
-            <div class="modal-content">
-
-                <!-- HEADER -->
-                <div class="modal-header bg-info">
-                    <h5 class="modal-title text-white">
-                        <i class="bx bx-receipt"></i>
-                        No.Pesanan <span id="lb_no_booking_payment_After_service"></span>
-                        <small class="ms-2">| Meja <span id="lb_no_meja_payment_After_service"></span></small>
-                    </h5>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-
-                <!-- BODY -->
-                <div class="modal-body">
-
-                    <!-- SUMMARY CARD -->
-                    <div class="card shadow-sm mb-3">
-                        <div class="card-body">
-                            <div class="row mb-2">
-                                <div class="col-6 fw-bold">Total Qty</div>
-                                <div class="col-6 text-end fs-5" id="total-qty-payment-After-service">0</div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-6 fw-bold">Subtotal</div>
-                                <div class="col-6 text-end fs-5" id="subtotal-payment-After-service">0</div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-6 fw-bold">Discount (<span id="lb-discount-After-service"></span>%)
-                                </div>
-                                <div class="col-6 text-end fs-5 text-danger" id="Discount-After-service">0</div>
-                            </div>
-                            <div class="row mb-2">
-                                <div class="col-6 fw-bold">PPN (<span id="ppn-text-payment-After-service"></span>%)
-                                </div>
-                                <div class="col-6 text-end fs-5" id="ppn-payment-After-service">0</div>
-                            </div>
-                            <hr>
-                            <div class="row">
-                                <div class="col-6 fw-bold fs-4">Grand Total</div>
-                                <div class="col-6 text-end fs-3 fw-bold text-success"
-                                    id="grand-total-payment-After-service">0</div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- PAYMENT METHOD CARD -->
-                    <div class="card shadow-sm">
-                        <div class="card-body">
-
-                            <!-- Metode Payment -->
-                            <div class="row">
-                                <div class="mb-3">
-                                    <label for="combo-payment-After-service" class="form-label fw-bold">Metode
-                                        Payment</label>
-                                    <select id="combo-payment-After-service" class="form-select form-select-lg"
-                                        onchange="changePaymentAfterService()">
-                                        <option value="">Pilih :</option>
-                                        <option value="Cash">Cash</option>
-                                        <option value="QRIS">QRIS</option>
-                                        <option value="Bank Transfer">Bank Transfer</option>
-                                    </select>
-                                </div>
-                            </div>
-
-
-                            <!-- Reference Payment -->
-                            <div class="row">
-                                <div class="mb-3" id="display_reference_payment_After_service" style="display:none;">
-                                    <label for="combo-reference-payment-After-service"
-                                        class="form-label fw-bold">Reference
-                                        Payment</label>
-                                    <select id="combo-reference-payment-After-service"
-                                        class="form-select form-select-lg"
-                                        onchange="changeReferencePaymentAfterService()">
-                                    </select>
-                                </div>
-                            </div>
-
-                            <!-- Reference Number -->
-                            <div class="row">
-                                <div class="mb-3" id="display_reference_number_payment_After_service"
-                                    style="display:none;">
-                                    <label for="reference-number-payment-After-service"
-                                        class="form-label fw-bold">Reference
-                                        Number</label>
-                                    <input type="text" id="reference-number-payment-After-service"
-                                        class="form-control form-control-lg text-end"
-                                        placeholder="Masukkan nomor referensi">
-                                </div>
-                            </div>
-
-                            <!-- Jumlah Dibayar -->
-                            <div class="row">
-                                <div class="mb-3" id="display_jumlah_dibayar_payment_After_service"
-                                    style="display:none;">
-                                    <label for="jumlah-dibayar-payment-After-service" class="form-label fw-bold">Jumlah
-                                        Dibayar</label>
-                                    <input type="text" id="jumlah-dibayar-payment-After-service"
-                                        class="form-control form-control-lg text-end" placeholder="0">
-                                </div>
-                            </div>
-
-                            <!-- Kembalian -->
-                            <div class="row">
-                                <div class="mb-3" id="display_kembalian_payment_After_service" style="display:none;">
-                                    <label class="form-label fw-bold">Kembalian</label>
-                                    <div class="fs-4 fw-bold text-danger text-end" id="kembalian-payment-After-service">
-                                        0
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                </div>
-
-                <!-- FOOTER -->
-                <div class="modal-footer p-0">
-                    <button class="btn btn-success w-100 fw-bold" style="height:80px;font-size:22px;"
-                        ng-click="PaymentAfterServiceSubmit()">
-                        <i class="bx bx-paper-plane"></i>
-                        SUBMIT PAYMENT
-                    </button>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-    <!-- End Modal Pembayaran -->
-
-    <!-- Cetak Bill Modal -->
-    <div id="my-modal-cetak-bill" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-sm" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title">No.Pesanan <label id="lb_no_booking_payment_before_service"></label> |
-                        No.Meja
-                        <label id="lb_no_meja_payment_before_service"></label>
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div id="printArea" class="receipt">
-
-                        <div class="text-center bold" style="font-size: 14px;margin-top: 0px;">
-                            <!-- <img src="<?php echo base_url() ?>public/assets/images/millennialpos.png" alt=""> -->
-                            <h5>SHAMROCK COFFEE</h5>
-                        </div>
-                        <div class="text-center" class="sub-title">
-                            Jl. STM Komplek SBC Block O No.9-12 i,
-                            Suka Maju, Kec. Medan Amplas, Kota Medan,
-                            Sumatera Utara
-                            20217<br>
-                            Telp: 082320103919<br>
-                        </div>
-                        <hr>
-                        <div style="padding-left: 18px;">
-                            <table>
-                                <tr>
-                                    <td>
-                                        Tanggal
-                                    </td>
-                                    <td>:</td>
-                                    <td><span id="bill_date"></span></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        No.Order
-                                    </td>
-                                    <td>:</td>
-                                    <td><span id="bill_invoice"></span></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        Kasir
-                                    </td>
-                                    <td>:</td>
-                                    <td><span id="bill_chasier"></span></td>
-                                </tr>
-                                <tr>
-                                    <td>
-                                        No.Meja
-                                    </td>
-                                    <td>:</td>
-                                    <td><span id="bill_no_meja"></span></td>
-                                </tr>
-                            </table>
-
-                        </div>
-                        <hr>
-                        <div style="padding-left: 18px;">
-                            <!-- Barang -->
-                            <table style="width: 100%;  font-size: 13px;">
-                                <tr ng-repeat="dt2 in LoadDataPesananBill" ng-if="LoadDataPesananBill.length > 0">
-                                    <td style="width: 8%;">[{{dt2.qty}}]</td>
-                                    <td style="width: 50%;">{{dt2.nama}}</td>
-                                    <td style="width: 35%; text-align: right;">
-                                        {{(dt2.qty * dt2.harga) | currency:"Rp ":0}}
-                                    </td>
-                                </tr>
-                            </table>
-                        </div>
-
-                        <hr>
-                        <!-- Perhitungan -->
-                        <div style="padding-left: 18px;">
-                            <table style="width: 100%;">
-                                <tr>
-                                    <td style="width: 20%;"></td>
-                                    <td style="width: 80%;">
-                                        <table style="width: 100%;">
-                                            <tr>
-                                                <td>Qty</td>
-                                                <td style="width: 10px;">:</td>
-                                                <td style="text-align: center;" id="bill_qty">0</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Subtotal</td>
-                                                <td style="width: 10px;">:</td>
-                                                <td style="text-align: right;" id="bill_subtotal">0</td>
-                                            </tr>
-
-                                            <tr>
-                                                <td>Discount (<label for="" id="bill_text_discount"></label>%)</td>
-                                                <td style="width: 10px;">:</td>
-                                                <td style="text-align: right;" id="bill_value_discount">0</td>
-                                            </tr>
-                                            <tr>
-                                                <td>PPN (10%)</td>
-                                                <td>:</td>
-                                                <td style="text-align: right;" id="bill_ppn">0</td>
-                                            </tr>
-                                            <tr>
-                                                <td>Grand Total</td>
-                                                <td>:</td>
-                                                <td style="text-align: right;" id="bill_grand_total">0</td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                </tr>
-                            </table>
-
-                        </div>
-                        <hr>
-                        <div class="text-center bold">
-                            -- BILL TRANSAKSI --
-                        </div>
-                        <hr>
-                        <div class="text-center bold">
-                            -- TERIMA KASIH --
-                        </div>
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-success" onclick="printEpppos()">Print</button>
-                    <button class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- End Bill Modal -->
-
-    <!-- Modal Gabung Bill -->
-    <div id="my-modal-gabung-bill" class="modal fade modal-right" tabindex="-1" role="dialog"
-        aria-labelledby="my-modal-title" aria-hidden="true" data-backdrop="static" data-keyboard="false">
-        <div class="modal-dialog modal-dialog-centered modal-fullscreen" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-dark">
-                    <h5 class="modal-title text-white">
-                        Bill Gabung
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="row">
-                        <div class="col-9 col-md-9 col-sm-9 col-lg-9">
-                            <!-- card-detail -->
-                            <div class="card">
-                                <div class="card-body">
-                                    <div class="row pb-3">
-                                        <div class="col-md-12">
-                                            <div class="form-group">
-                                                <label for="">No.Meja Digabung :</label>
-                                                <select class="form-control" ng-model="cmb_gabung"
-                                                    ng-options="meja.no_meja as (meja.no_meja + ' (' + meja.nama_meja + ')') for meja in listMejaGabung"
-                                                    ng-change="GabungListMeja()">
-                                                    <option value="">Pilih</option>
-                                                </select>
                                             </div>
                                         </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <label for="">List Item : </label>
-                                        </div>
-                                        <div class="col-md-12">
-                                            <div class="table-responsive">
-                                                <table class="table table-striped table-bordered" style="width:130%"
-                                                    id="tb_pesanan_list_detail">
-                                                    <thead class="bg-dark text-white">
-                                                        <tr>
-                                                            <th>#</th>
-                                                            <th>No.Order</th>
-                                                            <th>No.Meja</th>
-                                                            <th>Category</th>
-                                                            <th>List</th>
-                                                            <th>Harga</th>
-                                                            <th>Qty</th>
-                                                            <th>Subtotal</th>
-                                                            <th>Potongan</th>
-                                                            <th>Disc(%)</th>
-                                                            <th>Jenis</th>
-                                                            <th>Owner</th>
-                                                            <th>Time Request</th>
-                                                        </tr>
-                                                    </thead>
-                                                    <tbody id="td_pesanan_body_gabung_bill">
-                                                        <tr ng-repeat="dt in (LoadDataPesananDetail.concat(LoadDataPesananGabungSementara))"
-                                                            ng-if="LoadDataPesananDetail.length + LoadDataPesananGabungSementara.length > 0">
-                                                            <td>{{$index + 1}}</td>
-                                                            <td>{{dt.no_order}}</td>
-                                                            <td>{{dt.no_meja}}</td>
-                                                            <td>{{dt.kategori}}</td>
-                                                            <td>{{dt.nama}}</td>
-                                                            <td>{{dt.harga | currency:"Rp ":0}}</td>
-                                                            <td>{{dt.qty | number:0}}</td>
-                                                            <td>
-                                                                {{(dt.qty * dt.harga) - (dt.potongan) | currency:"Rp ":0}}
-                                                            </td>
-                                                            <td>{{dt.potongan | currency:"Rp ":0}}</td>
-                                                            <td>{{dt.discount | number:0}}%</td>
-                                                            <td>{{dt.jenis}}</td>
-                                                            <td>{{dt.owner}}</td>
-                                                            <td>{{dt.created_at}}</td>
-                                                        </tr>
-                                                        <tr
-                                                            ng-if="LoadDataPesananDetail.length + LoadDataPesananGabungSementara.length === 0">
-                                                            <td colspan="11" class="text-center">No data available
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                    <tfoot style="border: 1px solid #dee2e6;">
-                                                        <tr>
-                                                            <td colspan="5"
-                                                                style="text-align: right; font-size: 16px; font-weight: bold;
-                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <label for="">Total Qty : </label>
-                                                            </td>
-                                                            <td colspan="5"
-                                                                style="font-size: 16px; font-weight: bold;
-                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <input type="text" class="form-control"
-                                                                    name="qty-total-gabung" id="qty-total-gabung"
-                                                                    style="text-align: right;" value="0">
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td colspan="5"
-                                                                style="text-align: right; font-size: 16px; font-weight: bold;
-                                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <label for="">Subtotal : </label>
-                                                            </td>
-                                                            <td colspan="5"
-                                                                style="font-size: 16px; font-weight: bold;
-                                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <input type="text" class="form-control"
-                                                                    name="amount-total-gabung" id="amount-total-gabung"
-                                                                    style="text-align: right;" value="0">
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td colspan="5"
-                                                                style="text-align: right; font-size: 16px; font-weight: bold;
-                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <div
-                                                                    style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
-                                                                    Discount (%)
-                                                                </div>
-                                                            </td>
-                                                            <td colspan="5"
-                                                                style="font-size: 16px; font-weight: bold;
-                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <input type="text" class="form-control"
-                                                                    name="discount-nominal-gabung"
-                                                                    id="discount-nominal-gabung"
-                                                                    style="text-align: right;" placeholder="Sample : 10"
-                                                                    ng-keyup="CalculateTotalForGabung()" value="0">
-                                                                <input type="text" class="form-control"
-                                                                    name="discount-value-gabung"
-                                                                    id="discount-value-gabung"
-                                                                    style="text-align: right;" value="0">
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td colspan="5"
-                                                                style="text-align: right; font-size: 16px; font-weight: bold;
-                                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <div
-                                                                    style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
-                                                                    <select id="ppn-select-gabung" class="form-control"
-                                                                        style="width: 100px;"
-                                                                        ng-change="CalculateTotalForGabung()"
-                                                                        ng-model="ppnValue">
-                                                                        <option value="">Pilih PPN :</option>
-                                                                        <option value="10">10%</option>
-                                                                        <option value="11">11%</option>
-                                                                    </select>
-                                                                </div>
-                                                            </td>
-                                                            <td colspan="5"
-                                                                style="font-size: 16px; font-weight: bold;
-                                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <input type="text" class="form-control"
-                                                                    name="amount-ppn-gabung" id="amount-ppn-gabung""
-                                                                    style=" text-align: right;" value="0">
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td colspan="5"
-                                                                style="text-align: right; font-size: 16px; font-weight: bold;
-                                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <label for="">Grand Total : </label>
-                                                            </td>
-                                                            <td colspan="5"
-                                                                style="font-size: 16px; font-weight: bold;
-                                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <input type="text" class="form-control"
-                                                                    name="grand-total-gabung" id="grand-total-gabung"
-                                                                    style="text-align: right;" value="0">
-                                                            </td>
-                                                        </tr>
-                                                    </tfoot>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-12 text-end">
-                                            <button class="btn btn-md btn-warning btn-md"
-                                                ng-click="ResetGabungPesanan()" style="flex: 1;">
-                                                <i class="bx bx-refresh"></i>
-                                                Clear
+
+                                        <div class="kasir-action-grid mt-3" id="payment-action-buttons">
+                                            <button class="btn kasir-action-button kasir-action-button-print w-100"
+                                                ng-click="CetakBill()">
+                                                <i class="bx bx-printer"></i>
+                                                <span class="kasir-button-title">Print Bill</span>
                                             </button>
-                                            <button class="btn btn-success btn btn-md" style="flex: 1;"
-                                                onclick="printEppposBillGabung()">
-                                                <i class="bx bx-printer"></i> Cetak Bill
+                                            <button class="btn kasir-action-button kasir-action-button-split w-100"
+                                                ng-click="SplitBill()">
+                                                <i class="bx bx-credit-card"></i>
+                                                <span class="kasir-button-title">Split Bill</span>
                                             </button>
-
-                                            <button class="btn btn-info btn btn-md" ng-click="pay_payment_bill_gabung()"
-                                                style="flex: 1;">
-                                                <i class="bx bx-save"></i>
-                                                Payment
+                                            <button class="btn kasir-action-button kasir-action-button-pay w-100"
+                                                ng-click="pay_after_service()">
+                                                <i class="bx bx-wallet"></i>
+                                                <span class="kasir-button-title">Pay Now</span>
+                                            </button>
+                                            <button class="btn kasir-action-button kasir-action-button-cancel w-100"
+                                                ng-click="cancel_order()">
+                                                <i class="bx bx-x-circle"></i>
+                                                <span class="kasir-button-title">Cancel Order</span>
                                             </button>
                                         </div>
                                     </div>
                                 </div>
                             </div>
-                            <!-- End Card Detail -->
-
-                            <!-- card pembayaran -->
-                            <div class="card" id="card-payment-BillGabungan" style="display: none;">
-                                <div class="card-header bg-info">
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <h7 class="text-white">Lock to Transaction</h7>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="card-body">
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <div class="table-responsive">
-                                                <table class="table table-striped table-bordered" style="width:100%"
-                                                    id="tb_payment_BillGabungan_service">
-                                                    <tfoot>
-                                                        <tr>
-                                                            <td colspan="2"
-                                                                style="text-align: right; font-size: 20px; font-weight: bold;
-                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <label for="">Total Qty : </label>
-                                                            </td>
-                                                            <td colspan="6"
-                                                                style="font-size: 20px; font-weight: bold;text-align: right;
-                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <label for=""
-                                                                    id="total-qty-payment-BillGabungan-service">0</label>
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td colspan="2"
-                                                                style="text-align: right; font-size: 20px; font-weight: bold;
-                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <label for="">Subtotal : </label>
-                                                            </td>
-                                                            <td colspan="6"
-                                                                style="font-size: 20px; font-weight: bold;text-align: right;
-                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <label for=""
-                                                                    id="subtotal-payment-BillGabungan-service">0</label>
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td colspan="2"
-                                                                style="text-align: right; font-size: 20px; font-weight: bold;
-                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <label for="">Discount(<label for=""
-                                                                        id="bill_discount_persen_gabungan"></label>%)
-                                                                    :
-                                                                </label>
-                                                            </td>
-                                                            <td colspan=" 6"
-                                                                style="font-size: 20px; font-weight: bold;text-align: right;
-                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <label for=""
-                                                                    id="bill_discount_value_gabungan">0</label>
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td colspan="2"
-                                                                style="text-align: right; font-size: 20px; font-weight: bold;
-                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <label for="">
-                                                                    PPN
-                                                                    <label for=""
-                                                                        id="ppn-text-payment-BillGabungan-service">
-                                                                    </label>% :
-                                                                </label>
-                                                            </td>
-                                                            <td colspan="6"
-                                                                style="font-size: 20px; font-weight: bold;text-align: right;
-                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <label for=""
-                                                                    id="ppn-payment-BillGabungan-service">0</label>
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td colspan="2"
-                                                                style="text-align: right; font-size: 20px; font-weight: bold;
-                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <label for="">Grand Total : </label>
-                                                            </td>
-                                                            <td colspan="6"
-                                                                style="font-size: 20px; font-weight: bold;text-align: right;
-                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <label for=""
-                                                                    id="grand-total-payment-BillGabungan-service">0</label>
-                                                            </td>
-                                                        </tr>
-                                                        <tr>
-                                                            <td colspan="2"
-                                                                style="text-align: right; font-size: 20px; font-weight: bold;
-                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <label for="">Metode Payment :</label>
-                                                            </td>
-                                                            <td colspan="6"
-                                                                style="font-size: 20px; font-weight: bold;
-                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <div
-                                                                    style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
-                                                                    <select id="combo-payment-BillGabungan-service"
-                                                                        class="form-control"
-                                                                        style="width: 100%;font-size: 20px;"
-                                                                        onchange="changePaymentBillGabunganService()">
-                                                                        <option value="">Pilih :</option>
-                                                                        <option value="Cash">Cash</option>
-                                                                        <option value="QRIS">QRIS</option>
-                                                                        <option value="Bank Transfer">Bank Transfer
-                                                                        </option>
-                                                                    </select>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                        <tr id="display_jumlah_dibayar_payment_BillGabungan_service"
-                                                            style="display: none;">
-                                                            <td colspan="2"
-                                                                style="text-align: right; font-size: 20px; font-weight: bold;
-                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <label for="">Jumlah Dibayar :</label>
-                                                            </td>
-                                                            <td colspan="6"
-                                                                style="font-size: 20px; font-weight: bold;
-                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <div
-                                                                    style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
-                                                                    <input type="text"
-                                                                        name="jumlah-dibayar-payment-BillGabungan-service"
-                                                                        id="jumlah-dibayar-payment-BillGabungan-service"
-                                                                        class=" form-control" style="text-align: right;width:
-                                                100%;font-size: 20px;">
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                        <tr id="display_kembalian_payment_BillGabungan_service"
-                                                            style="display: none;">
-                                                            <td colspan="2"
-                                                                style="text-align: right; font-size: 20px; font-weight: bold;
-                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <label for="">kembalian : </label>
-                                                            </td>
-                                                            <td colspan="6"
-                                                                style="font-size: 20px; font-weight: bold;text-align: right;
-                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <label for=""
-                                                                    id="kembalian-payment-BillGabungan-service">0</label>
-                                                            </td>
-                                                        </tr>
-                                                        <tr id="display_reference_payment_BillGabungan_service"
-                                                            style="display: none;">
-                                                            <td colspan="2"
-                                                                style="text-align: right; font-size: 20px; font-weight: bold;
-                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <label for="">Reference Payment :</label>
-                                                            </td>
-                                                            <td colspan="6"
-                                                                style="font-size: 20px; font-weight: bold;
-                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <div
-                                                                    style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
-                                                                    <select
-                                                                        id="combo-reference-payment-BillGabungan-service"
-                                                                        class="form-control"
-                                                                        style="width: 100%;font-size: 20px;"
-                                                                        onchange="changeReferencePaymentBillGabunganService()">
-                                                                    </select>
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                        <tr id="display_reference_number_payment_BillGabungan_service"
-                                                            style="display: none;">
-                                                            <td colspan="2"
-                                                                style="text-align: right; font-size: 20px; font-weight: bold;
-                                                    font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <label for="">Reference Number :</label>
-                                                            </td>
-                                                            <td colspan="6"
-                                                                style="font-size: 20px; font-weight: bold;
-                                                        font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif;">
-                                                                <div
-                                                                    style="display: flex; align-items: center; justify-content: flex-end; gap: 10px;">
-                                                                    <input type="text"
-                                                                        name="reference-number-payment-BillGabungan-service"
-                                                                        id="reference-number-payment-BillGabungan-service"
-                                                                        class=" form-control" style="text-align: right;width:
-                                                                        100%;">
-                                                                </div>
-                                                            </td>
-                                                        </tr>
-                                                    </tfoot>
-                                                </table>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button class="btn btn-md btn-success" style="width: 100%;height: 80px;"
-                                        ng-click="PaymentBillGabunganSubmit()">
-                                        <i class="bx bx-paper-plane"></i>
-                                        Submit
-                                    </button>
-                                </div>
-                            </div>
-                            <!-- end Card pembayaran -->
-                        </div>
-                        <!-- Bill -->
-                        <div class="col-3 col-md-3 col-sm-3 col-lg-3">
-                            <div class="card">
-                                <div class="card-body" id="printArea2">
-                                    <div>
-                                        <div class="text-center bold" style="font-size: 14px;margin-top: 0px;">
-                                            <!-- <img src="<?php echo base_url() ?>public/assets/images/millennialpos.png"
-                                                alt=""> -->
-                                            <h5>SHAMROCK COFFEE</h5>
-                                        </div>
-                                        <div class="text-center">
-                                            Jl. STM Komplek SBC Block O No.9-12 i,
-                                            Suka Maju, Kec. Medan Amplas, Kota Medan,
-                                            Sumatera Utara
-                                            20217<br>
-                                            Telp: 0812-3456-7890<br>
-                                        </div>
-                                        <hr>
-                                        <div style="padding-left: 18px;">
-                                            <table>
-                                                <tr>
-                                                    <td>
-                                                        Tanggal
-                                                    </td>
-                                                    <td>:</td>
-                                                    <td><span id="bill_date_gabungan"></span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        Kasir
-                                                    </td>
-                                                    <td>:</td>
-                                                    <td><span id="bill_chasier_gabungan"></span></td>
-                                                </tr>
-                                                <tr>
-                                                    <td>
-                                                        No.order
-                                                    </td>
-                                                    <td>:</td>
-                                                    <td><span id="bill_no_order_gabungan"></span></td>
-                                                </tr>
-                                            </table>
-
-                                        </div>
-                                        <hr>
-                                        <div style="padding-left: 18px;">
-                                            <!-- Barang -->
-                                            <table style="width: 100%; font-size: 13px;">
-                                                <tbody ng-repeat="group in groupedOrders">
-                                                    <tr class="fw-bold">
-                                                        <td colspan="3" style="padding-top: 6px; padding-bottom: 2px;">
-                                                            Table: {{ group.no_meja }}
-                                                            <hr class="my-1">
-                                                        </td>
-                                                    </tr>
-                                                    <tr ng-repeat="item in group.items">
-                                                        <td style="width: 8%; text-align: center;">[{{ item.qty }}]
-                                                        </td>
-                                                        <td style="width: 60%;">
-                                                            {{ item.nama }}
-                                                            <span ng-if="item.potongan !== null">
-                                                                ({{item.discount}}%)
-                                                            </span>
-                                                        </td>
-                                                        <td style="width: 30%; text-align: right;">
-                                                            {{ (item.qty * item.harga) - item.potongan | currency:'Rp ':0 }}
-                                                        </td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-
-                                        <hr>
-                                        <!-- Perhitungan -->
-                                        <div style="padding-left: 18px;">
-                                            <table style="width: 100%;">
-                                                <tr>
-                                                    <td style="width: 20%;"></td>
-                                                    <td style="width: 80%;">
-                                                        <table style="width: 100%;">
-                                                            <tr>
-                                                                <td>Qty</td>
-                                                                <td style="width: 10px;">:</td>
-                                                                <td style="text-align: center;" id="bill_qty_gabungan">0
-                                                                </td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Subtotal</td>
-                                                                <td style="width: 10px;">:</td>
-                                                                <td style="text-align: right;"
-                                                                    id="bill_subtotal_gabungan">0</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Disc(<label for=""
-                                                                        id="bill_discount_text_gabungan"></label>%)
-                                                                </td>
-                                                                <td style="width: 10px;">:</td>
-                                                                <td style="text-align: right;"
-                                                                    id="bill_potongan_value_gabungan">0</td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>PPN (10%)</td>
-                                                                <td>:</td>
-                                                                <td style="text-align: right;" id="bill_ppn_gabungan">0
-                                                                </td>
-                                                            </tr>
-                                                            <tr>
-                                                                <td>Grand Total</td>
-                                                                <td>:</td>
-                                                                <td style="text-align: right;"
-                                                                    id="bill_grand_total_gabungan">0
-                                                                </td>
-                                                            </tr>
-                                                        </table>
-                                                    </td>
-                                                </tr>
-                                            </table>
-
-                                        </div>
-                                        <hr>
-                                        <div class="text-center bold">
-                                            -- BILL TRANSAKSI --
-                                        </div>
-                                        <hr>
-                                        <div class="text-center bold">
-                                            -- TERIMA KASIH --
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <!-- End bill -->
-                    </div>
-                </div>
-                <div class="modal-footer">
-
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- End Modal Gabung -->
-
-    <!-- Modal Bill Biling -->
-    <div id="my-modal-bill-billing" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-md" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-dark text-white">
-                    <h5 class="modal-title text-white">No.Pesanan <label id="lb_bill_billing_no_pesanan"></label> |
-                        No.Meja
-                        <label id="lb_bill_billing_no_meja"></label>
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="card">
-                        <div class="card-body" id="printArea3">
-                            <div>
-                                <div class="text-center bold" style="font-size: 14px;margin-top: 0px;">
-                                    <!-- <img src="<?php echo base_url() ?>public/assets/images/millennialpos.png" alt=""> -->
-                                    <h5>SHAMROCK COFFEE</h5>
-                                </div>
-                                <div class="text-center">
-                                    Jl. STM Komplek SBC Block O No.9-12 i,
-                                    Suka Maju, Kec. Medan Amplas, Kota Medan,
-                                    Sumatera Utara
-                                    20217<br>
-                                    Telp: 0812-3456-7890<br>
-                                </div>
-                                <hr>
-                                <div style="padding-left: 18px;">
-                                    <table style="width: 100%;">
-                                        <tr>
-                                            <td style="width: 20%;">
-                                                Tanggal
-                                            </td>
-                                            <td style="width: 5%;">:</td>
-                                            <td style="width: 75%;"><span id="bill_billing_date_show"
-                                                    style="font-weight: 500;"></span></td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                Kasir
-                                            </td>
-                                            <td>:</td>
-                                            <td><span id="bill_billing_chasier_show" style="font-weight: 500;"></span>
-                                            </td>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                No.order
-                                            </td>
-                                            <td>:</td>
-                                            <td><span id="bill_billing_no_order_show" style="font-weight: 500;"></span>
-                                            </td>
-                                        </tr>
-                                    </table>
-
-                                </div>
-                                <hr>
-                                <div style="padding-left: 18px;">
-                                    <!-- Barang -->
-                                    <table style="width: 100%; font-size: 13px;">
-                                        <tbody ng-repeat="group in groupedOrders">
-                                            <tr class="fw-bold">
-                                                <td colspan="3" style="padding-top: 0px; padding-bottom: 2px;">
-                                                    Table : {{ group.no_meja }}
-                                                    <hr class="my-1">
-                                                </td>
-                                            </tr>
-                                            <tr ng-repeat="item in group.items">
-                                                <td style="width: 8%; text-align: center;">[{{ item.qty }}]</td>
-                                                <td style="width: 60%;">
-                                                    {{ item.nama }}
-                                                    <span ng-if="item.potongan !== null">
-                                                        ({{item.discount}}%)
-                                                    </span>
-                                                </td>
-                                                <td style="width: 30%; text-align: right;">
-                                                    {{ (item.qty * item.harga) - item.potongan | currency:'Rp ':0 }}
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
-
-                                <hr>
-                                <!-- Perhitungan -->
-                                <div style="padding-left: 18px;">
-                                    <table style="width: 100%;">
-                                        <tr>
-
-                                            <td style="width: 100%;">
-                                                <table style="width: 100%;">
-                                                    <tr>
-                                                        <td>Qty</td>
-                                                        <td style="width: 10px;">:</td>
-                                                        <td style="text-align: right;padding-right: 10px;font-weight: 500;"
-                                                            id="bill_billing_qty_show">0
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Subtotal</td>
-                                                        <td style="width: 10px;">:</td>
-                                                        <td style="text-align: right;font-weight: 500;"
-                                                            id="bill_billing_subtotal_show">0
-                                                        </td>
-                                                    </tr>
-
-                                                    <tr>
-                                                        <td>Discount (<label for=""
-                                                                id="bill_billing_discount_persen"></label>%)</td>
-                                                        <td>:</td>
-                                                        <td style="text-align: right;font-weight: 500;"
-                                                            id="bill_billing_discount_show">0
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>PPN (10%)</td>
-                                                        <td>:</td>
-                                                        <td style="text-align: right;font-weight: 500;"
-                                                            id="bill_billing_ppn_show">0
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Grand Total</td>
-                                                        <td>:</td>
-                                                        <td style="text-align: right;font-weight: 500;"
-                                                            id="bill_billing_grand_total_show">0
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Metode Bayar</td>
-                                                        <td>:</td>
-                                                        <td style="text-align: right;font-weight: 500;"
-                                                            id="bill_billing_metode_show">-
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Jumlah Dibayar</td>
-                                                        <td>:</td>
-                                                        <td style="text-align: right;font-weight: 500;"
-                                                            id="bill_billing_jumlah_dibayar_show">0
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Kembalian</td>
-                                                        <td>:</td>
-                                                        <td style="text-align: right;font-weight: 500;"
-                                                            id="bill_billing_kembalian_show">0
-                                                        </td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td>Service Metode</td>
-                                                        <td>:</td>
-                                                        <td style="text-align: right;font-weight: 500;"
-                                                            id="bill_billing_service_metode_show">
-                                                        </td>
-                                                    </tr>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                    </table>
-
-                                </div>
-                                <hr>
-                                <div class="text-center bold">
-                                    -- TERIMA KASIH --
-                                </div>
-                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-    <!-- End Modal Bill Biling -->
 
-    <!-- Modal Split Bill -->
-    <div id="my-modal-split-bill" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="my-modal-title"
-        aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-primary text-white">
-                    <div>
-                        <h5 class="mb-0 text-white">
-                            Split Bill
-                        </h5>
-                        <small>
-                            Order <b id="lb_no_booking_split_bill"></b> |
-                            Meja <b id="lb_no_meja_split_bill"></b>
-                        </small>
-                    </div>
-                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-                </div>
-
-                <div class="modal-body">
-                    <div class="row g-3">
-
-                        <!-- BILL ASLI -->
-                        <div class="col-lg-6">
-                            <div class="card h-100 shadow-sm">
-                                <div class="card-header bg-dark text-white">
-                                    Bill Asli
-                                </div>
-                                <div class="card-body p-0">
-                                    <div class="table-responsive">
-                                        <table class="table table-sm table-striped mb-0">
-                                            <thead class="table-dark">
-                                                <tr>
-                                                    <th>#</th>
-                                                    <th>Item</th>
-                                                    <th>Qty</th>
-                                                    <th>Subtotal</th>
-                                                    <th></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr ng-repeat="dt in LoadDataPesananList">
-                                                    <td>{{$index+1}}</td>
-                                                    <td>
-                                                        <b>{{dt.nama}}</b><br>
-                                                        <small class="text-muted">
-                                                            {{dt.jenis}} • {{dt.kategori}}
-                                                        </small>
-                                                    </td>
-                                                    <td>{{dt.qty}}</td>
-                                                    <td>{{dt.subtotal | currency:"Rp. ":0}}</td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-outline-primary"
-                                                            ng-click="SplitPindahPAy(dt)">
-                                                            <i class="bx bx-right-arrow-alt"></i>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- BILL SPLIT -->
-                        <div class="col-lg-6">
-                            <div class="card h-100 shadow-sm border-primary">
-                                <div class="card-header bg-primary text-white">
-                                    Bill Split
-                                </div>
-                                <div class="card-body p-0">
-                                    <div class="table-responsive">
-                                        <table class="table table-sm table-bordered mb-0">
-                                            <thead class="table-primary">
-                                                <tr>
-                                                    <th>#</th>
-                                                    <th>Item</th>
-                                                    <th>Qty</th>
-                                                    <th>Subtotal</th>
-                                                    <th></th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr ng-repeat="dt in LoadDataPesananSplit">
-                                                    <td>{{$index+1}}</td>
-                                                    <td>
-                                                        <b>{{dt.nama}}</b><br>
-                                                        <small class="text-muted">
-                                                            {{dt.jenis}} • {{dt.kategori}}
-                                                        </small>
-                                                    </td>
-                                                    <td>{{dt.qty}}</td>
-                                                    <td>{{dt.subtotal | currency:"Rp. ":0}}</td>
-                                                    <td>
-                                                        <button class="btn btn-sm btn-outline-danger"
-                                                            ng-click="SplitKembali(dt)">
-                                                            <i class="bx bx-left-arrow-alt"></i>
-                                                        </button>
-                                                    </td>
-                                                </tr>
-                                                <tr ng-if="LoadDataPesananSplit.length === 0">
-                                                    <td colspan="5" class="text-center text-muted py-4">
-                                                        Belum ada item dipindah
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-                <div class="modal-footer bg-light border-top">
-                    <div class="container-fluid">
-
-                        <!-- TOTAL SPLIT -->
-                        <div class="row mb-2 align-items-center">
-                            <div class="col-md-6 fw-bold">
-                                Total Split
-                            </div>
-                            <div class="col-md-6 text-end text-primary fw-bold fs-5">
-                                {{ TotalSplit | currency:"Rp. ":0 }}
-                            </div>
-                        </div>
-
-                        <!-- PPN -->
-                        <div class="row mb-2 align-items-center">
-                            <div class="col-md-6 fw-bold">
-                                PPN
-                            </div>
-                            <div class="col-md-3">
-                                <select class="form-control" id="split-ppn-percent"
-                                    onchange="angular.element(this).scope().HitungSplitBill()">
-                                    <option value="">Pilih PPN</option>
-                                    <option value="0">0%</option>
-                                    <option value="10">10%</option>
-                                    <option value="11">11%</option>
-                                </select>
-                            </div>
-                            <div class="col-md-3 text-end">
-                                <input type="text" class="form-control text-end" id="split-ppn-value" readonly>
-                            </div>
-                        </div>
-
-                        <!-- GRAND TOTAL -->
-                        <div class="row mb-3 align-items-center border-top pt-2">
-                            <div class="col-md-6 fw-bold fs-5">
-                                Grand Total
-                            </div>
-                            <div class="col-md-6 text-end fw-bold fs-4 text-success">
-                                <span id="split-grand-total">Rp. 0</span>
-                            </div>
-                        </div>
-
-                        <!-- METODE BAYAR -->
-                        <div class="row mb-2">
-                            <div class="col-md-6 fw-bold">
-                                Metode Pembayaran
-                            </div>
-                            <select class="form-control" id="split-payment-method"
-                                onchange="angular.element(this).scope().OnChangePaymentMethod()">
-                                <option value="">Pilih Metode</option>
-                                <option value="Cash">Cash</option>
-                                <option value="QRIS">QRIS</option>
-                                <option value="Bank Transfer">Bank Transfer</option>
-                            </select>
-
-                        </div>
-
-                        <!-- NOMINAL BAYAR -->
-                        <div class="row mb-2">
-                            <div class="col-md-6 fw-bold">
-                                Nominal Bayar
-                            </div>
-                            <div class="col-md-6">
-                                <input type="text" class="form-control text-end" id="split-paid-amount"
-                                    placeholder="Masukkan nominal" onkeyup="formatInputRupiah(this)"
-                                    ng-keyup="HitungKembalianSplit()">
-                            </div>
-                        </div>
-
-                        <!-- KEMBALIAN -->
-                        <div class="row mb-3">
-                            <div class="col-md-6 fw-bold">
-                                Kembalian
-                            </div>
-                            <div class="col-md-6 text-end fw-bold text-danger">
-                                <span id="split-change">Rp. 0</span>
-                            </div>
-                        </div>
-
-                        <!-- BUTTON -->
-                        <div class="row">
-                            <div class="col-md-12 text-end">
-                                <button class="btn btn-success px-4" ng-click="SubmitSplitBill()">
-                                    <i class="bx bx-check"></i> Submit & Cetak
-                                </button>
-                            </div>
-                        </div>
-
-                    </div>
-                </div>
-
-
-            </div>
-        </div>
-    </div>
-    <!-- End Pindah Meja -->
-
-
-    <!-- Cancel Order Modal -->
-    <div id="my-modal-cancel-order" class="modal fade" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-dialog modal-sm" role="document">
-            <div class="modal-content">
-                <div class="modal-header bg-danger text-white">
-                    <h5 class="modal-title text-white">
-                        Cancel Order
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-2 small text-muted">
-                        No Pesanan :
-                        <strong>{{cancel.no_booking}}</strong><br>
-                        No Meja :
-                        <strong>{{cancel.no_meja}}</strong>
-                    </div>
-                    <hr>
-                    <div class="mb-3">
-                        <label class="form-label">Alasan Pembatalan</label>
-                        <textarea class="form-control" rows="2" ng-model="cancel.reason"
-                            placeholder="Masukkan alasan pembatalan" required></textarea>
-                    </div>
-                    <!-- Password Super Admin -->
-                    <div class="mb-3">
-                        <label class="form-label">Password Super Admin</label>
-                        <input type="password" class="form-control" ng-model="cancel.password"
-                            placeholder="Masukkan password" required>
-                    </div>
-
-                    <!-- Error Message -->
-                    <div class="alert alert-danger py-2" ng-if="cancel.error">
-                        {{cancel.error}}
-                    </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-danger w-100" ng-click="submitCancelOrder()" ng-disabled="cancel.loading">
-                        <span ng-if="!cancel.loading">
-                            <i class="fa fa-paper-plane"></i> Submit Cancel
-                        </span>
-                        <span ng-if="cancel.loading">
-                            <i class="fa fa-spinner fa-spin"></i> Processing...
-                        </span>
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <!-- End Bill Modal -->
+    <?php require_once "kasir-modal-bill-billing.php"?>
+    <?php require_once "kasir-modal-booking.php"?>
+    <?php require_once "kasir-modal-cancel-order.php"?>
+    <?php require_once "kasir-modal-cetak-bill.php"?>
+    <?php require_once "kasir-modal-gabung-bill.php"?>
+    <?php require_once "kasir-modal-list-detail.php"?>
+    <?php require_once "kasir-modal-payment-after-service.php"?>
+    <?php require_once "kasir-modal-payment-before-service.php"?>
+    <?php require_once "kasir-modal-pindah-meja.php"?>
+    <?php require_once "kasir-modal-saldo-awal.php"?>
+    <?php require_once "kasir-modal-split-bill.php"?>
+    <?php require_once "kasir-modal-tambah-pesanan.php"?>
+    <?php require_once "kasir-modal-tarik-uang.php"?>
 </div>
 
 <script>
@@ -2467,6 +670,754 @@ function formatItem(name, qty, price) {
     return left + right;
 }
 </script>
+
+<style>
+.kasir-pos-page {
+    --kasir-bg: #f4f7fb;
+    --kasir-surface: #ffffff;
+    --kasir-border: #dbe3ee;
+    --kasir-border-soft: #e8eef5;
+    --kasir-text: #0f172a;
+    --kasir-muted: #64748b;
+    --kasir-primary: #0f766e;
+    --kasir-primary-dark: #115e59;
+    --kasir-blue: #2563eb;
+    --kasir-blue-soft: #dbeafe;
+    --kasir-amber: #d97706;
+    --kasir-amber-soft: #fef3c7;
+    --kasir-green: #15803d;
+    --kasir-green-soft: #dcfce7;
+    --kasir-red: #dc2626;
+    --kasir-red-soft: #fee2e2;
+}
+
+.kasir-pos-page .page-content {
+    background:
+        radial-gradient(circle at top right, rgba(14, 165, 233, 0.08), transparent 28%),
+        radial-gradient(circle at top left, rgba(13, 148, 136, 0.1), transparent 24%),
+        var(--kasir-bg);
+}
+
+.kasir-mobile-table-toggle {
+    border: 0;
+    border-radius: 18px;
+    padding: 0.95rem 1.1rem;
+    background: linear-gradient(135deg, #0f172a 0%, #1f3b57 100%);
+    color: #fff;
+    font-weight: 700;
+    box-shadow: 0 18px 30px -20px rgba(15, 23, 42, 0.9);
+}
+
+.kasir-mobile-table-count,
+.kasir-header-count {
+    min-width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+    font-weight: 700;
+}
+
+.kasir-count-badge {
+    min-width: 42px;
+    height: 42px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: var(--kasir-blue-soft);
+    color: var(--kasir-blue);
+    font-weight: 800;
+}
+
+.kasir-table-offcanvas .offcanvas-header,
+.kasir-table-sidebar-header,
+.kasir-shell-header {
+    border: 0;
+    background: linear-gradient(135deg, #0f172a 0%, #1f3b57 50%, #0f766e 100%);
+}
+
+.kasir-offcanvas-header small,
+.kasir-shell-subtitle {
+    display: block;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.85rem;
+}
+
+.kasir-table-offcanvas .offcanvas-body,
+.kasir-table-sidebar > .card-body,
+.kasir-shell-body {
+    background: linear-gradient(180deg, #f8fbff 0%, #f4f7fb 100%);
+}
+
+.kasir-shell-card,
+.kasir-table-sidebar,
+.kasir-section-card,
+.kasir-order-shell,
+.kasir-order-panel-card,
+.kasir-payment-card,
+.kasir-info-card,
+.kasir-detail-info-card,
+.kasir-counter-card {
+    border: 1px solid var(--kasir-border);
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: 0 16px 38px -30px rgba(15, 23, 42, 0.6);
+}
+
+.kasir-shell-eyebrow {
+    display: inline-block;
+    margin-bottom: 0.45rem;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+}
+
+.kasir-dashboard-btn,
+.kasir-toolbar-btn,
+.kasir-table-action-btn,
+.kasir-order-detail-btn {
+    border: 0;
+    border-radius: 14px;
+    font-weight: 700;
+    transition: 0.2s ease;
+}
+
+.kasir-dashboard-btn {
+    background: rgba(255, 255, 255, 0.14);
+    color: #fff;
+    padding: 0.75rem 1rem;
+}
+
+.kasir-dashboard-btn:hover,
+.kasir-toolbar-btn:hover,
+.kasir-table-action-btn:hover,
+.kasir-order-detail-btn:hover,
+.kasir-primary-cta:hover,
+.kasir-op-button:hover,
+.kasir-action-button:hover {
+    transform: translateY(-2px);
+}
+
+.kasir-table-summary {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+}
+
+.kasir-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.8rem;
+    border-radius: 999px;
+    font-size: 0.76rem;
+    font-weight: 700;
+}
+
+.kasir-status-pill-available {
+    background: var(--kasir-green-soft);
+    color: var(--kasir-green);
+}
+
+.kasir-status-pill-occupied {
+    background: var(--kasir-blue-soft);
+    color: var(--kasir-blue);
+}
+
+.kasir-table-card {
+    cursor: pointer;
+    border: 0;
+    min-height: 172px;
+    color: #fff;
+    transition: 0.22s ease;
+}
+
+.kasir-table-card .card-body {
+    padding: 1rem;
+    background: transparent;
+}
+
+.kasir-table-card:hover {
+    transform: translateY(-4px);
+}
+
+.kasir-table-card.bg-secondary {
+    background: linear-gradient(145deg, #475569 0%, #334155 100%);
+}
+
+.kasir-table-card.bg-primary {
+    background: linear-gradient(145deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+.kasir-table-card.bg-warning {
+    background: linear-gradient(145deg, #f59e0b 0%, #d97706 100%);
+    box-shadow: 0 18px 32px -24px rgba(217, 119, 6, 0.9);
+}
+
+.kasir-table-card-head,
+.kasir-info-card .card-body,
+.kasir-detail-info-card .card-body,
+.kasir-counter-card .card-body {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.9rem;
+}
+
+.kasir-table-state,
+.kasir-table-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.34rem 0.7rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.14);
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+
+.kasir-table-icon {
+    font-size: 1.3rem;
+    opacity: 0.9;
+}
+
+.kasir-table-number {
+    margin: 1.1rem 0 0.35rem;
+    color: #fff;
+    font-size: 1.95rem;
+    font-weight: 800;
+}
+
+.kasir-table-caption {
+    margin-bottom: 1rem;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.8rem;
+}
+
+.kasir-section-header,
+.kasir-panel-header {
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid var(--kasir-border);
+    background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+}
+
+.kasir-section-header small,
+.kasir-panel-header small,
+.kasir-subsection-heading small {
+    color: var(--kasir-muted);
+}
+
+.kasir-toolbar-actions,
+.kasir-ops-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+}
+
+.kasir-ops-grid-main {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 1rem;
+    width: 100%;
+}
+
+.kasir-action-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 0.75rem;
+}
+
+.kasir-toolbar-btn {
+    padding: 0.72rem 1rem;
+    color: #fff;
+}
+
+.kasir-toolbar-btn-dark {
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+}
+
+.kasir-toolbar-btn-warning {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.kasir-toolbar-btn-danger {
+    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+}
+
+.kasir-transaction-table thead th,
+.kasir-order-table thead th {
+    background: #f8fbff;
+    color: #475569;
+    font-size: 0.74rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.kasir-transaction-table thead th {
+    padding: 0.9rem 1rem;
+}
+
+.kasir-transaction-wrap,
+.kasir-order-table-wrap {
+    overflow: auto;
+}
+
+.kasir-transaction-table tbody td,
+.kasir-order-table tbody td {
+    padding: 0.95rem 1rem;
+    vertical-align: middle;
+    border-color: var(--kasir-border-soft);
+    color: var(--kasir-text);
+}
+
+.kasir-transaction-row:hover,
+.kasir-order-table tbody tr:hover {
+    background: #f8fbff;
+}
+
+.kasir-transaction-title,
+.kasir-order-item-name {
+    font-weight: 700;
+    color: var(--kasir-text);
+}
+
+.kasir-transaction-meta,
+.kasir-transaction-date {
+    color: var(--kasir-muted);
+    font-size: 0.82rem;
+}
+
+.kasir-split-badge,
+.kasir-soft-badge,
+.kasir-badge,
+.kasir-qty-pill {
+    border-radius: 999px;
+    font-weight: 700;
+}
+
+.kasir-split-badge {
+    background: #fff1f2;
+    color: #be123c;
+}
+
+.kasir-soft-badge {
+    padding: 0.38rem 0.75rem;
+}
+
+.kasir-soft-badge-info,
+.kasir-badge-blue,
+.kasir-qty-pill {
+    background: var(--kasir-blue-soft);
+    color: var(--kasir-blue);
+}
+
+.kasir-soft-badge-success,
+.kasir-badge-green {
+    background: var(--kasir-green-soft);
+    color: var(--kasir-green);
+}
+
+.kasir-table-action-btn,
+.kasir-order-detail-btn {
+    background: linear-gradient(135deg, #0f766e 0%, #0f9b8e 100%);
+    color: #fff;
+    padding: 0.55rem 0.9rem;
+}
+
+.kasir-primary-cta {
+    border: 0;
+    border-radius: 18px;
+    padding: 0.95rem 1.2rem;
+    background: linear-gradient(135deg, #0f766e 0%, #0f9b8e 100%);
+    color: #fff;
+    font-weight: 800;
+    box-shadow: 0 18px 30px -20px rgba(15, 118, 110, 0.9);
+}
+
+.kasir-subsection-heading {
+    margin-bottom: 0.85rem;
+}
+
+.kasir-info-card .card-body,
+.kasir-detail-info-card .card-body,
+.kasir-counter-card .card-body {
+    padding: 1rem 1.1rem;
+    justify-content: flex-start;
+}
+
+.kasir-counter-copy {
+    min-width: 0;
+}
+
+.kasir-info-icon,
+.kasir-detail-icon,
+.kasir-counter-icon {
+    width: 46px;
+    height: 46px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 15px;
+    font-size: 1.2rem;
+}
+
+.kasir-info-card-primary .kasir-info-icon,
+.kasir-detail-icon-blue {
+    background: var(--kasir-blue-soft);
+    color: var(--kasir-blue);
+}
+
+.kasir-info-card-success .kasir-info-icon,
+.kasir-detail-icon-green {
+    background: var(--kasir-green-soft);
+    color: var(--kasir-green);
+}
+
+.kasir-detail-icon-amber,
+.kasir-counter-card-food .kasir-counter-icon {
+    background: var(--kasir-amber-soft);
+    color: var(--kasir-amber);
+}
+
+.kasir-counter-card-drink .kasir-counter-icon {
+    background: var(--kasir-blue-soft);
+    color: var(--kasir-blue);
+}
+
+.kasir-op-button,
+.kasir-action-button {
+    min-height: 102px;
+    border: 0;
+    border-radius: 20px;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    color: #fff;
+    font-weight: 800;
+    transition: 0.2s ease;
+}
+
+.kasir-ops-grid-main .kasir-op-button {
+    width: 100%;
+    min-width: 0;
+    min-height: 118px;
+    align-items: flex-start;
+    justify-content: flex-start;
+    text-align: left;
+    padding: 1.1rem 1.15rem;
+    box-shadow: 0 18px 30px -24px rgba(15, 23, 42, 0.75);
+}
+
+.kasir-action-grid .kasir-action-button {
+    width: 100%;
+    box-shadow: 0 18px 30px -24px rgba(15, 23, 42, 0.75);
+}
+
+.kasir-button-title {
+    display: block;
+    font-size: 0.98rem;
+    line-height: 1.25;
+}
+
+.kasir-op-button small {
+    display: block;
+    color: rgba(255, 255, 255, 0.78);
+    font-size: 0.75rem;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.kasir-op-button i,
+.kasir-action-button i {
+    font-size: 1.4rem;
+}
+
+.kasir-op-button-move,
+.kasir-action-button-cancel {
+    background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+}
+
+.kasir-op-button-merge,
+.kasir-action-button-split {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+}
+
+.kasir-op-button-add,
+.kasir-action-button-print {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0369a1 100%);
+}
+
+.kasir-action-button-pay {
+    background: linear-gradient(135deg, #22c55e 0%, #15803d 100%);
+}
+
+.kasir-counter-card {
+    background: linear-gradient(180deg, #fff 0%, #f8fbff 100%);
+}
+
+.kasir-counter-card-food {
+    background:
+        radial-gradient(circle at top right, rgba(245, 158, 11, 0.24), transparent 32%),
+        linear-gradient(135deg, #fff7ed 0%, #fffbeb 58%, #ffffff 100%);
+    border-color: #fcd34d;
+}
+
+.kasir-counter-card-drink {
+    background:
+        radial-gradient(circle at top right, rgba(14, 165, 233, 0.22), transparent 34%),
+        linear-gradient(135deg, #eff6ff 0%, #ecfeff 56%, #ffffff 100%);
+    border-color: #93c5fd;
+}
+
+.kasir-counter-card-food .kasir-counter-icon,
+.kasir-counter-card-drink .kasir-counter-icon {
+    box-shadow: 0 14px 22px -18px rgba(15, 23, 42, 0.9);
+}
+
+.kasir-counter-label,
+.kasir-detail-label {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: var(--kasir-muted);
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+}
+
+.kasir-counter-card h4,
+.kasir-detail-value {
+    color: var(--kasir-text);
+    font-weight: 800;
+}
+
+.kasir-counter-card-food .kasir-counter-label {
+    color: #b45309;
+}
+
+.kasir-counter-card-drink .kasir-counter-label {
+    color: #0369a1;
+}
+
+.kasir-counter-card-food h4 {
+    color: #9a3412;
+}
+
+.kasir-counter-card-drink h4 {
+    color: #1d4ed8;
+}
+
+.kasir-counter-note {
+    display: block;
+    margin-top: 0.32rem;
+    font-size: 0.76rem;
+    font-weight: 600;
+    line-height: 1.45;
+}
+
+.kasir-counter-card-food .kasir-counter-note {
+    color: rgba(154, 52, 18, 0.76);
+}
+
+.kasir-counter-card-drink .kasir-counter-note {
+    color: rgba(29, 78, 216, 0.76);
+}
+
+.kasir-order-table-wrap {
+    max-height: 560px;
+}
+
+.kasir-discount-input,
+.kasir-summary-group .form-control,
+.kasir-summary-group .form-select,
+.kasir-summary-field .form-control,
+.kasir-grand-total-input {
+    border-color: var(--kasir-border);
+    border-radius: 12px;
+    box-shadow: none;
+}
+
+.kasir-discount-input {
+    min-width: 72px;
+}
+
+.kasir-summary-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 0.75rem 0;
+    border-bottom: 1px solid var(--kasir-border-soft);
+    color: #334155;
+    font-weight: 700;
+}
+
+.kasir-summary-field {
+    width: 140px;
+}
+
+.kasir-summary-group {
+    margin-top: 1rem;
+}
+
+.kasir-summary-group label {
+    display: block;
+    margin-bottom: 0.45rem;
+    color: var(--kasir-muted);
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+
+.kasir-summary-group .form-control + .form-control {
+    margin-top: 0.55rem;
+}
+
+.kasir-grand-total-card {
+    margin-top: 1.15rem;
+    padding: 1rem;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #dcfce7 0%, #dbeafe 100%);
+}
+
+.kasir-grand-total-card span {
+    display: block;
+    margin-bottom: 0.55rem;
+    color: var(--kasir-text);
+    font-size: 0.82rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+.kasir-grand-total-input {
+    background: rgba(255, 255, 255, 0.76);
+    border-width: 2px;
+    color: var(--kasir-green);
+}
+
+.kasir-empty-state {
+    padding: 2rem 1rem;
+    color: var(--kasir-muted);
+    text-align: center;
+}
+
+.kasir-empty-state-compact {
+    padding: 1.4rem 1rem;
+}
+
+.kasir-empty-state i {
+    display: inline-flex;
+    margin-bottom: 0.55rem;
+    font-size: 2rem;
+    color: #cbd5e1;
+}
+
+@media (max-width: 991.98px) {
+    .kasir-shell-header,
+    .kasir-section-header,
+    .kasir-panel-header,
+    .kasir-table-sidebar-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .kasir-toolbar-actions,
+    .kasir-ops-grid {
+        width: 100%;
+    }
+
+    .kasir-toolbar-btn,
+    .kasir-op-button {
+        flex: 1 1 180px;
+    }
+
+    .kasir-ops-grid-main {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .kasir-action-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .kasir-action-grid .kasir-action-button {
+        min-height: 72px;
+        flex-direction: row;
+        justify-content: center;
+        gap: 0.7rem;
+        padding: 0.9rem 1rem;
+    }
+
+    .kasir-action-grid .kasir-action-button .kasir-button-title {
+        font-size: 0.94rem;
+        line-height: 1.2;
+    }
+}
+
+@media (max-width: 767.98px) {
+    .kasir-table-card {
+        min-height: 154px;
+    }
+
+    .kasir-table-number {
+        font-size: 1.6rem;
+    }
+
+    .kasir-summary-row {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .kasir-summary-field {
+        width: 100%;
+    }
+
+    .kasir-action-button,
+    .kasir-op-button {
+        min-height: 92px;
+    }
+
+    .kasir-ops-grid-main {
+        grid-template-columns: 1fr;
+    }
+
+    .kasir-action-grid {
+        gap: 0.65rem;
+    }
+
+    .kasir-action-grid .kasir-action-button {
+        min-height: 64px;
+        padding: 0.8rem 0.9rem;
+        gap: 0.55rem;
+    }
+
+    .kasir-action-grid .kasir-action-button i {
+        font-size: 1.18rem;
+    }
+
+    .kasir-ops-grid-main .kasir-op-button {
+        min-height: 104px;
+    }
+
+    .kasir-transaction-table tbody td,
+    .kasir-order-table tbody td {
+        padding: 0.8rem 0.7rem;
+    }
+}
+</style>
 
 <!-- style -->
 <style>
@@ -2705,5 +1656,98 @@ function formatItem(name, qty, price) {
 .table-card:hover {
     transform: translateY(-4px);
     box-shadow: 0 6px 12px rgba(0, 0, 0, 0.1);
+}
+
+@media (max-width: 768px) {
+    .card-body {
+        padding: 1rem;
+    }
+
+    .btn {
+        font-size: 0.8rem;
+        padding: 0.5rem;
+    }
+
+    .table td,
+    .table th {
+        padding: 0.5rem;
+        white-space: nowrap;
+    }
+}
+</style>
+
+<style>
+/* Penyesuaian tambahan untuk responsif */
+.table-card {
+    background-color: #f8f9fc;
+}
+
+.table thead th {
+    white-space: nowrap;
+}
+
+/* Kartu meja */
+.table-card .card {
+    cursor: pointer;
+    transition: transform 0.2s;
+    border: none;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.table-card .card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+}
+
+.table-card .card.bg-secondary {
+    background: linear-gradient(145deg, #6c757d, #5a6268);
+}
+
+.table-card .card.bg-primary {
+    background: linear-gradient(145deg, #007bff, #0056b3);
+}
+
+/* Tombol aksi besar */
+.action-button {
+    border-radius: 10px;
+    border: none;
+    transition: all 0.3s;
+    min-height: 80px;
+}
+
+.action-button i {
+    font-size: 1.8rem;
+}
+
+/* Responsif untuk mobile */
+@media (max-width: 767px) {
+    .action-button {
+        min-height: 70px;
+        font-size: 0.8rem;
+    }
+
+    .action-button i {
+        font-size: 1.5rem;
+    }
+}
+
+/* Offcanvas disesuaikan */
+.offcanvas-body {
+    background-color: #f8f9fc;
+}
+</style>
+
+<style>
+.menu-card {
+    transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.menu-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.menu-card .card-body {
+    padding: 0.5rem;
 }
 </style>

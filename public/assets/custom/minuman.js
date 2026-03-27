@@ -103,7 +103,7 @@ appminuman.controller("ControllerMinuman", function ($scope, $http) {
 		Swal.fire({
 			title: "Konfirmasi",
 			text:
-				"Anda yakin ingin menghapus data Makanan dengan Nama " +
+				"Anda yakin ingin menghapus data Minuman dengan Nama " +
 				$scope.data.nama +
 				" ?",
 			icon: "warning",
@@ -116,14 +116,14 @@ appminuman.controller("ControllerMinuman", function ($scope, $http) {
 				// Jika pengguna mengkonfirmasi penghapusan
 				// Lakukan permintaan DELETE ke backend
 				$http
-					.delete(base_url("master/meja/delete_meja/" + meja.id))
+					.delete(base_url("master/minuman/delete_minuman/" + da.id))
 					.then(function (response) {
 						// Handler ketika permintaan berhasil
 						// Tampilkan SweetAlert sukses
 						Swal.fire({
 							icon: "success",
 							title: "Berhasil",
-							text: "Data meja telah dihapus!",
+							text: "Data Minuman telah dihapus!",
 						});
 						document.location.reload();
 					})
@@ -276,8 +276,8 @@ function ComboKategoriMinumanUpdate() {
 		.catch((error) => console.error(error));
 }
 
-ComboKategoriMakanan();
-ComboKategoriMakananUpdate();
+ComboKategoriMinuman();
+ComboKategoriMinumanUpdate();
 
 function insert_minuman() {
 	var formupload = document.getElementById("form_insert_minuman");

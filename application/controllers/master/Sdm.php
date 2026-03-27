@@ -16,7 +16,7 @@ class Sdm extends CI_Controller
     {
         parent::__construct();
         $this->load->helper("url");
-        $this->session->sess_expiration = '60';
+        $this->session->sess_expiration      = '60';
         $this->session->sess_expire_on_close = 'true';
         if ($this->session->userdata('log_in') != "login") {
             redirect(base_url("auth/login"));
@@ -39,7 +39,7 @@ class Sdm extends CI_Controller
         if ($cd->num_rows() > 0) {
             foreach ($cd->result() as $k) {
                 $tmp = ((int) $k->kd_max) + 1;
-                $kd = sprintf("%03s", $tmp);
+                $kd  = sprintf("%03s", $tmp);
             }
         } else {
             $kd = "001";
@@ -63,17 +63,17 @@ class Sdm extends CI_Controller
     public function insert_sdm()
     {
         date_default_timezone_set('Asia/Jakarta');
-        $kode = $this->input->post("kode");
-        $nama = $this->input->post("nama");
-        $jk = $this->input->post("cmb_jk");
+        $kode    = $this->input->post("kode");
+        $nama    = $this->input->post("nama");
+        $jk      = $this->input->post("cmb_jk");
         $jabatan = $this->input->post("cmb_jabatan");
         $user_id = $this->session->userdata('user_id');
-        $data = [
-            'kd_sdm' => $kode,
-            'nama' => $nama,
-            'jk' => $jk,
-            'jabatan' => $jabatan,
-            'user_id' => $user_id,
+        $data    = [
+            'kd_sdm'     => $kode,
+            'nama'       => $nama,
+            'jk'         => $jk,
+            'jabatan'    => $jabatan,
+            'user_id'    => $user_id,
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ];
@@ -82,12 +82,12 @@ class Sdm extends CI_Controller
 
         if ($query) {
             $response = [
-                'status' => 'success',
+                'status'  => 'success',
                 'message' => 'Successfully created',
             ];
         } else {
             $response = [
-                'status' => 'error',
+                'status'  => 'error',
                 'message' => 'Error creating',
             ];
         }
@@ -99,24 +99,24 @@ class Sdm extends CI_Controller
     public function aktivasi()
     {
         date_default_timezone_set('Asia/Jakarta');
-        $payload = json_decode(file_get_contents('php://input'), true);
-        $kd_sdm = $payload['kd_sdm'];
+        $payload  = json_decode(file_get_contents('php://input'), true);
+        $kd_sdm   = $payload['kd_sdm'];
         $fullname = $payload['nama'];
-        $jabatan = $payload['jabatan'];
+        $jabatan  = $payload['jabatan'];
 
         $data1 = [
-            'fullname' => $fullname,
-            'username' => $kd_sdm,
-            'email' => '-',
-            'password' => md5("admin"),
-            'level' => $jabatan,
+            'fullname'   => $fullname,
+            'username'   => $kd_sdm,
+            'email'      => '-',
+            'password'   => md5("admin"),
+            'level'      => $jabatan,
             'inititated' => $jabatan,
             'created_at' => date('Y-m-d H:i:s'),
             'updated_at' => date('Y-m-d H:i:s'),
         ];
 
         $data2 = [
-            'status' => 'active',
+            'status'     => 'active',
             'updated_at' => date('Y-m-d H:i:s'),
         ];
 
@@ -125,12 +125,12 @@ class Sdm extends CI_Controller
 
         if ($query1 && $uqery2) {
             $response = [
-                'status' => 'success',
+                'status'  => 'success',
                 'message' => 'Success Processing',
             ];
         } else {
             $response = [
-                'status' => 'error',
+                'status'  => 'error',
                 'message' => 'Error Processing',
             ];
         }

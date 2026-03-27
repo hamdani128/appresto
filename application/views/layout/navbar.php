@@ -1,10 +1,10 @@
 <div class="nav-container primary-menu">
     <div class="mobile-topbar-header">
         <div>
-            <img src="<?php echo base_url() ?>public/assets/images/millennialpos.png" alt="logo icon">
+            <img src="<?php echo base_url() ?>public/assets/images/kafe.png" alt="logo icon" width="80">
         </div>
         <div>
-            <!-- <h4 class="logo-text">App The'Coffe</h4> -->
+            <!-- <h4 class="logo-text">App Coffe</h4> -->
         </div>
         <div class="toggle-icon ms-auto"><i class='bx bx-arrow-to-left'></i>
         </div>
@@ -68,7 +68,8 @@
             <?php if ($this->session->userdata('level') !== 'Mitra') {?>
             <li class="nav-item dropdown">
                 <a href="javascript:;"
-                    class="nav-link dropdown-toggle dropdown-toggle-nocaret                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           <?php echo uri_string() == 'transaksi/pesanan' || uri_string() == 'transaksi/invoice' ? 'active text-white' : '' ?>"
+                    class="nav-link dropdown-toggle dropdown-toggle-nocaret
+					<?php echo uri_string() == 'transaksi/pesanan' || uri_string() == 'transaksi/invoice' || uri_string() == 'transaksi/takeaway' ? 'active text-white' : '' ?>"
                     data-bs-toggle="dropdown">
                     <div class="parent-icon"><i class='bx bx-cart'></i>
                     </div>
@@ -79,14 +80,20 @@
                     <li>
                         <a class="dropdown-item" href="<?php echo base_url('transaksi/pesanan') ?>">
                             <i class="bx bx-right-arrow-alt"></i>
-                            Point Of Sale
+                            Dine-in POS
+                        </a>
+                    </li>
+                    <li>
+                        <a class="dropdown-item" href="<?php echo base_url('transaksi/takeaway') ?>">
+                            <i class="bx bx-right-arrow-alt"></i>
+                            Takeaway POS
                         </a>
                     </li>
                     <?php }?>
                     <li>
                         <a class="dropdown-item" href="<?php echo base_url('transaksi/invoice') ?>">
                             <i class="bx bx-right-arrow-alt"></i>
-                            List Transaksi
+                            Dine-in List Transaksi
                         </a>
                     </li>
                 </ul>

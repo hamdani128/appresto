@@ -3,7 +3,7 @@
         <nav class="navbar navbar-expand">
             <div class="topbar-logo-header">
                 <div class="">
-                    <img src="<?php echo base_url() ?>public/assets/images/millennialpos-white.png" alt="logo icon">
+                    <img src="<?php echo base_url() ?>public/assets/images/kafe.png" alt="logo icon">
                 </div>
                 <!-- <div class="">
                     <img src="<?php echo base_url() ?>public/assets/images/millennialpos-white.png" alt="logo icon">
@@ -290,3 +290,10 @@
         </nav>
     </div>
 </header>
+
+
+<style>
+.topbar-logo-header img {
+    width: 60px !important;
+}
+</style>

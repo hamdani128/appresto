@@ -7,7 +7,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Coffe App</title>
     <!--favicon-->
-    <link rel="icon" href="<?php echo base_url() ?>public/assets/images/coffe.png" type="image/png" />
+    <link rel="icon" href="<?php echo base_url() ?>public/assets/images/kafe.png" type="image/png" />
     <!--plugins-->
     <!--plugins-->
     <link rel="stylesheet" href="<?php echo base_url() ?>public/assets/plugins/notifications/css/lobibox.min.css" />
@@ -15,7 +15,6 @@
     <link href="<?php echo base_url() ?>public/assets/plugins/simplebar/css/simplebar.css" rel="stylesheet" />
     <link href="<?php echo base_url() ?>public/assets/plugins/perfect-scrollbar/css/perfect-scrollbar.css"
         rel="stylesheet" />
-
     <!-- loader-->
     <link href="<?php echo base_url() ?>public/assets/css/pace.min.css" rel="stylesheet" />
     <script src="<?php echo base_url() ?>public/assets/js/pace.min.js"></script>
@@ -37,6 +36,13 @@
     <link rel="stylesheet" href="<?php echo base_url() ?>public/assets/css/semi-dark.css" />
     <link rel="stylesheet" href="<?php echo base_url() ?>public/assets/css/header-colors.css" />
 
+    <style>
+    body,
+    .dark-theme,
+    .header-dark {
+        background: #F8F5F2 !important;
+    }
+    </style>
 
 
 </head>
@@ -181,6 +187,7 @@
     <script src="<?php echo base_url() ?>public/assets/custom/meja.js"></script>
     <script src="<?php echo base_url() ?>public/assets/custom/sdm.js"></script>
     <script src="<?php echo base_url() ?>public/assets/custom/kasir.js"></script>
+    <script src="<?php echo base_url() ?>public/assets/custom/kasir_takeaway.js"></script>
     <script src="<?php echo base_url() ?>public/assets/custom/mitra.js"></script>
     <script src="<?php echo base_url() ?>public/assets/custom/report.js"></script>
     <script src="<?php echo base_url() ?>public/assets/custom/list_transaksi.js"></script>
@@ -191,6 +198,7 @@
     <script src="<?php echo base_url() ?>public/assets/js/index.js"></script>
     <!--app JS-->
     <script src="<?php echo base_url() ?>public/assets/js/app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qz-tray/qz-tray.js"></script>
     <!-- JS -->
     <script>
     document.addEventListener("DOMContentLoaded", function() {

@@ -67,7 +67,7 @@
                                     <td>{{dt.harga}}</td>
                                     <td style="text-align: center;">
                                         <img style="height: 80px;width: 100px;"
-                                            ng-src="{{dt.img ? '<?=base_url("public/upload/")?>' + dt.img : '<?=base_url("public/assets/images/foodbar.png")?>'}}"
+                                            ng-src="{{dt.img ? '<?php echo base_url("public/upload/") ?>' + dt.img : '<?php echo base_url("public/assets/images/foodbar.png") ?>'}}"
                                             alt="">
                                     </td>
                                     <td>
@@ -244,6 +244,11 @@
                                         placeholder="Masukkan Nama Makanan">
                                 </div>
                                 <div class="form-group pt-2">
+                                    <label for="">HPP (Harga Pokok Penjualan)</label>
+                                    <input type="number" name="hpp" id="hpp" class="form-control mt-1"
+                                        placeholder="Masukkan Harga Pokok Penjualan">
+                                </div>
+                                <div class="form-group pt-2">
                                     <label for="">Harga Jual</label>
                                     <input type="number" name="harga" id="harga" class="form-control mt-1"
                                         placeholder="Masukkan Harga Makanan">
@@ -307,6 +312,11 @@
                                     <label for="">Nama Makanan</label>
                                     <input type="text" name="nama_update" id="nama_update" class="form-control mt-1"
                                         placeholder="Masukkan Nama Makanan">
+                                </div>
+                                <div class="form-group pt-2">
+                                    <label for="">HPP (Harga Pokok Penjualan)</label>
+                                    <input type="number" name="hpp_update" id="hpp_update" class="form-control mt-1"
+                                        placeholder="Masukkan Harga Pokok Penjualan">
                                 </div>
                                 <div class="form-group pt-2">
                                     <label for="">Harga Jual</label>

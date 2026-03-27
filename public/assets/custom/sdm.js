@@ -112,12 +112,12 @@ app.controller("MasterSdmController", function ($scope, $http) {
 						.post(base_url("master/sdm/aktivasi"), formdata)
 						.then(function (response) {
 							if (response.status == "success") {
-								$scope.LoadDataSDM();
 								Swal.fire({
 									icon: "success",
 									title: "Good Luck",
 									text: "Data Berhasil Di Activasi !",
 								});
+								$scope.LoadDataSDM();
 							}
 						})
 						.catch(function (error) {

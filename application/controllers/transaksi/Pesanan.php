@@ -16,7 +16,7 @@ class Pesanan extends CI_Controller
     {
         parent::__construct();
         $this->load->helper("url");
-        $this->session->sess_expiration = '60';
+        $this->session->sess_expiration      = '60';
         $this->session->sess_expire_on_close = 'true';
         if ($this->session->userdata('log_in') != "login") {
             redirect(base_url("auth/login"));
