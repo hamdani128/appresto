@@ -118,7 +118,8 @@ appmakanan.controller("ControllerMakanan", function ($scope, $http) {
 		$("#id_update").val($scope.data.id);
 		$("#cmb_kategori_update").val($scope.data.kategori_id);
 		$("#nama_update").val($scope.data.nama);
-		$("#harga_update").val($scope.data.harga);
+		syncFormattedInput("hpp_update_display", "hpp_update", $scope.data.hpp);
+		syncFormattedInput("harga_update_display", "harga_update", $scope.data.harga);
 		$("#cmb_owner_update").val($scope.data.owner);
 		var displayArea = document.getElementById("display_img_edit");
 		if ($scope.data.img != null || $scope.data.img != "") {
@@ -156,19 +157,19 @@ appmakanan.controller("ControllerMakanan", function ($scope, $http) {
 							Swal.fire({
 								icon: "success",
 								title: "Berhasil",
-								text: "Data meja telah dihapus!",
+								text: "Data makanan telah dihapus!",
 							});
 							LoadDataMakanan();
 						}
 					})
 					.catch(function (error) {
 						// Handler ketika terjadi kesalahan pada permintaan
-						console.error("Terjadi kesalahan saat menghapus data meja", error);
+						console.error("Terjadi kesalahan saat menghapus data makanan", error);
 						// Tampilkan SweetAlert error
 						Swal.fire({
 							icon: "error",
 							title: "Oops...",
-							text: "Terjadi kesalahan saat menghapus data meja!",
+							text: "Terjadi kesalahan saat menghapus data makanan!",
 						});
 						// Lakukan penanganan kesalahan yang sesuai
 						// ...
@@ -179,6 +180,46 @@ appmakanan.controller("ControllerMakanan", function ($scope, $http) {
 });
 
 var app = angular.module("CombineMakanan", ["makanan", "appmakanan"]);
+
+function toNumber(value) {
+	return String(value || "").replace(/\D/g, "");
+}
+
+function formatNumberInput(value) {
+	var numericValue = toNumber(value);
+	return numericValue ? new Intl.NumberFormat("id-ID").format(Number(numericValue)) : "";
+}
+
+function syncFormattedInput(displayId, hiddenId, rawValue) {
+	var displayInput = document.getElementById(displayId);
+	var hiddenInput = document.getElementById(hiddenId);
+
+	if (!displayInput || !hiddenInput) {
+		return;
+	}
+
+	var numericValue = toNumber(rawValue);
+	hiddenInput.value = numericValue;
+	displayInput.value = formatNumberInput(numericValue);
+}
+
+function bindFormattedNumberInput(displayId, hiddenId) {
+	var displayInput = document.getElementById(displayId);
+	var hiddenInput = document.getElementById(hiddenId);
+
+	if (!displayInput || !hiddenInput) {
+		return;
+	}
+
+	displayInput.addEventListener("input", function () {
+		syncFormattedInput(displayId, hiddenId, this.value);
+	});
+}
+
+bindFormattedNumberInput("hpp_display", "hpp");
+bindFormattedNumberInput("harga_display", "harga");
+bindFormattedNumberInput("hpp_update_display", "hpp_update");
+bindFormattedNumberInput("harga_update_display", "harga_update");
 
 function displayImage() {
 	var input = document.getElementById("file_img");
@@ -280,6 +321,8 @@ ComboKategoriMakanan();
 ComboKategoriMakananUpdate();
 
 function add_makanan() {
+	syncFormattedInput("hpp_display", "hpp", "");
+	syncFormattedInput("harga_display", "harga", "");
 	$("#my-modal-add").modal("show");
 }
 
@@ -288,10 +331,11 @@ function insert_makanan() {
 	var formdata = new FormData(formupload);
 	var kategori = $("#cmb_kategori").val();
 	var nama = $("#nama").val();
+	var hpp = $("#hpp").val();
 	var harga = $("#harga").val();
-	var owner = $("#owner").val();
+	var owner = $("#cmb_owner").val();
 
-	if (kategori == "" || nama == "" || harga == "" || owner == "") {
+	if (kategori == "" || nama == "" || hpp == "" || harga == "" || owner == "") {
 		Swal.fire({
 			icon: "warning",
 			title: "Notification",
@@ -320,6 +364,21 @@ function insert_makanan() {
 function update_makanan() {
 	var formupload = document.getElementById("form_update_makanan");
 	var formdata = new FormData(formupload);
+	var kategori = $("#cmb_kategori_update").val();
+	var nama = $("#nama_update").val();
+	var hpp = $("#hpp_update").val();
+	var harga = $("#harga_update").val();
+	var owner = $("#cmb_owner_update").val();
+
+	if (kategori == "" || nama == "" || hpp == "" || harga == "" || owner == "") {
+		Swal.fire({
+			icon: "warning",
+			title: "Notification",
+			text: "Wajib Mengisi Field - Field yang Tersedia !",
+		});
+		return;
+	}
+
 	fetch(base_url("master/makanan/update_makanan"), {
 		method: "POST",
 		body: formdata,

@@ -12,7 +12,8 @@
                         <i class='bx bx-table'></i>
                         No.Meja <span class="booking-modal-pill" id="lb_no_meja"></span>
                     </h5>
-                    <small class="booking-modal-subtitle">Pilih menu di kiri, review pesanan di kanan, lalu simpan.</small>
+                    <small class="booking-modal-subtitle">Pilih menu di kiri, review pesanan di kanan, lalu
+                        simpan.</small>
                 </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
@@ -86,13 +87,13 @@
                                     <div class="menu-card" ng-click="PilihMenu(dt)" data-bs-dismiss="offcanvas">
                                         <div class="menu-card-img">
                                             <img ng-if="dt.jenis=='Makanan' && !dt.img"
-                                                src="<?php echo base_url('public/assets/images/foodbar.png') ?>"
+                                                src="<?php echo base_url('public/assets/images/makanan.png') ?>"
                                                 alt="{{dt.nama}}">
                                             <img ng-if="dt.jenis=='Makanan' && dt.img"
                                                 src="<?php echo base_url('public/upload/{{dt.img}}') ?>"
                                                 alt="{{dt.nama}}">
                                             <img ng-if="dt.jenis=='Minuman' && !dt.img"
-                                                src="<?php echo base_url('public/assets/images/refreshments.png') ?>"
+                                                src="<?php echo base_url('public/assets/images/minuman.png') ?>"
                                                 alt="{{dt.nama}}">
                                             <img ng-if="dt.jenis=='Minuman' && dt.img"
                                                 src="<?php echo base_url('public/upload/{{dt.img}}') ?>"
@@ -179,13 +180,13 @@
                                             <div class="menu-card" ng-click="PilihMenu(dt)">
                                                 <div class="menu-card-img">
                                                     <img ng-if="dt.jenis=='Makanan' && !dt.img"
-                                                        src="<?php echo base_url('public/assets/images/foodbar.png') ?>"
+                                                        src="<?php echo base_url('public/assets/images/makanan.png') ?>"
                                                         alt="{{dt.nama}}">
                                                     <img ng-if="dt.jenis=='Makanan' && dt.img"
                                                         src="<?php echo base_url('public/upload/{{dt.img}}') ?>"
                                                         alt="{{dt.nama}}">
                                                     <img ng-if="dt.jenis=='Minuman' && !dt.img"
-                                                        src="<?php echo base_url('public/assets/images/refreshments.png') ?>"
+                                                        src="<?php echo base_url('public/assets/images/minuman.png') ?>"
                                                         alt="{{dt.nama}}">
                                                     <img ng-if="dt.jenis=='Minuman' && dt.img"
                                                         src="<?php echo base_url('public/upload/{{dt.img}}') ?>"
@@ -226,19 +227,22 @@
                         <div class="row g-3">
                             <div class="col-12">
                                 <div class="card order-panel">
-                                    <div class="card-header bg-white py-3 d-flex align-items-start justify-content-between booking-order-header">
+                                    <div
+                                        class="card-header bg-white py-3 d-flex align-items-start justify-content-between booking-order-header">
                                         <div>
                                             <div class="d-flex align-items-center">
                                                 <i class='bx bx-list-ul fs-4 me-2 text-primary'></i>
                                                 <h5 class="mb-0 fw-semibold">Daftar Pesanan</h5>
                                             </div>
-                                            <small class="booking-panel-subtitle">Review item, qty, dan owner sebelum simpan.</small>
+                                            <small class="booking-panel-subtitle">Review item, qty, dan owner sebelum
+                                                simpan.</small>
                                         </div>
                                         <span class="booking-panel-tag">Live Cart</span>
                                     </div>
                                     <div class="booking-order-note">
                                         <i class="bx bx-info-circle"></i>
-                                        <span>Gunakan tombol `+`, `-`, dan hapus untuk mengatur qty sebelum menyimpan.</span>
+                                        <span>Gunakan tombol `+`, `-`, dan hapus untuk mengatur qty sebelum
+                                            menyimpan.</span>
                                     </div>
                                     <div class="card-body p-0">
                                         <div class="table-responsive" style="max-height: 55vh; overflow-y: auto;">
@@ -599,7 +603,7 @@
     padding-right: 0;
 }
 
-#my-modal-booking .menu-grid-row > [class*="col-"] {
+#my-modal-booking .menu-grid-row>[class*="col-"] {
     display: flex;
 }
 

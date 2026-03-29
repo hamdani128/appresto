@@ -60,50 +60,53 @@ $(function () {
 	//   });
 
 	// chart2
-	var ctx = document.getElementById("chart2").getContext("2d");
-	var myChart = new Chart(ctx, {
-		type: "bar",
-		data: {
-			labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
-			datasets: [
-				{
-					label: "Direct",
-					data: [10, 15, 20, 25, 20, 15, 10],
-					backgroundColor: ["#5e72e4"],
-					borderColor: ["#5e72e4"],
-					borderWidth: 0,
+	var chart2Canvas = document.getElementById("chart2");
+	if (chart2Canvas) {
+		var ctx = chart2Canvas.getContext("2d");
+		var myChart = new Chart(ctx, {
+			type: "bar",
+			data: {
+				labels: ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul"],
+				datasets: [
+					{
+						label: "Direct",
+						data: [10, 15, 20, 25, 20, 15, 10],
+						backgroundColor: ["#5e72e4"],
+						borderColor: ["#5e72e4"],
+						borderWidth: 0,
+					},
+					{
+						label: "Affiliate",
+						data: [10, 15, 20, 25, 20, 15, 10],
+						backgroundColor: ["rgb(94 114 228 / 32%)"],
+						borderColor: ["rgb(94 114 228 / 32%)"],
+						borderWidth: 0,
+					},
+				],
+			},
+			options: {
+				maintainAspectRatio: false,
+				barPercentage: 0.35,
+				//categoryPercentage: 0.5,
+				plugins: {
+					legend: {
+						position: "bottom",
+						display: true,
+					},
 				},
-				{
-					label: "Affiliate",
-					data: [10, 15, 20, 25, 20, 15, 10],
-					backgroundColor: ["rgb(94 114 228 / 32%)"],
-					borderColor: ["rgb(94 114 228 / 32%)"],
-					borderWidth: 0,
-				},
-			],
-		},
-		options: {
-			maintainAspectRatio: false,
-			barPercentage: 0.35,
-			//categoryPercentage: 0.5,
-			plugins: {
-				legend: {
-					position: "bottom",
-					display: true,
+				scales: {
+					x: {
+						stacked: true,
+						beginAtZero: true,
+					},
+					y: {
+						stacked: true,
+						beginAtZero: true,
+					},
 				},
 			},
-			scales: {
-				x: {
-					stacked: true,
-					beginAtZero: true,
-				},
-				y: {
-					stacked: true,
-					beginAtZero: true,
-				},
-			},
-		},
-	});
+		});
+	}
 
 	// easy pie chart
 
@@ -141,44 +144,46 @@ $(function () {
 	});
 
 	// world map
-	jQuery("#dashboard-map").vectorMap({
-		map: "world_mill_en",
-		backgroundColor: "transparent",
-		borderColor: "#818181",
-		borderOpacity: 0.25,
-		borderWidth: 1,
-		zoomOnScroll: false,
-		color: "#009efb",
-		regionStyle: {
-			initial: {
-				fill: "#5e72e4",
+	if (jQuery("#dashboard-map").length) {
+		jQuery("#dashboard-map").vectorMap({
+			map: "world_mill_en",
+			backgroundColor: "transparent",
+			borderColor: "#818181",
+			borderOpacity: 0.25,
+			borderWidth: 1,
+			zoomOnScroll: false,
+			color: "#009efb",
+			regionStyle: {
+				initial: {
+					fill: "#5e72e4",
+				},
 			},
-		},
-		markerStyle: {
-			initial: {
-				r: 9,
-				fill: "#fff",
-				"fill-opacity": 1,
-				stroke: "#000",
-				"stroke-width": 5,
-				"stroke-opacity": 0.4,
+			markerStyle: {
+				initial: {
+					r: 9,
+					fill: "#fff",
+					"fill-opacity": 1,
+					stroke: "#000",
+					"stroke-width": 5,
+					"stroke-opacity": 0.4,
+				},
 			},
-		},
-		enableZoom: true,
-		hoverColor: "#009efb",
-		markers: [
-			{
-				latLng: [21.0, 78.0],
-				name: "Lorem Ipsum Dollar",
-			},
-		],
-		hoverOpacity: null,
-		normalizeFunction: "linear",
-		scaleColors: ["#b6d6ff", "#005ace"],
-		selectedColor: "#c9dfaf",
-		selectedRegions: [],
-		showTooltip: true,
-	});
+			enableZoom: true,
+			hoverColor: "#009efb",
+			markers: [
+				{
+					latLng: [21.0, 78.0],
+					name: "Lorem Ipsum Dollar",
+				},
+			],
+			hoverOpacity: null,
+			normalizeFunction: "linear",
+			scaleColors: ["#b6d6ff", "#005ace"],
+			selectedColor: "#c9dfaf",
+			selectedRegions: [],
+			showTooltip: true,
+		});
+	}
 
 	$("#trendchart1").sparkline(
 		[5, 8, 7, 10, 9, 10, 8, 6, 4, 6, 8, 7, 6, 8, 9, 10, 8],
@@ -241,9 +246,11 @@ $(function () {
 	);
 
 	// chart 3
-	var ctx = document.getElementById("chart3").getContext("2d");
+	var chart3El = document.getElementById("chart3");
+	if (chart3El) {
+		var ctx = chart3El.getContext("2d");
 
-	var myChart = new Chart(ctx, {
+		var myChart = new Chart(ctx, {
 		type: "line",
 		data: {
 			labels: ["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"],
@@ -289,7 +296,8 @@ $(function () {
 				},
 			},
 		},
-	});
+		});
+	}
 
 	// chart 4
 	var ctx = document.getElementById("chart4").getContext("2d");

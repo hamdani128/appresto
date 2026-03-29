@@ -77,7 +77,8 @@ appminuman.controller("ControllerMinuman", function ($scope, $http) {
 		$("#id_update").val($scope.data.id);
 		$("#cmb_kategori_update").val($scope.data.kategori_id);
 		$("#nama_update").val($scope.data.nama);
-		$("#harga_update").val($scope.data.harga);
+		syncFormattedInput("hpp_update_display", "hpp_update", $scope.data.hpp);
+		syncFormattedInput("harga_update_display", "harga_update", $scope.data.harga);
 		var AreaImg = document.getElementById("display_img_edit");
 		if ($scope.data.img != "" || $scope.data.img != null) {
 			AreaImg.innerHTML =
@@ -95,6 +96,8 @@ appminuman.controller("ControllerMinuman", function ($scope, $http) {
 	};
 
 	$scope.add_minuman = function () {
+		syncFormattedInput("hpp_display", "hpp", "");
+		syncFormattedInput("harga_display", "harga", "");
 		$("#my-modal-add").modal("show");
 	};
 
@@ -129,12 +132,12 @@ appminuman.controller("ControllerMinuman", function ($scope, $http) {
 					})
 					.catch(function (error) {
 						// Handler ketika terjadi kesalahan pada permintaan
-						console.error("Terjadi kesalahan saat menghapus data meja", error);
+						console.error("Terjadi kesalahan saat menghapus data minuman", error);
 						// Tampilkan SweetAlert error
 						Swal.fire({
 							icon: "error",
 							title: "Oops...",
-							text: "Terjadi kesalahan saat menghapus data meja!",
+							text: "Terjadi kesalahan saat menghapus data minuman!",
 						});
 						// Lakukan penanganan kesalahan yang sesuai
 						// ...
@@ -182,7 +185,7 @@ appkategori.controller("ControllerKategoriMinuman", function ($scope, $http) {
 	};
 
 	$scope.delete = function (kategori) {
-		var kategoriId = kategori.id; // Menggunakan properti id dari objek kategoriMakanan (sesuaikan dengan properti yang sesuai)
+		var kategoriId = kategori.id; // Menggunakan properti id dari objek kategori minuman
 
 		$http
 			.delete(base_url("master/minuman/delete_kategori_minuman/" + kategoriId))
@@ -206,6 +209,46 @@ var combineMinuman = angular.module("CombineMinuman", [
 	"KategoriMinuman",
 	"datatables",
 ]);
+
+function toNumber(value) {
+	return String(value || "").replace(/\D/g, "");
+}
+
+function formatNumberInput(value) {
+	var numericValue = toNumber(value);
+	return numericValue ? new Intl.NumberFormat("id-ID").format(Number(numericValue)) : "";
+}
+
+function syncFormattedInput(displayId, hiddenId, rawValue) {
+	var displayInput = document.getElementById(displayId);
+	var hiddenInput = document.getElementById(hiddenId);
+
+	if (!displayInput || !hiddenInput) {
+		return;
+	}
+
+	var numericValue = toNumber(rawValue);
+	hiddenInput.value = numericValue;
+	displayInput.value = formatNumberInput(numericValue);
+}
+
+function bindFormattedNumberInput(displayId, hiddenId) {
+	var displayInput = document.getElementById(displayId);
+	var hiddenInput = document.getElementById(hiddenId);
+
+	if (!displayInput || !hiddenInput) {
+		return;
+	}
+
+	displayInput.addEventListener("input", function () {
+		syncFormattedInput(displayId, hiddenId, this.value);
+	});
+}
+
+bindFormattedNumberInput("hpp_display", "hpp");
+bindFormattedNumberInput("harga_display", "harga");
+bindFormattedNumberInput("hpp_update_display", "hpp_update");
+bindFormattedNumberInput("harga_update_display", "harga_update");
 
 function displayImage() {
 	var input = document.getElementById("file_img");
@@ -284,10 +327,11 @@ function insert_minuman() {
 	var formdata = new FormData(formupload);
 	var kategori = $("#cmb_kategori").val();
 	var nama = $("#nama").val();
+	var hpp = $("#hpp").val();
 	var harga = $("#harga").val();
-	var owner = $("#owner").val();
+	var owner = $("#cmb_owner").val();
 
-	if (kategori == "" || nama == "" || harga == "" || owner == "") {
+	if (kategori == "" || nama == "" || hpp == "" || harga == "" || owner == "") {
 		Swal.fire({
 			icon: "warning",
 			title: "Notification",
@@ -316,6 +360,21 @@ function insert_minuman() {
 function updateMinuman() {
 	var formupload = document.getElementById("form_update_minuman");
 	var formdata = new FormData(formupload);
+	var kategori = $("#cmb_kategori_update").val();
+	var nama = $("#nama_update").val();
+	var hpp = $("#hpp_update").val();
+	var harga = $("#harga_update").val();
+	var owner = $("#cmb_owner_update").val();
+
+	if (kategori == "" || nama == "" || hpp == "" || harga == "" || owner == "") {
+		Swal.fire({
+			icon: "warning",
+			title: "Notification",
+			text: "Wajib Mengisi Field - Field yang Tersedia !",
+		});
+		return;
+	}
+
 	fetch(base_url("master/minuman/update_minuman"), {
 		method: "POST",
 		body: formdata,

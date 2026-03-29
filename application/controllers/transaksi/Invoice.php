@@ -39,7 +39,7 @@ class Invoice extends CI_Controller
         $input      = json_decode(file_get_contents("php://input"), true);
         $date_start = $input['date_start'];
         $date_end   = $input['date_end'];
-        $type       = $input['type'];
+        $type       = ! empty($input['type']) ? $input['type'] : 'All';
         $query1     = $this->M_pesanan->GetTransaksi($date_start, $date_end, $type);
         $query2     = $this->M_pesanan->GetPeriodeSaldoAwal($date_start, $date_end);
         $query3     = $this->M_pesanan->GetPeriodePengeluaran($date_start, $date_end);
@@ -140,9 +140,13 @@ class Invoice extends CI_Controller
         $date_start = $input['date_start'];
         $date_end   = $input['date_end'];
         $query      = $this->M_pesanan->GetPeriodeTransaksi($date_start, $date_end);
+        $overview   = $this->M_pesanan->SummaryOverviewTransaksi($date_start, $date_end);
+        $service    = $this->M_pesanan->SummaryServiceTransaksi($date_start, $date_end);
         $data       = [
-            'kasir'  => $this->session->userdata('username') . '-' . $this->session->userdata('fullname'),
-            'detail' => $query,
+            'kasir'           => $this->session->userdata('username') . '-' . $this->session->userdata('fullname'),
+            'detail'          => $query,
+            'overview'        => $overview,
+            'service_summary' => $service,
         ];
         $this->output
             ->set_content_type('application/json')
@@ -156,14 +160,18 @@ class Invoice extends CI_Controller
         $date_start       = $input['date_start'];
         $date_end         = $input['date_end'];
         $metode_transaksi = $this->M_pesanan->SummaryMetodeTransaksi($date_start, $date_end);
+        $service_summary  = $this->M_pesanan->SummaryServiceTransaksi($date_start, $date_end);
+        $overview         = $this->M_pesanan->SummaryOverviewTransaksi($date_start, $date_end);
         $saldo_awal       = $this->M_pesanan->SummarySaldoAwal($date_start, $date_end);
         $pengeluaran      = $this->M_pesanan->SummaryPengeluaran($date_start, $date_end);
         $detail           = $this->M_pesanan->GetPeriodeTransaksi($date_start, $date_end);
         $data             = [
-            'metode'      => $metode_transaksi,
-            'saldo_awal'  => $saldo_awal,
-            'pengeluaran' => $pengeluaran,
-            'detail'      => $detail,
+            'metode'          => $metode_transaksi,
+            'service_summary' => $service_summary,
+            'overview'        => $overview,
+            'saldo_awal'      => $saldo_awal,
+            'pengeluaran'     => $pengeluaran,
+            'detail'          => $detail,
         ];
         $this->output
             ->set_content_type('application/json')

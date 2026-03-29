@@ -94,7 +94,14 @@ class Kasir extends CI_Controller
     public function getdata_transaksi_today()
     {
         date_default_timezone_set("Asia/Jakarta");
-        $query = $this->db->where('tanggal', date('Y-m-d'))->order_by('id', 'DESC')->get("invoice")->result();
+        $query = $this->db
+            ->where('tanggal', date('Y-m-d'))
+            ->where("LOWER(COALESCE(no_meja, '')) <> 'takeaway'", null, false)
+            ->where("LOWER(COALESCE(metode_service, '')) <> 'takeaway'", null, false)
+            ->not_like('no_transaksi', 'TKI', 'after')
+            ->order_by('id', 'DESC')
+            ->get("invoice")
+            ->result();
         $this->output
             ->set_content_type('application/json')
             ->set_output(json_encode($query));

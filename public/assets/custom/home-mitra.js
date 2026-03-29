@@ -157,7 +157,10 @@ angular.element(document).ready(function () {
 	]);
 });
 
-var ctx = document.getElementById("chart3").getContext("2d");
+var chart3El = document.getElementById("chart3");
+
+if (chart3El) {
+var ctx = chart3El.getContext("2d");
 
 var myChart = new Chart(ctx, {
 	type: "line",
@@ -234,6 +237,7 @@ var myChart = new Chart(ctx, {
 		},
 	},
 });
+}
 
 function formatRupiah(angka) {
 	// Hapus semua karakter selain angka

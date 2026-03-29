@@ -73,6 +73,7 @@ class Minuman extends CI_Controller
         $now        = date('Y-m-d H:i:s');
         $jenis_id   = $this->input->post('cmb_kategori');
         $nama       = $this->input->post('nama');
+        $hpp        = $this->input->post('hpp');
         $harga      = $this->input->post('harga');
         $owner      = $this->input->post('cmb_owner');
         $userid     = $this->session->userdata('user_id');
@@ -82,6 +83,7 @@ class Minuman extends CI_Controller
             $data = [
                 'kategori_id' => $jenis_id,
                 'nama'        => $nama,
+                'hpp'         => $hpp,
                 'harga'       => $harga,
                 'owner'       => $owner,
                 'user_id'     => $userid,
@@ -122,6 +124,7 @@ class Minuman extends CI_Controller
                     'img'         => $dataupload['upload_data']['file_name'],
                     'kategori_id' => $jenis_id,
                     'nama'        => $nama,
+                    'hpp'         => $hpp,
                     'harga'       => $harga,
                     'owner'       => $owner,
                     'user_id'     => $userid,
@@ -160,6 +163,7 @@ class Minuman extends CI_Controller
                 b.id AS kategori_id,
                 b.kategori AS kategori,
                 a.nama AS nama,
+                a.hpp AS hpp,
                 a.harga AS harga,
                 a.img AS img,
                 a.owner AS owner,
@@ -174,6 +178,7 @@ class Minuman extends CI_Controller
                 b.id AS kategori_id,
                 b.kategori AS kategori,
                 a.nama AS nama,
+                a.hpp AS hpp,
                 a.harga AS harga,
                 a.img AS img,
                 a.owner AS owner,
@@ -199,6 +204,7 @@ class Minuman extends CI_Controller
         $id               = $this->input->post('id_update');
         $kategori_makanan = $this->input->post('cmb_kategori_update');
         $nama             = $this->input->post('nama_update');
+        $hpp              = $this->input->post('hpp_update');
         $harga            = $this->input->post('harga_update');
         $owner            = $this->input->post('cmb_owner_update');
         $userid           = $this->session->userdata('user_id');
@@ -207,6 +213,7 @@ class Minuman extends CI_Controller
             $data = [
                 'kategori_id' => $kategori_makanan,
                 'nama'        => $nama,
+                'hpp'         => $hpp,
                 'harga'       => $harga,
                 'owner'       => $owner,
                 'status'      => 1,
@@ -246,6 +253,7 @@ class Minuman extends CI_Controller
                     'img'         => $dataupload['upload_data']['file_name'],
                     'kategori_id' => $kategori_makanan,
                     'nama'        => $nama,
+                    'hpp'         => $hpp,
                     'harga'       => $harga,
                     'owner'       => $owner,
                     'status'      => 1,

@@ -1,6 +1,15 @@
 <?php
 class M_pesanan extends CI_Model
 {
+    private function getTakeawayCondition($alias = '')
+    {
+        $prefix = $alias !== '' ? $alias . '.' : '';
+
+        return "(LOWER(COALESCE({$prefix}no_meja, '')) = 'takeaway'
+            OR LOWER(COALESCE({$prefix}metode_service, '')) = 'takeaway'
+            OR COALESCE({$prefix}no_transaksi, '') LIKE 'TKI%'
+            OR COALESCE({$prefix}no_order, '') LIKE 'TAK%')";
+    }
 
     public function GetDataMenu()
     {
@@ -100,12 +109,19 @@ class M_pesanan extends CI_Model
     public function GetTransaksi($date_start, $date_end, $type)
     {
         if ($type == 'All') {
-            $SQL = "SELECT * FROM invoice WHERE tanggal BETWEEN '" . $date_start . "' AND '" . $date_end . "'";
+            $SQL = "SELECT * FROM invoice
+                    WHERE tanggal BETWEEN '" . $date_start . "' AND '" . $date_end . "'
+                    AND LOWER(COALESCE(no_meja, '')) <> 'takeaway'
+                    AND LOWER(COALESCE(metode_service, '')) <> 'takeaway'
+                    AND no_transaksi NOT LIKE 'TKI%'
+                    ORDER BY id DESC";
         } elseif ($type == 'Owner') {
             $SQL = "SELECT
 					a.no_transaksi as no_transaksi,
 					b.no_order as no_order,
 					b.no_meja as no_meja,
+					b.no_split as no_split,
+					b.created_by as created_by,
 					b.metode as metode,
 					b.metode_service as metode_service,
 					a.tanggal as tanggal,
@@ -116,12 +132,18 @@ class M_pesanan extends CI_Model
 					WHERE
 					a.tanggal BETWEEN '" . $date_start . "' AND '" . $date_end . "'
 					AND a.owner='Owner'
-					GROUP BY 1,2,3,4,5,6,7";
+					AND LOWER(COALESCE(b.no_meja, '')) <> 'takeaway'
+					AND LOWER(COALESCE(b.metode_service, '')) <> 'takeaway'
+					AND b.no_transaksi NOT LIKE 'TKI%'
+					GROUP BY 1,2,3,4,5,6,7,8,9
+					ORDER BY b.created_at DESC";
         } else {
             $SQL = "SELECT
 					a.no_transaksi as no_transaksi,
 					b.no_order as no_order,
 					b.no_meja as no_meja,
+					b.no_split as no_split,
+					b.created_by as created_by,
 					b.metode as metode,
 					b.metode_service as metode_service,
 					a.tanggal as tanggal,
@@ -132,7 +154,11 @@ class M_pesanan extends CI_Model
 					WHERE
 					a.tanggal BETWEEN '" . $date_start . "' AND '" . $date_end . "'
 					AND a.owner='" . $type . "'
-					GROUP BY 1,2,3,4,5,6,7";
+					AND LOWER(COALESCE(b.no_meja, '')) <> 'takeaway'
+					AND LOWER(COALESCE(b.metode_service, '')) <> 'takeaway'
+					AND b.no_transaksi NOT LIKE 'TKI%'
+					GROUP BY 1,2,3,4,5,6,7,8,9
+					ORDER BY b.created_at DESC";
         }
         $query = $this->db->query($SQL)->result();
         return $query;
@@ -141,18 +167,31 @@ class M_pesanan extends CI_Model
     public function GetPeriodeTransaksi($date_start, $date_end)
     {
         date_default_timezone_set('Asia/Jakarta');
+        $takeawayCondition = $this->getTakeawayCondition('b');
         $SQL = "SELECT
 				a.jenis,
 				a.kategori,
 				a.nama,
 				a.harga,
 				a.owner,
-				b.nama AS owner_name,
+				c.nama AS owner_name,
+				CASE
+					WHEN {$takeawayCondition} THEN 'Takeaway'
+					ELSE 'Dine In'
+				END AS service_label,
+				CASE
+					WHEN {$takeawayCondition} THEN 1
+					ELSE 0
+				END AS is_takeaway,
 				SUM(a.qty) AS qty,
-				SUM(a.qty * a.harga) AS subtotal
+				SUM((COALESCE(a.qty, 0) * COALESCE(a.harga, 0)) - COALESCE(a.potongan, 0) + COALESCE(a.discount, 0)) AS subtotal
 				FROM invoice_detail a
-				LEFT JOIN mitra b
-				ON a.owner = b.kode
+				LEFT JOIN invoice b
+				ON a.no_transaksi = b.no_transaksi
+				AND a.no_order = b.no_order
+				AND a.no_meja = b.no_meja
+				LEFT JOIN mitra c
+				ON a.owner = c.kode
 				WHERE
 				a.tanggal BETWEEN '" . $date_start . "'
 				AND '" . $date_end . "'
@@ -162,9 +201,14 @@ class M_pesanan extends CI_Model
 				a.nama,
 				a.harga,
 				a.owner,
-				b.nama
+				c.nama,
+				service_label,
+				is_takeaway
 				ORDER BY
-				a.jenis ASC";
+				is_takeaway ASC,
+				a.jenis ASC,
+				a.kategori ASC,
+				a.nama ASC";
         $query = $this->db->query($SQL)->result();
         return $query;
     }
@@ -188,13 +232,58 @@ class M_pesanan extends CI_Model
     public function SummaryMetodeTransaksi($start, $end)
     {
         $SQL = "SELECT
-				a.metode,
-				SUM(a.subtotal) as total
+				CASE
+					WHEN LOWER(COALESCE(a.metode, '')) LIKE '%qris%' THEN 'QRIS'
+					WHEN LOWER(COALESCE(a.metode, '')) LIKE '%cash%' OR COALESCE(a.metode, '') = '' THEN 'Cash'
+					WHEN LOWER(COALESCE(a.metode, '')) LIKE '%transfer%' THEN 'Transfer'
+					WHEN LOWER(COALESCE(a.metode, '')) LIKE '%debit%' OR LOWER(COALESCE(a.metode, '')) LIKE '%card%' THEN 'Debit'
+					ELSE COALESCE(a.metode, 'Lainnya')
+				END AS metode,
+				COUNT(*) AS jumlah,
+				SUM(COALESCE(a.amount_total, 0)) as total
 				FROM invoice a
 				WHERE a.tanggal BETWEEN '" . $start . "' AND '" . $end . "'
-				GROUP BY 1";
+				GROUP BY 1
+				ORDER BY total DESC";
         $query = $this->db->query($SQL)->result();
         return $query;
+    }
+
+    public function SummaryServiceTransaksi($start, $end)
+    {
+        $takeawayCondition = $this->getTakeawayCondition('a');
+
+        $SQL = "SELECT
+				CASE
+					WHEN {$takeawayCondition} THEN 'Takeaway'
+					ELSE 'Dine In'
+				END AS service_label,
+				COUNT(*) AS jumlah_transaksi,
+				SUM(COALESCE(a.qty, 0)) AS total_qty,
+				SUM(COALESCE(a.amount_total, 0)) AS total
+				FROM invoice a
+				WHERE a.tanggal BETWEEN '" . $start . "' AND '" . $end . "'
+				GROUP BY 1
+				ORDER BY total DESC";
+
+        return $this->db->query($SQL)->result();
+    }
+
+    public function SummaryOverviewTransaksi($start, $end)
+    {
+        $takeawayCondition = $this->getTakeawayCondition('a');
+
+        $SQL = "SELECT
+				COUNT(*) AS jumlah_transaksi,
+				SUM(COALESCE(a.qty, 0)) AS total_qty,
+				SUM(COALESCE(a.amount_total, 0)) AS total_pendapatan,
+				SUM(CASE WHEN {$takeawayCondition} THEN COALESCE(a.amount_total, 0) ELSE 0 END) AS total_takeaway,
+				SUM(CASE WHEN {$takeawayCondition} THEN 1 ELSE 0 END) AS transaksi_takeaway,
+				SUM(CASE WHEN {$takeawayCondition} THEN COALESCE(a.qty, 0) ELSE 0 END) AS qty_takeaway
+				FROM invoice a
+				WHERE a.tanggal BETWEEN '" . $start . "' AND '" . $end . "'";
+
+        return $this->db->query($SQL)->row();
     }
 
     public function SummarySaldoAwal($start, $end)

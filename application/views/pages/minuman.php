@@ -38,8 +38,8 @@
                                 </button>
                                 <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
                                     <a class="dropdown-item" ng-click="add_minuman()">Tambah Data</a>
-                                    <a class="dropdown-item" href="javascript:;">Ready All Status Food</a>
-                                    <a class="dropdown-item" href="javascript:;">Not Ready All Status Food</a>
+                                    <a class="dropdown-item" href="javascript:;">Ready Semua Minuman</a>
+                                    <a class="dropdown-item" href="javascript:;">Tidak Ready Semua Minuman</a>
                                 </div>
                             </div>
                         </div>
@@ -52,6 +52,7 @@
                                     <th>#</th>
                                     <th>Kategori</th>
                                     <th>Nama Minuman</th>
+                                    <th>HPP</th>
                                     <th>Harga Jual</th>
                                     <th>Image</th>
                                     <th>Owner/Mitra</th>
@@ -64,10 +65,11 @@
                                     <td>{{$index + 1}}</td>
                                     <td>{{da.kategori}}</td>
                                     <td>{{da.nama}}</td>
-                                    <td>{{da.harga}}</td>
+                                    <td>{{da.hpp | currency:'Rp. ':0}}</td>
+                                    <td>{{da.harga | currency:'Rp. ':0}}</td>
                                     <td style="text-align: center;">
                                         <img style="height: 80px;width: 100px;"
-                                            ng-src="{{da.img ? '<?php echo base_url("public/upload/")?>' + da.img : '<?php echo base_url("public/assets/images/refreshments.png")?>'}}"
+                                            ng-src="{{da.img ? '<?php echo base_url("public/upload/") ?>' + da.img : '<?php echo base_url("public/assets/images/minuman.png") ?>'}}"
                                             alt="">
                                     </td>
                                     <td>
@@ -110,7 +112,7 @@
                                     </td>
                                 </tr>
                                 <tr ng-if="MinumanData.length === 0">
-                                    <td colspan="6">No data available</td>
+                                    <td colspan="9">No data available</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -228,7 +230,7 @@
         </div>
     </div>
 
-    <!-- modal add Makanan -->
+    <!-- modal add Minuman -->
     <div class="modal fade" id="my-modal-add" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable modal-lg">
             <div class="modal-content">
@@ -250,12 +252,21 @@
                                 <div class="form-group pt-2">
                                     <label for="">Nama Minuman</label>
                                     <input type="text" name="nama" id="nama" class="form-control mt-1"
-                                        placeholder="Masukkan Nama Makanan">
+                                        placeholder="Masukkan Nama Minuman">
+                                </div>
+                                <div class="form-group pt-2">
+                                    <label for="">HPP (Harga Pokok Penjualan)</label>
+                                    <input type="text" id="hpp_display" class="form-control mt-1 currency-input"
+                                        placeholder="Masukkan Harga Pokok Penjualan" inputmode="numeric"
+                                        autocomplete="off">
+                                    <input type="hidden" name="hpp" id="hpp">
                                 </div>
                                 <div class="form-group pt-2">
                                     <label for="">Harga Jual</label>
-                                    <input type="number" name="harga" id="harga" class="form-control mt-1"
-                                        placeholder="Masukkan Harga Makanan">
+                                    <input type="text" id="harga_display" class="form-control mt-1 currency-input"
+                                        placeholder="Masukkan Harga Jual Minuman" inputmode="numeric"
+                                        autocomplete="off">
+                                    <input type="hidden" name="harga" id="harga">
                                 </div>
                                 <div class="form-group pt-2">
                                     <label for="">Ambil Gambar :</label>
@@ -288,7 +299,7 @@
     </div>
 
 
-    <!-- Modal Edit Makanan -->
+    <!-- Modal Edit Minuman -->
     <div class="modal fade" id="my-modal-show-edit" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-scrollable modal-lg">
             <div class="modal-content">
@@ -305,21 +316,31 @@
                                     <input type="hidden" name="id_update" id="id_update" class="form-control">
                                 </div>
                                 <div class="form-group">
-                                    <label for="">Kategori Makanan</label>
+                                    <label for="">Kategori Minuman</label>
                                     <select name="cmb_kategori_update" id="cmb_kategori_update"
                                         class="form-control mt-1">
                                         <option value="">Pilih Kategori</option>
                                     </select>
                                 </div>
                                 <div class="form-group pt-2">
-                                    <label for="">Nama Makanan</label>
+                                    <label for="">Nama Minuman</label>
                                     <input type="text" name="nama_update" id="nama_update" class="form-control mt-1"
-                                        placeholder="Masukkan Nama Makanan">
+                                        placeholder="Masukkan Nama Minuman">
                                 </div>
                                 <div class="form-group pt-2">
-                                    <label for="">Harga Makanan</label>
-                                    <input type="number" name="harga_update" id="harga_update" class="form-control mt-1"
-                                        placeholder="Masukkan Harga Makanan">
+                                    <label for="">HPP (Harga Pokok Penjualan)</label>
+                                    <input type="text" id="hpp_update_display" class="form-control mt-1 currency-input"
+                                        placeholder="Masukkan Harga Pokok Penjualan" inputmode="numeric"
+                                        autocomplete="off">
+                                    <input type="hidden" name="hpp_update" id="hpp_update">
+                                </div>
+                                <div class="form-group pt-2">
+                                    <label for="">Harga Jual</label>
+                                    <input type="text" id="harga_update_display"
+                                        class="form-control mt-1 currency-input"
+                                        placeholder="Masukkan Harga Jual Minuman" inputmode="numeric"
+                                        autocomplete="off">
+                                    <input type="hidden" name="harga_update" id="harga_update">
                                 </div>
                                 <div class="form-group pt-2">
                                     <label for="">Edit Gambar (Jika Diperlukan) :</label>
@@ -327,7 +348,7 @@
                                         onchange="displayImageUpdate()">
                                     <div class="pt-2" id="display_img_edit"></div>
                                 </div>
-                                <div class="form-group pt-2">W
+                                <div class="form-group pt-2">
                                     <label for="">Owner</label>
                                     <select class="form-control mt-1" name="cmb_owner_update" id="cmb_owner_update">
                                     </select>

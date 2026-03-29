@@ -178,7 +178,6 @@
     <script src="<?php echo base_url() ?>public/assets/plugins/datatable/js/jquery.dataTables.min.js"></script>
     <script src="<?php echo base_url() ?>public/assets/plugins/datatable/js/dataTables.bootstrap5.min.js"></script>
     <!-- Angular -->
-    <script src="<?php echo base_url() ?>public/assets/angular/angular.js"></script>
     <script src="<?php echo base_url() ?>public/assets/angular/angular.min.js"></script>
     <script src="<?php echo base_url() ?>public/assets/angular/angular-datatables.min.js"></script>
     <!-- csutom -->

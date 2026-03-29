@@ -13,6 +13,24 @@ function base_url(string_url) {
 	return url;
 }
 
+function showBsModalById(id) {
+	var modalEl = document.getElementById(id);
+	if (!modalEl || typeof bootstrap === "undefined" || !bootstrap.Modal) {
+		return;
+	}
+
+	bootstrap.Modal.getOrCreateInstance(modalEl).show();
+}
+
+function hideBsModalById(id) {
+	var modalEl = document.getElementById(id);
+	if (!modalEl || typeof bootstrap === "undefined" || !bootstrap.Modal) {
+		return;
+	}
+
+	bootstrap.Modal.getOrCreateInstance(modalEl).hide();
+}
+
 var app = angular.module("KasirTakeAwayApp", ["notifyAppMitra", "datatables"]);
 app.controller("KasirTakeAwayAppController", function ($scope, $http) {
 	$scope.LoadData = [];
@@ -34,6 +52,7 @@ app.controller("KasirTakeAwayAppController", function ($scope, $http) {
 	$scope.amount_paid = 0;
 	$scope.change_amount = 0;
 	$scope.payment_reference = "";
+	$scope.cashQuickAmounts = [50000, 100000, 150000, 200000];
 	$scope.serviceLabel = "Takeaway";
 	$scope.queueNumber = "-";
 	$scope.draftOrderNo = "-";
@@ -44,9 +63,11 @@ app.controller("KasirTakeAwayAppController", function ($scope, $http) {
 	$scope.todayLabel = nowLabel();
 	$scope.takeawayTransactions = [];
 	$scope.takeawayTransactionsAll = [];
+	$scope.takeawayQueueList = [];
+	$scope.queueReceiptDraft = null;
 	$scope.transactionFilter = {
-		start_date: todayInputValue(),
-		end_date: todayInputValue(),
+		start_date: todayDateObject(),
+		end_date: todayDateObject(),
 		keyword: "",
 	};
 	$scope.lastPaidTransaction = null;
@@ -66,6 +87,26 @@ app.controller("KasirTakeAwayAppController", function ($scope, $http) {
 		var month = String(today.getMonth() + 1).padStart(2, "0");
 		var day = String(today.getDate()).padStart(2, "0");
 		return today.getFullYear() + "-" + month + "-" + day;
+	}
+
+	function todayDateObject() {
+		var today = new Date();
+		today.setHours(0, 0, 0, 0);
+		return today;
+	}
+
+	function formatDateRequest(value) {
+		if (!value) {
+			return todayInputValue();
+		}
+
+		if (Object.prototype.toString.call(value) === "[object Date]") {
+			var month = String(value.getMonth() + 1).padStart(2, "0");
+			var day = String(value.getDate()).padStart(2, "0");
+			return value.getFullYear() + "-" + month + "-" + day;
+		}
+
+		return value;
 	}
 
 	function normalizeDateLabel(value) {
@@ -93,11 +134,13 @@ app.controller("KasirTakeAwayAppController", function ($scope, $http) {
 	}
 
 	function isTakeawayTransaction(item) {
+		var noOrder = ((item && item.no_order) || "").toUpperCase();
 		var noMeja = ((item && item.no_meja) || "").toLowerCase();
 		var service = ((item && item.metode_service) || "").toLowerCase();
 		var invoiceNo = ((item && item.no_transaksi) || "").toUpperCase();
 
 		return (
+			noOrder.indexOf("TAK") === 0 ||
 			noMeja === "takeaway" ||
 			service === "takeaway" ||
 			invoiceNo.indexOf("TKI") === 0
@@ -142,6 +185,48 @@ app.controller("KasirTakeAwayAppController", function ($scope, $http) {
 		});
 	}
 
+	function normalizeTakeawayTransactionRows(payload) {
+		if (Array.isArray(payload)) {
+			return payload;
+		}
+
+		if (payload && Array.isArray(payload.transactions)) {
+			return payload.transactions;
+		}
+
+		return [];
+	}
+
+	function applyTakeawayTransactionRows(rows) {
+		$scope.takeawayTransactionsAll = sortTransactionsByNewest(
+			rows.filter(isTakeawayTransaction).map(createTransactionViewModel),
+		);
+		applyTransactionFilters();
+	}
+
+	function fetchTakeawayTransactions() {
+		var formdata = {
+			date_start: formatDateRequest($scope.transactionFilter.start_date),
+			date_end: formatDateRequest($scope.transactionFilter.end_date),
+		};
+
+		return $http
+			.post(base_url("transaksi/takeaway/get_transactions"), formdata)
+			.then(function (response) {
+				return normalizeTakeawayTransactionRows(response.data);
+			});
+	}
+
+	function fetchTakeawayQueues() {
+		return $http
+			.get(base_url("transaksi/takeaway/get_queue_list"))
+			.then(function (response) {
+				return Array.isArray(response.data && response.data.queues)
+					? response.data.queues
+					: [];
+			});
+	}
+
 	function applyTransactionFilters() {
 		var keyword = ($scope.transactionFilter.keyword || "").toLowerCase().trim();
 
@@ -150,6 +235,10 @@ app.controller("KasirTakeAwayAppController", function ($scope, $http) {
 				return transactionMatchesKeyword(item, keyword);
 			},
 		);
+	}
+
+	function getTakeawayAmount(item) {
+		return toNumber(item && (item.amount_total || item.subtotal || 0));
 	}
 
 	function getMenuKey(menu) {
@@ -173,7 +262,7 @@ app.controller("KasirTakeAwayAppController", function ($scope, $http) {
 	}
 
 	function canEditDraft() {
-		return !hasQueuedOrder() && !$scope.paymentCompleted;
+		return !$scope.paymentCompleted;
 	}
 
 	function showEmptyOrderWarning() {
@@ -187,8 +276,8 @@ app.controller("KasirTakeAwayAppController", function ($scope, $http) {
 	function showLockedOrderWarning() {
 		Swal.fire({
 			icon: "warning",
-			title: "Order Sudah Masuk Antrian",
-			text: "Batalkan antrian atau selesaikan pembayaran sebelum mengubah item.",
+			title: "Order Sudah Dibayar",
+			text: "Order yang sudah selesai dibayar tidak bisa diubah lagi.",
 		});
 	}
 
@@ -337,6 +426,10 @@ app.controller("KasirTakeAwayAppController", function ($scope, $http) {
 		return hasOrderItems() && !hasQueuedOrder() && !$scope.paymentCompleted;
 	};
 
+	$scope.canUpdateQueue = function () {
+		return hasOrderItems() && hasQueuedOrder() && !$scope.paymentCompleted;
+	};
+
 	$scope.isPaymentReady = function () {
 		return hasOrderItems() && !$scope.paymentCompleted;
 	};
@@ -361,23 +454,9 @@ app.controller("KasirTakeAwayAppController", function ($scope, $http) {
 	};
 
 	$scope.LoadTakeawayTransactions = function () {
-		var formdata = {
-			date_start: $scope.transactionFilter.start_date,
-			date_end: $scope.transactionFilter.end_date,
-			type: "All",
-		};
-
-		$http
-			.post(base_url("transaksi/invoice/get_transaksi"), formdata)
+		fetchTakeawayTransactions()
 			.then(function (response) {
-				var rows = Array.isArray(response.data.transaksi)
-					? response.data.transaksi
-					: [];
-
-				$scope.takeawayTransactionsAll = sortTransactionsByNewest(
-					rows.filter(isTakeawayTransaction).map(createTransactionViewModel),
-				);
-				applyTransactionFilters();
+				applyTakeawayTransactionRows(response);
 			})
 			.catch(function (error) {
 				console.error("Terjadi kesalahan saat memuat transaksi:", error);
@@ -387,6 +466,37 @@ app.controller("KasirTakeAwayAppController", function ($scope, $http) {
 					text: "Tidak bisa memuat list transaksi takeaway.",
 				});
 			});
+	};
+
+	$scope.LoadTakeawayQueues = function (showModalAfterLoad) {
+		fetchTakeawayQueues()
+			.then(function (queues) {
+				$scope.takeawayQueueList = queues;
+				if (showModalAfterLoad) {
+					showBsModalById("my-modal-takeaway-queue-list");
+				}
+			})
+			.catch(function (error) {
+				console.error("Terjadi kesalahan saat memuat antrian:", error);
+				Swal.fire({
+					icon: "error",
+					title: "Gagal",
+					text: "Tidak bisa memuat daftar antrian takeaway.",
+				});
+			});
+	};
+
+	$scope.openQueueListModal = function () {
+		$scope.LoadTakeawayQueues(true);
+	};
+
+	$scope.selectQueueFromList = function (queue) {
+		if (!queue || !queue.queue_no) {
+			return;
+		}
+		$scope.queueLookup = queue.queue_no;
+		hideBsModalById("my-modal-takeaway-queue-list");
+		$scope.loadQueueByNumber();
 	};
 
 	$scope.applyTransactionFilters = function () {
@@ -427,6 +537,55 @@ app.controller("KasirTakeAwayAppController", function ($scope, $http) {
 		}, 0);
 	};
 
+	$scope.getTakeawayTransactionCount = function () {
+		return Array.isArray($scope.takeawayTransactions)
+			? $scope.takeawayTransactions.length
+			: 0;
+	};
+
+	$scope.getTakeawayTransactionAmount = function () {
+		if (!Array.isArray($scope.takeawayTransactions)) {
+			return 0;
+		}
+
+		return $scope.takeawayTransactions.reduce(function (total, item) {
+			return total + getTakeawayAmount(item);
+		}, 0);
+	};
+
+	$scope.getTakeawayCountByPayment = function (method) {
+		if (!Array.isArray($scope.takeawayTransactions)) {
+			return 0;
+		}
+
+		return $scope.takeawayTransactions.filter(function (item) {
+			return ((item && item.metode) || "") === method;
+		}).length;
+	};
+
+	$scope.getTakeawayAmountByPayment = function (method) {
+		if (!Array.isArray($scope.takeawayTransactions)) {
+			return 0;
+		}
+
+		return $scope.takeawayTransactions.reduce(function (total, item) {
+			if (((item && item.metode) || "") !== method) {
+				return total;
+			}
+
+			return total + getTakeawayAmount(item);
+		}, 0);
+	};
+
+	$scope.getTakeawayAverageTransactionAmount = function () {
+		var count = $scope.getTakeawayTransactionCount();
+		if (!count) {
+			return 0;
+		}
+
+		return $scope.getTakeawayTransactionAmount() / count;
+	};
+
 	$scope.printTransaction = function (transaction) {
 		if (!transaction || !transaction.no_transaksi) {
 			Swal.fire({
@@ -459,6 +618,42 @@ app.controller("KasirTakeAwayAppController", function ($scope, $http) {
 			},
 			function () {
 				transaction.print_loading = false;
+			},
+		);
+	};
+
+	$scope.printTransactionUSB = function (transaction) {
+		if (!transaction || !transaction.no_transaksi) {
+			Swal.fire({
+				icon: "info",
+				title: "Print Bill",
+				text: "Transaksi takeaway belum tersedia untuk dicetak.",
+			});
+			return;
+		}
+
+		if (transaction.print_loading_usb) {
+			return;
+		}
+
+		transaction.print_loading_usb = true;
+		fetchTransactionDetail(
+			transaction,
+			function (data) {
+				transaction.print_loading_usb = false;
+				$scope.lastPaidTransaction = {
+					no_order: data.transaksi.no_order || transaction.no_order || "",
+					no_meja: data.transaksi.no_meja || transaction.no_meja || "Takeaway",
+					no_transaksi:
+						data.transaksi.no_transaksi || transaction.no_transaksi || "",
+				};
+				printTakeawayUSBReceipt(
+					data.transaksi,
+					Array.isArray(data.detail_transaksi) ? data.detail_transaksi : [],
+				);
+			},
+			function () {
+				transaction.print_loading_usb = false;
 			},
 		);
 	};
@@ -650,6 +845,15 @@ app.controller("KasirTakeAwayAppController", function ($scope, $http) {
 		$scope.syncPaymentState();
 	};
 
+	$scope.setPaidAmount = function (amount) {
+		if (!$scope.isPaymentReady() || $scope.payment_method !== "Cash") {
+			return;
+		}
+
+		$scope.amount_paid = toNumber(amount);
+		$scope.syncPaymentState();
+	};
+
 	$scope.createQueue = function () {
 		if (!hasOrderItems()) {
 			showEmptyOrderWarning();
@@ -682,6 +886,7 @@ app.controller("KasirTakeAwayAppController", function ($scope, $http) {
 				return;
 			}
 
+			var queuedItems = angular.copy($scope.LoadDataPesananList);
 			$http
 				.post(base_url("transaksi/takeaway/create_queue"), formdata)
 				.then(function (response) {
@@ -698,19 +903,26 @@ app.controller("KasirTakeAwayAppController", function ($scope, $http) {
 
 					var createdQueue = response.data.queue_no || "-";
 					var createdOrder = response.data.no_order || "-";
+					var createdAt = response.data.created_at || nowLabel();
+					$scope.queueReceiptDraft = {
+						queue_no: createdQueue,
+						no_order: createdOrder,
+						created_at: createdAt,
+						status_label: response.data.status_label || "Menunggu",
+						detail: queuedItems.map(function (item) {
+							return {
+								nama: item.nama || "-",
+								qty: toNumber(item.qty),
+								jenis: item.jenis || "Menu",
+								kategori: item.kategori || "",
+							};
+						}),
+					};
 					resetDraft();
 					$scope.queueLookup = createdQueue;
+					$scope.LoadTakeawayQueues(false);
 
-					Swal.fire({
-						icon: "success",
-						title: "Antrian Dibuat",
-						text:
-							"No antrian " +
-							createdQueue +
-							" berhasil dibuat untuk order " +
-							createdOrder +
-							". Form siap dipakai untuk order baru.",
-					});
+					showBsModalById("my-modal-takeaway-queue-print");
 				})
 				.catch(function (error) {
 					console.error("Terjadi kesalahan saat proses data:", error);
@@ -787,6 +999,66 @@ app.controller("KasirTakeAwayAppController", function ($scope, $http) {
 			});
 	};
 
+	$scope.updateQueue = function () {
+		if (!$scope.canUpdateQueue()) {
+			Swal.fire({
+				icon: "info",
+				title: "Update Antrian",
+				text: "Panggil antrian dulu dan pastikan item masih ada.",
+			});
+			return;
+		}
+
+		var formdata = {
+			no_order: $scope.draftOrderNo,
+			order_detail: buildOrderDetailPayload(),
+		};
+
+		Swal.fire({
+			title: "Simpan perubahan antrian?",
+			text: "Perubahan item pada antrian ini akan disimpan.",
+			icon: "question",
+			showCancelButton: true,
+			confirmButtonText: "Ya, simpan",
+			cancelButtonText: "Batal",
+			reverseButtons: true,
+		}).then(function (result) {
+			if (!result.isConfirmed) {
+				return;
+			}
+
+			$http
+				.post(base_url("transaksi/takeaway/update_queue"), formdata)
+				.then(function (response) {
+					if (response.data.status !== "success") {
+						Swal.fire({
+							icon: "error",
+							title: "Gagal",
+							text:
+								response.data.message ||
+								"Gagal memperbarui antrian takeaway.",
+						});
+						return;
+					}
+
+					$scope.LoadTakeawayQueues(false);
+					Swal.fire({
+						icon: "success",
+						title: "Berhasil",
+						text: "Perubahan antrian takeaway sudah disimpan.",
+					});
+				})
+				.catch(function (error) {
+					console.error("Terjadi kesalahan saat update antrian:", error);
+					Swal.fire({
+						icon: "error",
+						title: "Gagal",
+						text: "Tidak bisa menyimpan perubahan antrian takeaway.",
+					});
+				});
+		});
+	};
+
 	$scope.CetakBill = function () {
 		if (!$scope.canPrintLastBill()) {
 			Swal.fire({
@@ -798,6 +1070,45 @@ app.controller("KasirTakeAwayAppController", function ($scope, $http) {
 		}
 
 		$scope.printTransaction($scope.lastPaidTransaction);
+	};
+
+	$scope.CetakBillUSB = function () {
+		if (!$scope.canPrintLastBill()) {
+			Swal.fire({
+				icon: "info",
+				title: "Print Bill",
+				text: "Bill takeaway bisa dicetak ulang setelah ada transaksi yang berhasil dibayar.",
+			});
+			return;
+		}
+
+		$scope.printTransactionUSB($scope.lastPaidTransaction);
+	};
+
+	$scope.printQueueBluetooth = function () {
+		if (!$scope.queueReceiptDraft) {
+			Swal.fire({
+				icon: "info",
+				title: "Print Antrian",
+				text: "Data antrian belum tersedia untuk dicetak.",
+			});
+			return;
+		}
+
+		printTakeawayQueueBluetoothReceipt($scope.queueReceiptDraft);
+	};
+
+	$scope.printQueueUSB = function () {
+		if (!$scope.queueReceiptDraft) {
+			Swal.fire({
+				icon: "info",
+				title: "Print Antrian",
+				text: "Data antrian belum tersedia untuk dicetak.",
+			});
+			return;
+		}
+
+		printTakeawayQueueUSBReceipt($scope.queueReceiptDraft);
 	};
 
 	$scope.pay_after_service = function () {
@@ -829,7 +1140,7 @@ app.controller("KasirTakeAwayAppController", function ($scope, $http) {
 
 		var formdata = {
 			no_order: hasQueuedOrder() ? $scope.draftOrderNo : "",
-			order_detail: hasQueuedOrder() ? [] : buildOrderDetailPayload(),
+			order_detail: buildOrderDetailPayload(),
 			qty: toNumber($scope.total_qty),
 			subtotal: toNumber($scope.amount_total),
 			discount_text: toNumber($scope.discount_nominal),
@@ -1132,11 +1443,29 @@ function buildTakeawayBillText(data, items) {
 	const kasir = data.fullname || data.created_by || "-";
 	const tanggal = data.created_at || data.tanggal || "-";
 
-	text += "   RUMAH KOPI DINDA  \n";
-	text += "Jl. RS Haji NO. 45 A\n";
-	text += "MEDAN - SUMATERA UTARA\n";
-	text += "Telp: 085260207471\n";
-	text += "--------------------------------\n";
+	if (typeof getReceiptHeaderText === "function") {
+		text += getReceiptHeaderText();
+	} else {
+		const companyFallback = (document.getElementById("receipt_company_bill") || {})
+			.textContent || "";
+		const addressFallbackHtml = (
+			(document.getElementById("receipt_address_bill") || {}).innerHTML || ""
+		).replace(/<br\s*\/?>/gi, "\n");
+		const addressFallback = addressFallbackHtml
+			.split(/\r?\n/)
+			.map((line) => line.trim())
+			.filter(Boolean)
+			.join("\n");
+
+		if (companyFallback) {
+			text += "   " + companyFallback.toUpperCase() + "  \n";
+		}
+		if (addressFallback) {
+			text += addressFallback + "\n";
+		}
+		text += "--------------------------------\n";
+	}
+
 	text += "Tanggal   : " + tanggal + "\n";
 	text += "Kasir     : " + kasir + "\n";
 	text += "No.Order  : " + (data.no_order || "-") + "\n";
@@ -1181,11 +1510,64 @@ function buildTakeawayBillText(data, items) {
 	return text;
 }
 
+function buildTakeawayQueueText(data) {
+	let text = "";
+	const createdAt = data.created_at || "-";
+	const items = Array.isArray(data.detail) ? data.detail : [];
+	const queueNo = data.queue_no || "-";
+
+	if (typeof getReceiptHeaderText === "function") {
+		text += getReceiptHeaderText();
+	} else {
+		text += "--------------------------------\n";
+	}
+
+	text += "\x1B\x61\x01";
+	text += "QUEUE TAKEAWAY\n";
+	text += "\x1D\x21\x11";
+	text += queueNo + "\n";
+	text += "\x1D\x21\x00";
+	text += "--------------------------------\n";
+	text += "\x1B\x61\x00";
+	text += "No.Order   : " + (data.no_order || "-") + "\n";
+	text += "Status     : " + (data.status_label || "Menunggu") + "\n";
+	text += "Tanggal    : " + createdAt + "\n";
+	text += "--------------------------------\n";
+
+	items.forEach(function (item, index) {
+		text +=
+			String(index + 1).padStart(2, "0") +
+			". " +
+			(item.nama || "-") +
+			" x" +
+			(item.qty || 0) +
+			"\n";
+	});
+
+	text += "--------------------------------\n";
+	text += "      -- TERIMA KASIH --      \n\n\n";
+
+	return text;
+}
+
 async function printTakeawayBluetoothReceipt(data, items) {
 	try {
+		if (typeof ensureReceiptSettingLoaded === "function") {
+			await ensureReceiptSettingLoaded();
+		}
 		const printer = getTakeawayBluetoothPrinter();
 		await printer.connect();
-		await printTakeawayChunked(printer, buildTakeawayBillText(data, items));
+		const text = buildTakeawayBillText(data, items);
+
+		if (
+			typeof buildEscposFromText === "function" &&
+			typeof printBytesChunked === "function"
+		) {
+			const escposBytes = await buildEscposFromText(text);
+			await printBytesChunked(printer, escposBytes);
+		} else {
+			await printTakeawayChunked(printer, text);
+		}
 
 		Swal.fire({
 			icon: "success",
@@ -1201,6 +1583,145 @@ async function printTakeawayBluetoothReceipt(data, items) {
 				error && error.message
 					? error.message
 					: "Tidak bisa mencetak struk takeaway lewat Bluetooth.",
+		});
+	}
+}
+
+async function printTakeawayQueueBluetoothReceipt(data) {
+	try {
+		if (typeof ensureReceiptSettingLoaded === "function") {
+			await ensureReceiptSettingLoaded();
+		}
+		const printer = getTakeawayBluetoothPrinter();
+		await printer.connect();
+		const text = buildTakeawayQueueText(data);
+
+		if (
+			typeof buildEscposFromText === "function" &&
+			typeof printBytesChunked === "function"
+		) {
+			const escposBytes = await buildEscposFromText(text);
+			await printBytesChunked(printer, escposBytes);
+		} else {
+			await printTakeawayChunked(printer, text);
+		}
+
+		Swal.fire({
+			icon: "success",
+			title: "Berhasil",
+			text: "Slip antrian takeaway berhasil dikirim ke printer Bluetooth.",
+		});
+	} catch (error) {
+		console.error("Gagal cetak bluetooth antrian takeaway:", error);
+		Swal.fire({
+			icon: "error",
+			title: "Print Gagal",
+			text:
+				error && error.message
+					? error.message
+					: "Tidak bisa mencetak slip antrian lewat Bluetooth.",
+		});
+	}
+}
+
+async function printTakeawayUSBReceipt(data, items) {
+	try {
+		if (typeof ensureReceiptSettingLoaded === "function") {
+			await ensureReceiptSettingLoaded();
+		}
+
+		if (typeof connectQZ !== "function") {
+			throw new Error("Modul printer USB belum siap.");
+		}
+
+		await connectQZ();
+
+		const printerName = await qz.printers.getDefault();
+		const config = qz.configs.create(printerName);
+		const text = buildTakeawayBillText(data, items);
+
+		if (
+			typeof buildEscposFromText === "function" &&
+			typeof escposBytesToString === "function"
+		) {
+			const escposBytes = await buildEscposFromText(text);
+			const rawData = escposBytesToString(escposBytes);
+			await qz.print(config, [
+				{
+					type: "raw",
+					format: "command",
+					data: rawData,
+				},
+			]);
+		} else {
+			await qz.print(config, [text]);
+		}
+
+		Swal.fire({
+			icon: "success",
+			title: "Berhasil",
+			text: "Struk takeaway berhasil dikirim ke printer USB.",
+		});
+	} catch (error) {
+		console.error("Gagal cetak USB takeaway:", error);
+		Swal.fire({
+			icon: "error",
+			title: "Print Gagal",
+			text:
+				error && error.message
+					? error.message
+					: "Tidak bisa mencetak struk takeaway lewat USB.",
+		});
+	}
+}
+
+async function printTakeawayQueueUSBReceipt(data) {
+	try {
+		if (typeof ensureReceiptSettingLoaded === "function") {
+			await ensureReceiptSettingLoaded();
+		}
+
+		if (typeof connectQZ !== "function") {
+			throw new Error("Modul printer USB belum siap.");
+		}
+
+		await connectQZ();
+
+		const printerName = await qz.printers.getDefault();
+		const config = qz.configs.create(printerName);
+		const text = buildTakeawayQueueText(data);
+
+		if (
+			typeof buildEscposFromText === "function" &&
+			typeof escposBytesToString === "function"
+		) {
+			const escposBytes = await buildEscposFromText(text);
+			const rawData = escposBytesToString(escposBytes);
+			await qz.print(config, [
+				{
+					type: "raw",
+					format: "command",
+					data: rawData,
+				},
+			]);
+		} else {
+			await qz.print(config, [text]);
+		}
+
+		Swal.fire({
+			icon: "success",
+			title: "Berhasil",
+			text: "Slip antrian takeaway berhasil dikirim ke printer USB.",
+		});
+	} catch (error) {
+		console.error("Gagal cetak USB antrian takeaway:", error);
+		Swal.fire({
+			icon: "error",
+			title: "Print Gagal",
+			text:
+				error && error.message
+					? error.message
+					: "Tidak bisa mencetak slip antrian lewat USB.",
 		});
 	}
 }

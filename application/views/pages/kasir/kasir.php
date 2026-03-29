@@ -622,6 +622,11 @@
                                                 <i class="bx bx-printer"></i>
                                                 <span class="kasir-button-title">Print Bill</span>
                                             </button>
+                                            <button class="btn kasir-action-button kasir-action-button-print w-100"
+                                                ng-click="CetakOrderOnly()">
+                                                <i class="bx bx-list-ul"></i>
+                                                <span class="kasir-button-title">Print Order</span>
+                                            </button>
                                             <button class="btn kasir-action-button kasir-action-button-split w-100"
                                                 ng-click="SplitBill()">
                                                 <i class="bx bx-credit-card"></i>
@@ -638,6 +643,7 @@
                                                 <span class="kasir-button-title">Cancel Order</span>
                                             </button>
                                         </div>
+
                                     </div>
                                 </div>
                             </div>
@@ -652,6 +658,7 @@
     <?php require_once "kasir-modal-booking.php"?>
     <?php require_once "kasir-modal-cancel-order.php"?>
     <?php require_once "kasir-modal-cetak-bill.php"?>
+    <?php require_once "kasir-modal-print-order-only.php"?>
     <?php require_once "kasir-modal-gabung-bill.php"?>
     <?php require_once "kasir-modal-list-detail.php"?>
     <?php require_once "kasir-modal-payment-after-service.php"?>

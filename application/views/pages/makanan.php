@@ -38,8 +38,8 @@
                                 </button>
                                 <div class="dropdown-menu dropdown-menu-right dropdown-menu-lg-end">
                                     <a class="dropdown-item" onclick="add_makanan()">Tambah Data</a>
-                                    <a class="dropdown-item" href="javascript:;">Ready All Status Food</a>
-                                    <a class="dropdown-item" href="javascript:;">Not Ready All Status Food</a>
+                                    <a class="dropdown-item" href="javascript:;">Ready Semua Makanan</a>
+                                    <a class="dropdown-item" href="javascript:;">Tidak Ready Semua Makanan</a>
                                 </div>
                             </div>
                         </div>
@@ -52,6 +52,7 @@
                                     <th>#</th>
                                     <th>Kategori</th>
                                     <th>Nama Makanan</th>
+                                    <th>HPP</th>
                                     <th>Harga Jual</th>
                                     <th>File Image</th>
                                     <th>Owner/Mitra</th>
@@ -64,10 +65,11 @@
                                     <td>{{$index + 1}}</td>
                                     <td>{{dt.kategori}}</td>
                                     <td>{{dt.nama}}</td>
-                                    <td>{{dt.harga}}</td>
+                                    <td>{{dt.hpp | currency:'Rp. ':0}}</td>
+                                    <td>{{dt.harga | currency:'Rp. ':0}}</td>
                                     <td style="text-align: center;">
                                         <img style="height: 80px;width: 100px;"
-                                            ng-src="{{dt.img ? '<?php echo base_url("public/upload/") ?>' + dt.img : '<?php echo base_url("public/assets/images/foodbar.png") ?>'}}"
+                                            ng-src="{{dt.img ? '<?php echo base_url("public/upload/") ?>' + dt.img : '<?php echo base_url("public/assets/images/makanan.png") ?>'}}"
                                             alt="">
                                     </td>
                                     <td>
@@ -99,14 +101,14 @@
                                             <button class="btn btn-md btn-warning" ng-click="ShowEditMakanan(dt)">
                                                 <i class="bx bx-edit"></i>
                                             </button>
-                                            <button class="btn btn-md btn-dark" ng-click="ReadyClose(da)">
+                                            <button class="btn btn-md btn-dark" ng-click="ReadyClose(dt)">
                                                 <i class="bx bx-refresh"></i>
                                             </button>
                                         </div>
                                     </td>
                                 </tr>
                                 <tr ng-if="Makanan.length === 0">
-                                    <td colspan="6">No data available</td>
+                                    <td colspan="9">No data available</td>
                                 </tr>
                             </tbody>
                         </table>
@@ -245,13 +247,17 @@
                                 </div>
                                 <div class="form-group pt-2">
                                     <label for="">HPP (Harga Pokok Penjualan)</label>
-                                    <input type="number" name="hpp" id="hpp" class="form-control mt-1"
-                                        placeholder="Masukkan Harga Pokok Penjualan">
+                                    <input type="text" id="hpp_display" class="form-control mt-1 currency-input"
+                                        placeholder="Masukkan Harga Pokok Penjualan" inputmode="numeric"
+                                        autocomplete="off">
+                                    <input type="hidden" name="hpp" id="hpp">
                                 </div>
                                 <div class="form-group pt-2">
                                     <label for="">Harga Jual</label>
-                                    <input type="number" name="harga" id="harga" class="form-control mt-1"
-                                        placeholder="Masukkan Harga Makanan">
+                                    <input type="text" id="harga_display" class="form-control mt-1 currency-input"
+                                        placeholder="Masukkan Harga Jual Makanan" inputmode="numeric"
+                                        autocomplete="off">
+                                    <input type="hidden" name="harga" id="harga">
                                 </div>
                                 <div class="form-group pt-2">
                                     <label for="">Ambil Gambar :</label>
@@ -315,13 +321,18 @@
                                 </div>
                                 <div class="form-group pt-2">
                                     <label for="">HPP (Harga Pokok Penjualan)</label>
-                                    <input type="number" name="hpp_update" id="hpp_update" class="form-control mt-1"
-                                        placeholder="Masukkan Harga Pokok Penjualan">
+                                    <input type="text" id="hpp_update_display" class="form-control mt-1 currency-input"
+                                        placeholder="Masukkan Harga Pokok Penjualan" inputmode="numeric"
+                                        autocomplete="off">
+                                    <input type="hidden" name="hpp_update" id="hpp_update">
                                 </div>
                                 <div class="form-group pt-2">
                                     <label for="">Harga Jual</label>
-                                    <input type="number" name="harga_update" id="harga_update" class="form-control mt-1"
-                                        placeholder="Masukkan Harga Makanan">
+                                    <input type="text" id="harga_update_display"
+                                        class="form-control mt-1 currency-input"
+                                        placeholder="Masukkan Harga Jual Makanan" inputmode="numeric"
+                                        autocomplete="off">
+                                    <input type="hidden" name="harga_update" id="harga_update">
                                 </div>
                                 <div class="form-group pt-2">
                                     <label for="">Edit Gambar (Jika Diperlukan) :</label>

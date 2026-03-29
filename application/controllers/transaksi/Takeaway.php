@@ -149,6 +149,140 @@ class Takeaway extends CI_Controller
         ]);
     }
 
+    public function update_queue()
+    {
+        date_default_timezone_set("Asia/Jakarta");
+        $input = json_decode(file_get_contents("php://input"), true);
+
+        $noOrder = trim($input['no_order'] ?? '');
+        $orderDetail = isset($input['order_detail']) && is_array($input['order_detail'])
+            ? $input['order_detail']
+            : [];
+
+        if ($noOrder === '') {
+            return $this->json_response([
+                'status'  => 'error',
+                'message' => 'No order takeaway tidak ditemukan.',
+            ], 422);
+        }
+
+        if (empty($orderDetail)) {
+            return $this->json_response([
+                'status'  => 'error',
+                'message' => 'Item antrian tidak boleh kosong.',
+            ], 422);
+        }
+
+        $orderRow = $this->db->where('no_order', $noOrder)
+            ->where('no_meja', 'Takeaway')
+            ->where('status', 1)
+            ->get('order')
+            ->row();
+
+        if (! $orderRow) {
+            return $this->json_response([
+                'status'  => 'error',
+                'message' => 'Antrian takeaway tidak ditemukan atau sudah tidak aktif.',
+            ], 404);
+        }
+
+        $tanggal  = date('Y-m-d');
+        $now      = date('Y-m-d H:i:s');
+        $userId   = $this->session->userdata('user_id');
+        $username = $this->session->userdata('username');
+
+        $insertedOwners  = [];
+        $dataOrderDetail = [];
+        $dataNotif       = [];
+
+        foreach ($orderDetail as $row) {
+            $owner  = ! empty($row['owner']) ? $row['owner'] : 'Owner';
+            $harga  = (float) ($row['harga'] ?? 0);
+            $qtyRow = (int) ($row['qty'] ?? 0);
+
+            if ($qtyRow <= 0) {
+                continue;
+            }
+
+            if ($owner !== 'Owner' && ! in_array($owner, $insertedOwners, true)) {
+                $dataNotif[] = [
+                    'no_order'   => $noOrder,
+                    'no_meja'    => 'Takeaway',
+                    'tanggal'    => $tanggal,
+                    'owner'      => $owner,
+                    'notif'      => 1,
+                    'created_at' => $now,
+                    'created_by' => $username,
+                ];
+                $insertedOwners[] = $owner;
+            }
+
+            $dataOrderDetail[] = [
+                'no_order'   => $noOrder,
+                'no_meja'    => 'Takeaway',
+                'tanggal'    => $tanggal,
+                'kategori'   => $row['kategori'] ?? '',
+                'nama'       => $row['nama'] ?? '',
+                'harga'      => $harga,
+                'qty'        => $qtyRow,
+                'potongan'   => 0,
+                'discount'   => 0,
+                'jenis'      => $row['jenis'] ?? 'Menu',
+                'owner'      => $owner,
+                'status'     => 1,
+                'user_id'    => $userId,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ];
+        }
+
+        if (empty($dataOrderDetail)) {
+            return $this->json_response([
+                'status'  => 'error',
+                'message' => 'Item antrian takeaway tidak valid.',
+            ], 422);
+        }
+
+        $this->db->trans_begin();
+
+        $this->db->where('no_order', $noOrder)
+            ->where('no_meja', 'Takeaway')
+            ->delete('order_detail');
+
+        $this->db->where('no_order', $noOrder)
+            ->where('no_meja', 'Takeaway')
+            ->delete('mitra_order_notif');
+
+        $this->db->insert_batch('order_detail', $dataOrderDetail);
+
+        if (! empty($dataNotif)) {
+            $this->db->insert_batch('mitra_order_notif', $dataNotif);
+        }
+
+        $this->db->where('no_order', $noOrder)
+            ->where('no_meja', 'Takeaway')
+            ->update('order', [
+                'updated_at' => $now,
+                'user_id'    => $userId,
+            ]);
+
+        if ($this->db->trans_status() === false) {
+            $this->db->trans_rollback();
+
+            return $this->json_response([
+                'status'  => 'error',
+                'message' => 'Gagal memperbarui antrian takeaway.',
+            ], 500);
+        }
+
+        $this->db->trans_commit();
+
+        return $this->json_response([
+            'status'  => 'success',
+            'message' => 'Antrian takeaway berhasil diperbarui.',
+        ]);
+    }
+
     public function submit_payment()
     {
         date_default_timezone_set("Asia/Jakarta");
@@ -216,10 +350,15 @@ class Takeaway extends CI_Controller
 
             $meta        = $this->parse_order_meta($orderRow->keterangan);
             $queueNumber = $meta['queue_no'];
-            $orderDetail = $this->db->where('no_order', $noOrder)
-                ->where('no_meja', $noMeja)
-                ->get('order_detail')
-                ->result();
+
+            if (! empty($inputOrderRows)) {
+                $orderDetail = $this->map_input_order_to_objects($inputOrderRows);
+            } else {
+                $orderDetail = $this->db->where('no_order', $noOrder)
+                    ->where('no_meja', $noMeja)
+                    ->get('order_detail')
+                    ->result();
+            }
 
             if (empty($orderDetail)) {
                 return $this->json_response([
@@ -514,6 +653,77 @@ class Takeaway extends CI_Controller
         ]);
     }
 
+    public function get_transactions()
+    {
+        date_default_timezone_set("Asia/Jakarta");
+        $input     = json_decode(file_get_contents("php://input"), true);
+        $dateStart = ! empty($input['date_start']) ? $input['date_start'] : date('Y-m-d');
+        $dateEnd   = ! empty($input['date_end']) ? $input['date_end'] : date('Y-m-d');
+
+        $rows = $this->db
+            ->where('tanggal >=', $dateStart)
+            ->where('tanggal <=', $dateEnd)
+            ->group_start()
+            ->like('no_order', 'TAK', 'after')
+            ->or_where("LOWER(COALESCE(no_meja, '')) = 'takeaway'", null, false)
+            ->or_where("LOWER(COALESCE(metode_service, '')) = 'takeaway'", null, false)
+            ->or_like('no_transaksi', 'TKI', 'after')
+            ->group_end()
+            ->order_by('created_at', 'DESC')
+            ->get('invoice')
+            ->result();
+
+        return $this->json_response([
+            'status'       => 'success',
+            'transactions' => $rows,
+        ]);
+    }
+
+    public function get_queue_list()
+    {
+        date_default_timezone_set("Asia/Jakarta");
+        $today = date('Y-m-d');
+
+        $orders = $this->db->where('no_meja', 'Takeaway')
+            ->where('status', 1)
+            ->where('tanggal', $today)
+            ->order_by('created_at', 'DESC')
+            ->get('order')
+            ->result();
+
+        $result = [];
+
+        foreach ($orders as $order) {
+            $meta = $this->parse_order_meta($order->keterangan);
+
+            $detail = $this->db->select('nama, qty, jenis, kategori')
+                ->where('no_order', $order->no_order)
+                ->where('no_meja', 'Takeaway')
+                ->get('order_detail')
+                ->result();
+
+            $qty = 0;
+            foreach ($detail as $row) {
+                $qty += (int) ($row->qty ?? 0);
+            }
+
+            $result[] = [
+                'queue_no'     => $meta['queue_no'],
+                'no_order'     => $order->no_order,
+                'status_label' => $meta['status_label'],
+                'tanggal'      => $order->tanggal,
+                'created_at'   => $order->created_at,
+                'qty'          => $qty,
+                'detail'       => $detail,
+            ];
+        }
+
+        return $this->json_response([
+            'status' => 'success',
+            'queues' => $result,
+        ]);
+    }
+
     private function generate_takeaway_order_number()
     {
         $tanggal = date('Y-m-d');
@@ -568,12 +778,12 @@ class Takeaway extends CI_Controller
              FROM `order`
              WHERE tanggal = ?
              AND no_meja = ?
-             AND keterangan LIKE '%\"queue_no\":\"TA%'",
+             AND keterangan LIKE '%\"queue_no\":\"%'",
             [$tanggal, 'Takeaway']
         )->row();
 
         $next = ((int) ($query->total ?? 0)) + 1;
-        return 'TA' . sprintf('%03d', $next);
+        return sprintf('%03d', $next);
     }
 
     private function map_input_order_to_objects($rows)

@@ -16,18 +16,80 @@ var app = angular.module("ListTransaksiApp", ["datatables"]);
 app.controller(
 	"ListTransaksiAppController",
 	function ($scope, $http, $timeout) {
-		// $scope.data_transaksi = [];
+		$scope.data_transaksi = [];
+		$scope.saldo_awal_data = [];
+		$scope.pengeluaran_data = [];
+
+		function applyTransaksiPayload(payload) {
+			$scope.data_transaksi = Array.isArray(payload)
+				? payload
+				: (payload && payload.transaksi) || [];
+			$scope.saldo_awal_data =
+				(payload && payload.saldo_awal) || $scope.saldo_awal_data || [];
+			$scope.pengeluaran_data =
+				(payload && payload.pengeluaran) || $scope.pengeluaran_data || [];
+		}
+
+		$scope.sumField = function (items, field) {
+			if (!Array.isArray(items) || !items.length) return 0;
+			return items.reduce(function (total, item) {
+				return total + (parseFloat((item && item[field]) || 0) || 0);
+			}, 0);
+		};
+
+		$scope.getNetCashMovement = function () {
+			return (
+				$scope.sumField($scope.data_transaksi, "subtotal") +
+				$scope.sumField($scope.saldo_awal_data, "saldo") -
+				$scope.sumField($scope.pengeluaran_data, "amount")
+			);
+		};
+
+		$scope.countByField = function (items, field, value) {
+			if (!Array.isArray(items) || !items.length) return 0;
+			return items.filter(function (item) {
+				return ((item && item[field]) || "") === value;
+			}).length;
+		};
+
+		$scope.countDistinct = function (items, field) {
+			if (!Array.isArray(items) || !items.length) return 0;
+			var values = items
+				.map(function (item) {
+					return ((item && item[field]) || "").toString().trim();
+				})
+				.filter(function (value) {
+					return value !== "";
+				});
+			return new Set(values).size;
+		};
+
+		$scope.getDateRangeLabel = function () {
+			var start = $("#start_date").val() || "-";
+			var end = $("#end_date").val() || "-";
+			return start === end ? start : start + " s/d " + end;
+		};
+
+		$scope.getSelectedTypeLabel = function () {
+			var type = $("#type_transaction").val() || "All";
+			if (type === "All") return "Semua owner kasir";
+			if (type === "Owner") return "Owner internal";
+			return "Mitra " + type;
+		};
+
 		$scope.LoadDataTransaksi = function () {
 			var date_start = $("#start_date").val();
 			var date_end = $("#end_date").val();
+			var type = $("#type_transaction").val() || "All";
 			var formdata = {
 				date_start: date_start,
 				date_end: date_end,
+				type: type,
 			};
 			$http
 				.post(base_url("transaksi/invoice/get_transaksi"), formdata)
 				.then(function (response) {
-					$scope.data_transaksi = response.data;
+					applyTransaksiPayload(response.data);
 				})
 				.catch(function (error) {
 					console.log(error);
@@ -61,9 +123,7 @@ app.controller(
 			$http
 				.post(base_url("transaksi/invoice/get_transaksi"), formdata)
 				.then(function (response) {
-					$scope.data_transaksi = response.data.transaksi;
-					$scope.saldo_awal_data = response.data.saldo_awal;
-					$scope.pengeluaran_data = response.data.pengeluaran;
+					applyTransaksiPayload(response.data);
 				})
 				.catch(function (error) {
 					console.log(error);
@@ -190,12 +250,13 @@ app.controller(
 			var no_booking = dt.no_order;
 			var no_meja = dt.no_meja;
 			var no_transaksi = dt.no_transaksi;
+			var no_split = dt.no_split || null;
 
 			document.getElementById("lb_bill_billing_no_pesanan").innerHTML =
 				no_booking;
 			document.getElementById("lb_bill_billing_no_meja").innerHTML = no_meja;
 
-			$scope.DetailPesananBilling(no_booking, no_meja, no_transaksi);
+			$scope.DetailPesananBilling(no_booking, no_meja, no_transaksi, no_split);
 
 			// // Unbind event dulu biar tidak dobel
 			// $("#my-modal-bill-billing")
@@ -209,11 +270,17 @@ app.controller(
 			printEppposAfterPayment();
 		};
 
-		$scope.DetailPesananBilling = function (no_booking, no_meja, no_transaksi) {
+		$scope.DetailPesananBilling = function (
+			no_booking,
+			no_meja,
+			no_transaksi,
+			no_split,
+		) {
 			var formdata = {
 				no_booking: no_booking,
 				no_meja: no_meja,
 				no_transaksi: no_transaksi,
+				no_split: no_split,
 			};
 			$scope.LoadDataPesananDetail = [];
 			$scope.LoadDataPesananGabungSementara = [];
@@ -413,6 +480,9 @@ app.controller(
 
 async function printEppposAfterPayment() {
 	try {
+		if (typeof ensureReceiptSettingLoaded === "function") {
+			await ensureReceiptSettingLoaded();
+		}
 		if (!BTPrinter) throw "Bluetooth belum siap";
 
 		await BTPrinter.connect();
@@ -420,9 +490,15 @@ async function printEppposAfterPayment() {
 		const text = buildBillTextAfterPayment();
 
 		// 🔥 FIX UTAMA: encode string → bytes
-		const encoder = new TextEncoder();
-		const data = encoder.encode(text); // Uint8Array
-		await printChunked(BTPrinter, text);
+		if (
+			typeof buildEscposFromText === "function" &&
+			typeof printBytesChunked === "function"
+		) {
+			const escposBytes = await buildEscposFromText(text);
+			await printBytesChunked(BTPrinter, escposBytes);
+		} else {
+			await printChunked(BTPrinter, text);
+		}
 		// await BTPrinter.print(data); // ✅ sekarang BENAR
 
 		showNotification("Berhasil cetak", "success");
@@ -433,13 +509,84 @@ async function printEppposAfterPayment() {
 }
 
 function buildBillTextAfterPayment() {
+	if (
+		typeof getReceiptHeaderText === "function" &&
+		typeof formatRupiah === "function"
+	) {
+		const scope = angular.element(document.getElementById("printArea3")).scope();
+		const data = scope && scope.billingData ? scope.billingData : null;
+		const groupedOrders = (scope && scope.groupedOrders) || [];
+
+		if (data) {
+			let receiptText = "";
+
+			receiptText += getReceiptHeaderText();
+			receiptText += "Tanggal   : " + data.created_at + "\n";
+			receiptText += "No.Order  : " + data.no_order + "\n";
+			receiptText += "No.Invoice: " + data.no_transaksi + "\n";
+			receiptText += "Kasir     : " + data.created_by + "\n";
+			receiptText += "No.Meja   : " + (data.no_meja || "-") + "\n";
+			receiptText += "--------------------------------\n";
+
+			groupedOrders.forEach((group) => {
+				receiptText += "Table : " + group.no_meja + "\n";
+
+				group.items.forEach((item) => {
+					const qty = `[${item.qty}]`.padEnd(5, " ");
+					const name = item.nama.substring(0, 16).padEnd(16, " ");
+					const total = (item.qty * item.harga - (item.potongan || 0))
+						.toLocaleString("id-ID")
+						.padStart(8, " ");
+
+					receiptText += `${qty}${name}${total}\n`;
+				});
+
+				receiptText += "--------------------------------\n";
+			});
+
+			receiptText += `Qty         : ${data.qty}\n`;
+			receiptText += `Subtotal    : ${formatRupiah(data.subtotal)}\n`;
+			receiptText += `Discount    : ${formatRupiah(data.potongan)}\n`;
+			receiptText += `PPN ${data.ppn_persen || 10}%     : ${formatRupiah(data.ppn)}\n`;
+			receiptText += "--------------------------------\n";
+			receiptText += `GRAND TOTAL : ${formatRupiah(data.amount_total)}\n`;
+			receiptText += `Metode Bayar: ${data.metode || "-"}\n`;
+			receiptText += `Dibayar     : ${formatRupiah(data.dibayar || 0)}\n`;
+			receiptText += `Kembalian   : ${formatRupiah(data.kembalian || 0)}\n`;
+
+			if (data.metode_service) {
+				receiptText += `Service     : ${data.metode_service}\n`;
+			}
+
+			receiptText += "--------------------------------\n";
+			receiptText += "     -- BILL TRANSAKSI --     \n";
+			receiptText += "      -- TERIMA KASIH --      \n";
+			receiptText += " Barang yang sudah dibeli\n";
+			receiptText += " tidak dapat dikembalikan\n\n\n";
+
+			return receiptText;
+		}
+	}
+
 	let text = "";
+	const companyFallback = (document.getElementById("receipt_company_billing") || {})
+		.textContent || "";
+	const addressFallbackHtml = (
+		(document.getElementById("receipt_address_billing") || {}).innerHTML || ""
+	).replace(/<br\s*\/?>/gi, "\n");
+	const addressFallback = addressFallbackHtml
+		.split(/\r?\n/)
+		.map((line) => line.trim())
+		.filter(Boolean)
+		.join("\n");
 
 	// ===== HEADER =====
-	text += "   RUMAH KOPI DINDA  \n";
-	text += "Jl. RS Haji NO. 45 A\n";
-	text += "MEDAN - SUMATERA UTARA\n";
-	text += "Telp: 085260207471\n";
+	if (companyFallback) {
+		text += "   " + companyFallback.toUpperCase() + "  \n";
+	}
+	if (addressFallback) {
+		text += addressFallback + "\n";
+	}
 	text += "--------------------------------\n";
 
 	// ===== INFO TRANSAKSI =====

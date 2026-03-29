@@ -80,9 +80,19 @@
                             <div class="row g-2 tambah-menu-grid-row">
                                 <div class="col-6" ng-repeat="dt in filteredMenu">
                                     <div class="menu-card" ng-click="PilihMenuTambahan(dt)" data-bs-dismiss="offcanvas">
-                                        <div class="menu-card-img">
-                                            <img ng-src="<?php echo base_url('public/upload/{{dt.img}}') ?>"
-                                                onerror="this.src='<?php echo base_url('public/assets/images/foodbar.png') ?>'">
+                                            <div class="menu-card-img">
+                                            <img ng-if="dt.jenis=='Makanan' && !dt.img"
+                                                src="<?php echo base_url('public/assets/images/makanan.png') ?>"
+                                                alt="{{dt.nama}}">
+                                            <img ng-if="dt.jenis=='Makanan' && dt.img"
+                                                src="<?php echo base_url('public/upload/{{dt.img}}') ?>"
+                                                alt="{{dt.nama}}">
+                                            <img ng-if="dt.jenis=='Minuman' && !dt.img"
+                                                src="<?php echo base_url('public/assets/images/minuman.png') ?>"
+                                                alt="{{dt.nama}}">
+                                            <img ng-if="dt.jenis=='Minuman' && dt.img"
+                                                src="<?php echo base_url('public/upload/{{dt.img}}') ?>"
+                                                alt="{{dt.nama}}">
                                             <span class="status-badge"
                                                 ng-class="dt.status_food=='1' ? 'bg-success' : 'bg-danger'">
                                                 {{dt.status_food=='1' ? 'Ready' : 'Close'}}
@@ -163,8 +173,18 @@
                                                 ng-if="filteredMenu.length > 0">
                                                 <div class="menu-card" ng-click="PilihMenuTambahan(dt)">
                                                     <div class="menu-card-img">
-                                                        <img ng-src="<?php echo base_url('public/upload/{{dt.img}}') ?>"
-                                                            onerror="this.src='<?php echo base_url('public/assets/images/foodbar.png') ?>'">
+                                                        <img ng-if="dt.jenis=='Makanan' && !dt.img"
+                                                            src="<?php echo base_url('public/assets/images/makanan.png') ?>"
+                                                            alt="{{dt.nama}}">
+                                                        <img ng-if="dt.jenis=='Makanan' && dt.img"
+                                                            src="<?php echo base_url('public/upload/{{dt.img}}') ?>"
+                                                            alt="{{dt.nama}}">
+                                                        <img ng-if="dt.jenis=='Minuman' && !dt.img"
+                                                            src="<?php echo base_url('public/assets/images/minuman.png') ?>"
+                                                            alt="{{dt.nama}}">
+                                                        <img ng-if="dt.jenis=='Minuman' && dt.img"
+                                                            src="<?php echo base_url('public/upload/{{dt.img}}') ?>"
+                                                            alt="{{dt.nama}}">
                                                         <span class="status-badge"
                                                             ng-class="dt.status_food=='1' ? 'bg-success' : 'bg-danger'">
                                                             {{dt.status_food=='1' ? 'Ready' : 'Close'}}
@@ -374,6 +394,9 @@
 
 #my-modal-tambah-pesanan .menu-card-img img {
     position: absolute;
+    top: 0;
+    left: 0;
+    display: block;
     width: 100%;
     height: 100%;
     object-fit: cover;

@@ -1,4 +1,26 @@
 <header>
+    <?php
+        $profileUser = null;
+        $profileImageUrl = base_url() . 'public/assets/images/avatars/avatar-2.png';
+        $profileImageField = null;
+        $profileImageFields = ['img_profile', 'profile_img', 'avatar', 'image', 'img', 'photo', 'foto'];
+        $currentUsername = $this->session->userdata('username');
+
+        if (!empty($currentUsername)) {
+            $profileUser = $this->db->where('username', $currentUsername)->get('users')->row();
+
+            foreach ($profileImageFields as $fieldName) {
+                if ($this->db->field_exists($fieldName, 'users')) {
+                    $profileImageField = $fieldName;
+                    break;
+                }
+            }
+
+            if ($profileUser && $profileImageField && !empty($profileUser->{$profileImageField})) {
+                $profileImageUrl = base_url() . 'public/upload/' . $profileUser->{$profileImageField};
+            }
+        }
+    ?>
     <div class="topbar d-flex align-items-center">
         <nav class="navbar navbar-expand">
             <div class="topbar-logo-header">
@@ -262,7 +284,7 @@
             <div class="user-box dropdown">
                 <a class="d-flex align-items-center nav-link dropdown-toggle dropdown-toggle-nocaret" href="#"
                     role="button" data-bs-toggle="dropdown" aria-expanded="false">
-                    <img src="<?php echo base_url() ?>public/assets/images/avatars/avatar-2.png" class="user-img"
+                    <img src="<?php echo $profileImageUrl; ?>" class="user-img"
                         alt="user avatar">
                     <div class="user-info ps-3">
                         <div id="userdata" data-fullname="<?php echo $this->session->userdata('fullname'); ?>"></div>
@@ -271,12 +293,15 @@
                     </div>
                 </a>
                 <ul class="dropdown-menu dropdown-menu-end">
-                    <li><a class="dropdown-item" href="javascript:;"><i class="bx bx-user"></i><span>Profile</span></a>
+                    <li>
+                        <a class="dropdown-item" href="<?php echo base_url('profile') ?>">
+                            <i class="bx bx-user"></i><span>Profile</span>
+                        </a>
                     </li>
-                    <li><a class="dropdown-item" href="javascript:;"><i class="bx bx-cog"></i><span>Settings</span></a>
-                    </li>
-                    <li><a class="dropdown-item" href="javascript:;"><i
-                                class='bx bx-home-circle'></i><span>Dashboard</span></a>
+                    <li>
+                        <a class="dropdown-item" href="<?php echo base_url('setting') ?>">
+                            <i class=" bx bx-cog"></i><span>Settings</span>
+                        </a>
                     </li>
                     <li>
                         <div class="dropdown-divider mb-0"></div>

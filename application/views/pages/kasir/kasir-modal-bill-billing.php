@@ -11,169 +11,119 @@
             </div>
             <div class="modal-body">
                 <div class="card">
-                    <div class="card-body" id="printArea3">
-                        <div>
-                            <div class="text-center bold" style="font-size: 14px;margin-top: 0px;">
-                                <!-- <img src="<?php echo base_url() ?>public/assets/images/millennialpos.png"
-                                                alt=""> -->
-                                <h5>RUMAH KOPI DINDA</h5>
-                            </div>
-                            <div class="text-center">
-                                Jl. RS Haji NO. 45 A<br>
-                                MEDAN - SUMATERA UTARA<br>
-                                Telp: 085260207471<br>
-                            </div>
-                            <hr>
-                            <div style="padding-left: 18px;">
-                                <table style="width: 100%;">
-                                    <tr>
-                                        <td style="width: 20%;">
-                                            Tanggal
+                    <div class="card-body kasir-billing-receipt-shell" id="printArea3">
+                        <div class="kasir-billing-receipt-header text-center">
+                            <img id="receipt_logo_billing" src="" alt="Logo Struk" class="kasir-billing-receipt-logo"
+                                style="display:none;">
+                            <h5 id="receipt_company_billing" class="kasir-billing-receipt-company"></h5>
+                            <div class="kasir-billing-receipt-address" id="receipt_address_billing"></div>
+                        </div>
+
+                        <hr class="kasir-billing-receipt-rule">
+
+                        <div class="kasir-billing-receipt-section">
+                            <table class="kasir-billing-receipt-table kasir-billing-receipt-info">
+                                <tr>
+                                    <td>Tanggal</td>
+                                    <td>:</td>
+                                    <td><span id="bill_billing_date_show" style="font-weight: 500;"></span></td>
+                                </tr>
+                                <tr>
+                                    <td>Kasir</td>
+                                    <td>:</td>
+                                    <td><span id="bill_billing_chasier_show" style="font-weight: 500;"></span></td>
+                                </tr>
+                                <tr>
+                                    <td>No.Order</td>
+                                    <td>:</td>
+                                    <td><span id="bill_billing_no_order_show" style="font-weight: 500;"></span></td>
+                                </tr>
+                                <tr>
+                                    <td>No.Invoice</td>
+                                    <td>:</td>
+                                    <td><span id="bill_billing_no_invoice" style="font-weight: 500;"></span></td>
+                                </tr>
+                            </table>
+                        </div>
+
+                        <hr class="kasir-billing-receipt-rule">
+
+                        <div class="kasir-billing-receipt-section">
+                            <table class="kasir-billing-receipt-table kasir-billing-receipt-items">
+                                <tbody ng-repeat="group in groupedOrders">
+                                    <tr class="group-row">
+                                        <td colspan="3">Table : {{ group.no_meja }}</td>
+                                    </tr>
+                                    <tr ng-repeat="item in group.items">
+                                        <td class="qty-col">[{{ item.qty }}]</td>
+                                        <td class="name-col">
+                                            {{ item.nama }}
+                                            <span ng-if="item.potongan !== null">({{item.discount}}%)</span>
                                         </td>
-                                        <td style="width: 5%;">:</td>
-                                        <td style="width: 75%;"><span id="bill_billing_date_show"
-                                                style="font-weight: 500;">
-                                                {{$scope.billingData.tanggal | date:'dd-MM-yyyy'}}
-                                            </span>
+                                        <td class="amount-col">
+                                            {{ (item.qty * item.harga) - item.potongan | currency:'Rp ':0 }}
                                         </td>
                                     </tr>
-                                    <tr>
-                                        <td>
-                                            Kasir
-                                        </td>
-                                        <td>:</td>
-                                        <td><span id="bill_billing_chasier_show" style="font-weight: 500;"></span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            No.order
-                                        </td>
-                                        <td>:</td>
-                                        <td><span id="bill_billing_no_order_show" style="font-weight: 500;"></span>
-                                        </td>
-                                    </tr>
-                                    <tr>
-                                        <td>
-                                            No.Invoice
-                                        </td>
-                                        <td>:</td>
-                                        <td><span id="bill_billing_no_invoice" style="font-weight: 500;"></span>
-                                        </td>
-                                    </tr>
-                                </table>
+                                </tbody>
+                            </table>
+                        </div>
 
-                            </div>
-                            <hr>
-                            <div style="padding-left: 18px;">
-                                <!-- Barang -->
-                                <table style="width: 100%; font-size: 13px;">
-                                    <tbody ng-repeat="group in groupedOrders">
-                                        <tr class="fw-bold">
-                                            <td colspan="3" style="padding-top: 0px; padding-bottom: 2px;">
-                                                Table : {{ group.no_meja }}
-                                                <hr class="my-1">
-                                            </td>
-                                        </tr>
-                                        <tr ng-repeat="item in group.items">
-                                            <td style="width: 8%; text-align: center;">[{{ item.qty }}]</td>
-                                            <td style="width: 60%;">
-                                                {{ item.nama }}
-                                                <span ng-if="item.potongan !== null">
-                                                    ({{item.discount}}%)
-                                                </span>
-                                            </td>
-                                            <td style="width: 30%; text-align: right;">
-                                                {{ (item.qty * item.harga) - item.potongan | currency:'Rp ':0 }}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                        <hr class="kasir-billing-receipt-rule">
 
-                            <hr>
-                            <!-- Perhitungan -->
-                            <div style="padding-left: 18px;">
-                                <table style="width: 100%;">
-                                    <tr>
+                        <div class="kasir-billing-receipt-section">
+                            <table class="kasir-billing-receipt-table kasir-billing-receipt-summary">
+                                <tr>
+                                    <td>Qty</td>
+                                    <td>:</td>
+                                    <td id="bill_billing_qty_show">0</td>
+                                </tr>
+                                <tr>
+                                    <td>Subtotal</td>
+                                    <td>:</td>
+                                    <td id="bill_billing_subtotal_show">0</td>
+                                </tr>
+                                <tr>
+                                    <td>Discount (<span id="bill_billing_discount_persen"></span>%)</td>
+                                    <td>:</td>
+                                    <td id="bill_billing_discount_show">0</td>
+                                </tr>
+                                <tr>
+                                    <td>PPN (<span id="bill_billing_ppn_percen_show"></span>%)</td>
+                                    <td>:</td>
+                                    <td id="bill_billing_ppn_show">0</td>
+                                </tr>
+                                <tr class="kasir-billing-receipt-grand-total">
+                                    <td>Grand Total</td>
+                                    <td>:</td>
+                                    <td id="bill_billing_grand_total_show">0</td>
+                                </tr>
+                                <tr>
+                                    <td>Metode Bayar</td>
+                                    <td>:</td>
+                                    <td id="bill_billing_metode_show">-</td>
+                                </tr>
+                                <tr>
+                                    <td>Jumlah Dibayar</td>
+                                    <td>:</td>
+                                    <td id="bill_billing_jumlah_dibayar_show">0</td>
+                                </tr>
+                                <tr>
+                                    <td>Kembalian</td>
+                                    <td>:</td>
+                                    <td id="bill_billing_kembalian_show">0</td>
+                                </tr>
+                                <tr>
+                                    <td>Service Metode</td>
+                                    <td>:</td>
+                                    <td id="bill_billing_service_metode_show"></td>
+                                </tr>
+                            </table>
+                        </div>
 
-                                        <td style="width: 100%;">
-                                            <table style="width: 100%;">
-                                                <tr>
-                                                    <td>Qty</td>
-                                                    <td style="width: 10px;">:</td>
-                                                    <td style="text-align: right;padding-right: 10px;font-weight: 500;"
-                                                        id="bill_billing_qty_show">0
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Subtotal</td>
-                                                    <td style="width: 10px;">:</td>
-                                                    <td style="text-align: right;font-weight: 500;"
-                                                        id="bill_billing_subtotal_show">0
-                                                    </td>
-                                                </tr>
+                        <hr class="kasir-billing-receipt-rule">
 
-                                                <tr>
-                                                    <td>Discount (<label for=""
-                                                            id="bill_billing_discount_persen"></label>%)</td>
-                                                    <td>:</td>
-                                                    <td style="text-align: right;font-weight: 500;"
-                                                        id="bill_billing_discount_show">0
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>PPN (<label id="bill_billing_ppn_percen_show"></label>%)</td>
-                                                    <td>:</td>
-                                                    <td style="text-align: right;font-weight: 500;"
-                                                        id="bill_billing_ppn_show">0
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Grand Total</td>
-                                                    <td>:</td>
-                                                    <td style="text-align: right;font-weight: 500;"
-                                                        id="bill_billing_grand_total_show">0
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Metode Bayar</td>
-                                                    <td>:</td>
-                                                    <td style="text-align: right;font-weight: 500;"
-                                                        id="bill_billing_metode_show">-
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Jumlah Dibayar</td>
-                                                    <td>:</td>
-                                                    <td style="text-align: right;font-weight: 500;"
-                                                        id="bill_billing_jumlah_dibayar_show">0
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Kembalian</td>
-                                                    <td>:</td>
-                                                    <td style="text-align: right;font-weight: 500;"
-                                                        id="bill_billing_kembalian_show">0
-                                                    </td>
-                                                </tr>
-                                                <tr>
-                                                    <td>Service Metode</td>
-                                                    <td>:</td>
-                                                    <td style="text-align: right;font-weight: 500;"
-                                                        id="bill_billing_service_metode_show">
-                                                    </td>
-                                                </tr>
-                                            </table>
-                                        </td>
-                                    </tr>
-                                </table>
-
-                            </div>
-                            <hr>
-                            <div class="text-center bold">
-                                -- TERIMA KASIH --
-                            </div>
+                        <div class="kasir-billing-receipt-footer text-center">
+                            <div class="kasir-billing-receipt-label">-- TERIMA KASIH --</div>
                         </div>
                     </div>
                     <div class="card-footer">
@@ -194,3 +144,84 @@
     </div>
 </div>
 <!-- End Modal Bill Biling -->
+
+<style>
+#my-modal-bill-billing .kasir-billing-receipt-shell {
+    font-family: "Courier New", monospace;
+    background: #ffffff;
+    border: 1px dashed #cbd5e1;
+    border-radius: 16px;
+    padding: 14px 16px;
+    color: #0f172a;
+}
+
+#my-modal-bill-billing .kasir-billing-receipt-header {
+    line-height: 1.45;
+}
+
+#my-modal-bill-billing .kasir-billing-receipt-logo {
+    max-width: 72px;
+    max-height: 72px;
+    margin-bottom: 6px;
+}
+
+#my-modal-bill-billing .kasir-billing-receipt-company {
+    margin-bottom: 4px;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+#my-modal-bill-billing .kasir-billing-receipt-address {
+    font-size: 0.78rem;
+}
+
+#my-modal-bill-billing .kasir-billing-receipt-rule {
+    margin: 10px 0;
+    border-top: 1px dashed #94a3b8;
+    opacity: 1;
+}
+
+#my-modal-bill-billing .kasir-billing-receipt-table {
+    width: 100%;
+    font-size: 0.78rem;
+}
+
+#my-modal-bill-billing .kasir-billing-receipt-info td:first-child,
+#my-modal-bill-billing .kasir-billing-receipt-summary td:first-child {
+    width: 42%;
+}
+
+#my-modal-bill-billing .kasir-billing-receipt-info td:nth-child(2),
+#my-modal-bill-billing .kasir-billing-receipt-summary td:nth-child(2) {
+    width: 8%;
+    text-align: center;
+}
+
+#my-modal-bill-billing .kasir-billing-receipt-items .group-row td {
+    padding-top: 6px;
+    font-weight: 700;
+}
+
+#my-modal-bill-billing .kasir-billing-receipt-items .qty-col {
+    width: 16%;
+}
+
+#my-modal-bill-billing .kasir-billing-receipt-items .name-col {
+    width: 52%;
+}
+
+#my-modal-bill-billing .kasir-billing-receipt-items .amount-col,
+#my-modal-bill-billing .kasir-billing-receipt-summary td:last-child {
+    width: 32%;
+    text-align: right;
+}
+
+#my-modal-bill-billing .kasir-billing-receipt-grand-total td {
+    font-weight: 700;
+}
+
+#my-modal-bill-billing .kasir-billing-receipt-footer {
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+</style>

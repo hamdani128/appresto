@@ -370,8 +370,10 @@
                             <div class="card-body p-3 pt-0">
                                 <div class="gabung-receipt-shell" id="printArea2">
                                     <div class="text-center small">
-                                        <h5 class="mb-1">RUMAH KOPI DINDA</h5>
-                                        <div>Jl. RS Haji NO. 45 A<br>MEDAN - SUMATERA UTARA<br>Telp: 085260207471</div>
+                                        <img id="receipt_logo_gabung" src="" alt="Logo Struk"
+                                            style="display:none; max-width: 72px; max-height: 72px; margin-bottom: 6px;">
+                                        <h5 class="mb-1" id="receipt_company_gabung"></h5>
+                                        <div id="receipt_address_gabung"></div>
                                     </div>
                                     <hr class="my-2">
                                     <div class="small">
@@ -468,9 +470,10 @@
                                 <div class="card-body p-3 pt-0">
                                     <div class="gabung-receipt-shell" id="printArea2Mobile">
                                         <div class="text-center small">
-                                            <h5 class="mb-1">RUMAH KOPI DINDA</h5>
-                                            <div>Jl. RS Haji NO. 45 A<br>MEDAN - SUMATERA UTARA<br>Telp: 085260207471
-                                            </div>
+                                            <img id="receipt_logo_gabung_mobile" src="" alt="Logo Struk"
+                                                style="display:none; max-width: 72px; max-height: 72px; margin-bottom: 6px;">
+                                            <h5 class="mb-1" id="receipt_company_gabung_mobile"></h5>
+                                            <div id="receipt_address_gabung_mobile"></div>
                                         </div>
                                         <hr class="my-2">
                                         <div class="small">

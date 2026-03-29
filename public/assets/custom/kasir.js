@@ -13,6 +13,179 @@ function base_url(string_url) {
 }
 
 var app = angular.module("KasirApp", ["datatables"]);
+let receiptSetting = {
+	company: "",
+	address: "",
+	logo: "",
+};
+let receiptSettingPromise = null;
+
+function normalizeReceiptSetting(data) {
+	if (!data) {
+		return receiptSetting;
+	}
+
+	receiptSetting = {
+		company: (data.company || "").trim(),
+		address: (data.address || "").trim(),
+		logo: (data.logo || "").trim(),
+	};
+
+	return receiptSetting;
+}
+
+function ensureReceiptSettingLoaded() {
+	if (receiptSettingPromise) {
+		return receiptSettingPromise;
+	}
+
+	receiptSettingPromise = fetch(base_url("setting/getdata"))
+		.then((response) => response.json())
+		.then((data) => {
+			const setting = normalizeReceiptSetting(data);
+			renderReceiptPreviewHeaders();
+			return setting;
+		})
+		.catch((error) => {
+			console.error("Gagal mengambil setting struk:", error);
+			renderReceiptPreviewHeaders();
+			return receiptSetting;
+		});
+
+	return receiptSettingPromise;
+}
+
+function getReceiptHeaderText() {
+	const lines = [];
+	const company = (receiptSetting.company || "").trim();
+	const address = (receiptSetting.address || "").trim();
+
+	if (company) {
+		lines.push(`   ${company.toUpperCase()}  `);
+	}
+
+	if (address) {
+		address.split(/\r?\n/).forEach((line) => {
+			const cleanLine = line.trim();
+			if (cleanLine) {
+				lines.push(cleanLine);
+			}
+		});
+	}
+
+	lines.push("--------------------------------");
+	return lines.join("\n") + "\n";
+}
+
+async function buildEscposFromText(text) {
+	await ensureReceiptSettingLoaded();
+
+	let bytes = [];
+	bytes.push(0x1b, 0x40);
+	bytes.push(0x1b, 0x61, 0x01);
+
+	const logoUrl = getReceiptLogoUrl();
+	if (logoUrl) {
+		try {
+			const logoBytes = await imageToEscPosBytes(logoUrl);
+			bytes.push(...logoBytes);
+			bytes.push(0x0a);
+		} catch (error) {
+			console.error("Gagal menyiapkan logo struk:", error);
+		}
+	}
+
+	bytes.push(0x0a);
+	bytes.push(0x1b, 0x61, 0x00);
+
+	const encoder = new TextEncoder();
+	bytes.push(...encoder.encode(text));
+	bytes.push(0x0a, 0x0a, 0x0a);
+	bytes.push(0x1d, 0x56, 0x00);
+
+	return new Uint8Array(bytes);
+}
+
+async function printBytesChunked(printer, bytes, chunkSize = 512) {
+	for (let i = 0; i < bytes.length; i += chunkSize) {
+		const chunk = bytes.slice(i, i + chunkSize);
+		await printer.print(chunk);
+		await new Promise((resolve) => setTimeout(resolve, 120));
+	}
+}
+
+function getReceiptLogoUrl() {
+	if (receiptSetting.logo) {
+		return base_url("public/upload/" + receiptSetting.logo);
+	}
+
+	return "";
+}
+
+function getReceiptAddressHtml() {
+	const address = (receiptSetting.address || "").trim();
+	if (!address) {
+		return "";
+	}
+
+	return address
+		.split(/\r?\n/)
+		.map((line) => line.trim())
+		.filter(Boolean)
+		.join("<br>");
+}
+
+function renderReceiptPreviewHeaders() {
+	const companySelectors = [
+		"receipt_company_bill",
+		"receipt_company_billing",
+		"receipt_company_gabung",
+		"receipt_company_gabung_mobile",
+	];
+	const addressSelectors = [
+		"receipt_address_bill",
+		"receipt_address_billing",
+		"receipt_address_gabung",
+		"receipt_address_gabung_mobile",
+	];
+	const logoSelectors = [
+		"receipt_logo_bill",
+		"receipt_logo_billing",
+		"receipt_logo_gabung",
+		"receipt_logo_gabung_mobile",
+	];
+
+	companySelectors.forEach((id) => {
+		const el = document.getElementById(id);
+		if (el) {
+			el.textContent = receiptSetting.company || "";
+		}
+	});
+
+	addressSelectors.forEach((id) => {
+		const el = document.getElementById(id);
+		if (el) {
+			el.innerHTML = getReceiptAddressHtml();
+		}
+	});
+
+	logoSelectors.forEach((id) => {
+		const el = document.getElementById(id);
+		if (el) {
+			el.src = getReceiptLogoUrl();
+			el.style.display = receiptSetting.logo ? "inline-block" : "none";
+		}
+	});
+}
+
+function escposBytesToString(uint8Array) {
+	let result = "";
+	for (let i = 0; i < uint8Array.length; i++) {
+		result += String.fromCharCode(uint8Array[i]);
+	}
+	return result;
+}
+
 app.controller("KasirAppController", function ($scope, $http, $timeout) {
 	$scope.LoadData = [];
 	$scope.LoadDataPesananList = [];
@@ -230,6 +403,7 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 	};
 
 	$scope.ComboJenisMakanan(); // panggil
+	ensureReceiptSettingLoaded();
 
 	$scope.searchMenu = function () {
 		$scope.filteredMenu = $scope.LoadDatMenuAll.filter(function (menu) {
@@ -609,6 +783,24 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 	};
 
 	$scope.CetakBill = function () {
+		prepareKasirPrintData($scope);
+		$("#my-modal-cetak-bill").modal("show");
+	};
+
+	$scope.CetakOrderOnly = function () {
+		prepareKasirPrintData($scope);
+		$("#my-modal-print-order-only").modal("show");
+	};
+
+	$scope.PrintOrderOnlyByBluetooth = function (copyLabel) {
+		printOrderOnlyBluetooth(copyLabel || "CUSTOMER / MEJA");
+	};
+
+	$scope.PrintOrderOnlyByUSB = function (copyLabel) {
+		printOrderOnlyUSB(copyLabel || "CUSTOMER / MEJA");
+	};
+
+	function prepareKasirPrintData(scope) {
 		var no_booking =
 			document.getElementById("lb_tambahan_no_order")?.innerHTML || "";
 		var no_meja =
@@ -642,9 +834,7 @@ app.controller("KasirAppController", function ($scope, $http, $timeout) {
 		document.getElementById("bill_ppn").innerHTML = formatRupiah(ppn);
 		document.getElementById("bill_grand_total").innerHTML =
 			formatRupiah(grandtotal);
-
-		$("#my-modal-cetak-bill").modal("show");
-	};
+	}
 
 	$scope.HapusPesananList = function (dt) {
 		Swal.fire({
@@ -2275,6 +2465,7 @@ const inputBayar = document.getElementById(
 	"jumlah-dibayar-payment-before-service",
 );
 
+if (inputBayar) {
 inputBayar.addEventListener("input", function (e) {
 	let cursorPos = this.selectionStart;
 	let originalLength = this.value.length;
@@ -2314,6 +2505,7 @@ inputBayar.addEventListener("keydown", function (e) {
 			formatRupiah(kembalian.toString());
 	}
 });
+}
 
 function changePaymentBeforeService() {
 	var combo_methode = $("#combo-payment-before-service").val();
@@ -2789,6 +2981,7 @@ async function connectUSBPrinter() {
 
 async function printEpppos() {
 	try {
+		await ensureReceiptSettingLoaded();
 		if (!BTPrinter) throw "Bluetooth belum siap";
 
 		await BTPrinter.connect();
@@ -2796,9 +2989,8 @@ async function printEpppos() {
 		const text = buildBillText();
 
 		// 🔥 FIX UTAMA: encode string → bytes
-		const encoder = new TextEncoder();
-		const data = encoder.encode(text); // Uint8Array
-		await printChunked(BTPrinter, text);
+		const escposBytes = await buildEscposFromText(text);
+		await printBytesChunked(BTPrinter, escposBytes);
 		// await BTPrinter.print(data); // ✅ sekarang BENAR
 
 		// buka laci
@@ -2814,44 +3006,89 @@ function buildBillText() {
 	let text = "";
 
 	// ===== HEADER TEXT =====
-	text += "   RUMAH KOPI DINDA  \n";
-	text += "Jl. RS Haji NO. 45 A\n";
-	text += "MEDAN - SUMATERA UTARA\n";
-	text += "Telp: 085260207471\n";
-	text += "--------------------------------\n";
+	text += getReceiptHeaderText();
 
 	// ===== INFO TRANSAKSI =====
-	text += "Date     : " + bill_date.innerText + "\n";
-	text += "No.Order : " + bill_invoice.innerText + "\n";
-	text += "Kasir    : " + bill_chasier.innerText + "\n";
-	text += "Meja     : " + bill_no_meja.innerText + "\n";
+	text += "Tanggal   : " + bill_date.innerText + "\n";
+	text += "No.Order  : " + bill_invoice.innerText + "\n";
+	text += "No.Invoice: " + bill_invoice.innerText + "\n";
+	text += "Kasir     : " + bill_chasier.innerText + "\n";
+	text += "No.Meja   : " + bill_no_meja.innerText + "\n";
 	text += "--------------------------------\n";
 
 	// ===== ITEM =====
 	const scope = angular.element(document.getElementById("printArea")).scope();
 	const items = scope.LoadDataPesananBill || [];
 	items.forEach((item) => {
-		const qty = String(item.qty).padStart(2, " ");
-		const name = item.nama.substring(0, 18).padEnd(18, " ");
+		const qty = `[${item.qty}]`.padEnd(5, " ");
+		const name = item.nama.substring(0, 16).padEnd(16, " ");
 		const total = (item.qty * item.harga)
 			.toLocaleString("id-ID")
 			.padStart(8, " ");
-		text += `${qty} ${name}${total}\n`;
+		text += `${qty}${name}${total}\n`;
 	});
 
 	// ===== TOTAL =====
 	text += "--------------------------------\n";
-	text += `Qty      : ${bill_qty.innerText}\n`;
-	text += `Subtotal : ${bill_subtotal.innerText}\n`;
-	text += `Disc     : ${bill_value_discount.innerText}\n`;
-	text += `PPN 10%  : ${bill_ppn.innerText}\n`;
-	text += `TOTAL    : ${bill_grand_total.innerText}\n`;
+	text += `Qty         : ${bill_qty.innerText}\n`;
+	text += `Subtotal    : ${bill_subtotal.innerText}\n`;
+	text += `Discount    : ${bill_value_discount.innerText}\n`;
+	text += `PPN 10%     : ${bill_ppn.innerText}\n`;
+	text += `GRAND TOTAL : ${bill_grand_total.innerText}\n`;
 	text += "--------------------------------\n";
 
 	// ===== FOOTER =====
+	text += "     -- BILL TRANSAKSI --     \n";
 	text += "      -- TERIMA KASIH --      \n";
 	text += " Barang yang sudah dibeli\n";
 	text += " tidak dapat dikembalikan\n\n\n";
+
+	return text;
+}
+
+function buildOrderOnlyText(copyLabel = "") {
+	let text = "";
+
+	text += getReceiptHeaderText();
+	text += "       ORDER KITCHEN BAR       \n";
+	if (copyLabel) {
+		text += `        -- ${copyLabel} --       \n`;
+	}
+	text += "Tanggal   : " + bill_date.innerText + "\n";
+	text += "No.Order  : " + bill_invoice.innerText + "\n";
+	text += "Kasir     : " + bill_chasier.innerText + "\n";
+	text += "No.Meja   : " + bill_no_meja.innerText + "\n";
+	text += "--------------------------------\n";
+
+	const scope = angular.element(document.getElementById("printArea")).scope();
+	const items = scope.LoadDataPesananBill || [];
+
+	const grouped = {};
+	items.forEach((item) => {
+		const groupKey = item.jenis || "MENU";
+		if (!grouped[groupKey]) {
+			grouped[groupKey] = [];
+		}
+		grouped[groupKey].push(item);
+	});
+
+	Object.keys(grouped).forEach((groupKey) => {
+		text += `${groupKey.toUpperCase()}\n`;
+		text += "--------------------------------\n";
+
+		grouped[groupKey].forEach((item) => {
+			const qty = `[${item.qty}]`.padEnd(5, " ");
+			const name = item.nama.substring(0, 24);
+			text += `${qty}${name}\n`;
+		});
+
+		text += "--------------------------------\n";
+	});
+
+	text += `Total Item  : ${bill_qty.innerText}\n`;
+	text += `Dicetak     : ${bill_date.innerText}\n`;
+	text += "--------------------------------\n";
+	text += "       -- ORDER ONLY --        \n\n\n";
 
 	return text;
 }
@@ -2873,6 +3110,7 @@ async function connectQZ() {
 
 async function PrintCetakUSB() {
 	try {
+		await ensureReceiptSettingLoaded();
 		await connectQZ();
 
 		// Ambil printer default Windows
@@ -2881,17 +3119,66 @@ async function PrintCetakUSB() {
 		const config = qz.configs.create(printerName);
 
 		const text = buildBillText();
+		const escposBytes = await buildEscposFromText(text);
+		const rawData = escposBytesToString(escposBytes);
 
-		const openDrawer = "\x1B\x70\x00\x19\xFA";
-
-		const data = [text, openDrawer];
-
-		await qz.print(config, data);
+		await qz.print(config, [
+			{
+				type: "raw",
+				format: "command",
+				data: rawData,
+			},
+		]);
 
 		showNotification("Cetak via: " + printerName, "success");
 	} catch (err) {
 		console.error(err);
 		showNotification("Gagal cetak USB", "error");
+	}
+}
+
+async function printOrderOnlyBluetooth(copyLabel = "CUSTOMER / MEJA") {
+	try {
+		await ensureReceiptSettingLoaded();
+		if (!BTPrinter) throw "Bluetooth belum siap";
+
+		await BTPrinter.connect();
+
+		const text = buildOrderOnlyText(copyLabel);
+		const escposBytes = await buildEscposFromText(text);
+		await printBytesChunked(BTPrinter, escposBytes);
+
+		showNotification("Berhasil cetak order " + copyLabel, "success");
+	} catch (err) {
+		console.error(err);
+		showNotification("Gagal cetak order Bluetooth", "error");
+	}
+}
+
+async function printOrderOnlyUSB(copyLabel = "CUSTOMER / MEJA") {
+	try {
+		await ensureReceiptSettingLoaded();
+		await connectQZ();
+
+		const printerName = await qz.printers.getDefault();
+		const config = qz.configs.create(printerName);
+
+		const text = buildOrderOnlyText(copyLabel);
+		const escposBytes = await buildEscposFromText(text);
+		const rawData = escposBytesToString(escposBytes);
+
+		await qz.print(config, [
+			{
+				type: "raw",
+				format: "command",
+				data: rawData,
+			},
+		]);
+
+		showNotification("Cetak order " + copyLabel + " via: " + printerName, "success");
+	} catch (err) {
+		console.error(err);
+		showNotification("Gagal cetak order USB", "error");
 	}
 }
 
@@ -2950,6 +3237,7 @@ async function imageToEscPosBytes(imgUrl, options = {}) {
 }
 
 async function buildBillEscpos() {
+	await ensureReceiptSettingLoaded();
 	let bytes = [];
 
 	// INIT
@@ -2957,10 +3245,11 @@ async function buildBillEscpos() {
 	bytes.push(0x1b, 0x61, 0x01); // CENTER
 
 	// LOGO
-	const logoBytes = await imageToEscPosBytes(
-		base_url("public/assets/images/millennialpos.png"),
-	);
-	bytes.push(...logoBytes);
+	const logoUrl = getReceiptLogoUrl();
+	if (logoUrl) {
+		const logoBytes = await imageToEscPosBytes(logoUrl);
+		bytes.push(...logoBytes);
+	}
 
 	// FEED
 	bytes.push(0x0a, 0x0a);
@@ -2981,6 +3270,7 @@ async function buildBillEscpos() {
 
 async function printEppposAfterPayment() {
 	try {
+		await ensureReceiptSettingLoaded();
 		if (!BTPrinter) throw "Bluetooth belum siap";
 
 		await BTPrinter.connect();
@@ -2988,9 +3278,8 @@ async function printEppposAfterPayment() {
 		const text = buildBillTextAfterPayment();
 
 		// 🔥 FIX UTAMA: encode string → bytes
-		const encoder = new TextEncoder();
-		const data = encoder.encode(text); // Uint8Array
-		await printChunked(BTPrinter, text);
+		const escposBytes = await buildEscposFromText(text);
+		await printBytesChunked(BTPrinter, escposBytes);
 		// await BTPrinter.print(data); // ✅ sekarang BENAR
 
 		showNotification("Berhasil cetak", "success");
@@ -3002,6 +3291,7 @@ async function printEppposAfterPayment() {
 
 async function printEppposAfterPaymentUSB() {
 	try {
+		await ensureReceiptSettingLoaded();
 		await connectQZ();
 
 		// Ambil printer default Windows
@@ -3010,12 +3300,16 @@ async function printEppposAfterPaymentUSB() {
 		const config = qz.configs.create(printerName);
 
 		const text = buildBillTextAfterPayment();
+		const escposBytes = await buildEscposFromText(text);
+		const rawData = escposBytesToString(escposBytes);
 
-		const openDrawer = "\x1B\x70\x00\x19\xFA";
-
-		const data = [text, openDrawer];
-
-		await qz.print(config, data);
+		await qz.print(config, [
+			{
+				type: "raw",
+				format: "command",
+				data: rawData,
+			},
+		]);
 
 		showNotification("Cetak via: " + printerName, "success");
 	} catch (err) {
@@ -3054,24 +3348,20 @@ function buildBillTextAfterPayment() {
 
 	let text = "";
 
-	// ===== HEADER =====
-	text += "   RUMAH KOPI DINDA  \n";
-	text += "Jl. RS Haji NO. 45 A\n";
-	text += "MEDAN - SUMATERA UTARA\n";
-	text += "Telp: 085260207471\n";
-	text += "--------------------------------\n";
+	// ===== HEADER TEXT =====
+	text += getReceiptHeaderText();
 
 	// ===== INFO TRANSAKSI =====
 	text += "Tanggal   : " + data.created_at + "\n";
-	text += "Kasir     : " + data.created_by + "\n";
 	text += "No.Order  : " + data.no_order + "\n";
 	text += "No.Invoice: " + data.no_transaksi + "\n";
+	text += "Kasir     : " + data.created_by + "\n";
+	text += "No.Meja   : " + (data.no_meja || "-") + "\n";
 	text += "--------------------------------\n";
 
 	// ===== ITEM =====
 	groupedOrders.forEach((group) => {
-		text += "MEJA : " + group.no_meja + "\n";
-		text += "--------------------------------\n";
+		text += "Table : " + group.no_meja + "\n";
 
 		group.items.forEach((item) => {
 			const qty = `[${item.qty}]`.padEnd(5, " ");
@@ -3090,12 +3380,12 @@ function buildBillTextAfterPayment() {
 	text += `Qty         : ${data.qty}\n`;
 	text += `Subtotal    : ${formatRupiah(data.subtotal)}\n`;
 	text += `Discount    : ${formatRupiah(data.potongan)}\n`;
-	text += `PPN 10%     : ${formatRupiah(data.ppn)}\n`;
+	text += `PPN ${data.ppn_persen || 10}%     : ${formatRupiah(data.ppn)}\n`;
 	text += "--------------------------------\n";
 	text += `GRAND TOTAL : ${formatRupiah(data.amount_total)}\n`;
-	text += `Metode      : ${data.metode}\n`;
-	text += `Dibayar     : ${formatRupiah(data.dibayar)}\n`;
-	text += `Kembalian   : ${formatRupiah(data.kembalian)}\n`;
+	text += `Metode Bayar: ${data.metode || "-"}\n`;
+	text += `Dibayar     : ${formatRupiah(data.dibayar || 0)}\n`;
+	text += `Kembalian   : ${formatRupiah(data.kembalian || 0)}\n`;
 
 	if (data.metode_service) {
 		text += `Service     : ${data.metode_service}\n`;
@@ -3104,6 +3394,7 @@ function buildBillTextAfterPayment() {
 	text += "--------------------------------\n";
 
 	// ===== FOOTER =====
+	text += "     -- BILL TRANSAKSI --     \n";
 	text += "      -- TERIMA KASIH --      \n";
 	text += " Barang yang sudah dibeli\n";
 	text += " tidak dapat dikembalikan\n\n\n";
@@ -3113,6 +3404,7 @@ function buildBillTextAfterPayment() {
 
 async function printEppposBillGabung() {
 	try {
+		await ensureReceiptSettingLoaded();
 		if (!BTPrinter) throw "Bluetooth belum siap";
 
 		await BTPrinter.connect();
@@ -3120,9 +3412,8 @@ async function printEppposBillGabung() {
 		const text = buildBillTextBillGabung();
 
 		// 🔥 FIX UTAMA: encode string → bytes
-		const encoder = new TextEncoder();
-		const data = encoder.encode(text); // Uint8Array
-		await printChunked(BTPrinter, text);
+		const escposBytes = await buildEscposFromText(text);
+		await printBytesChunked(BTPrinter, escposBytes);
 		// await BTPrinter.print(data); // ✅ sekarang BENAR
 
 		showNotification("Berhasil cetak", "success");
@@ -3134,6 +3425,7 @@ async function printEppposBillGabung() {
 
 async function printEppposBillGabungUSB() {
 	try {
+		await ensureReceiptSettingLoaded();
 		await connectQZ();
 
 		// Ambil printer default Windows
@@ -3142,12 +3434,16 @@ async function printEppposBillGabungUSB() {
 		const config = qz.configs.create(printerName);
 
 		const text = buildBillTextBillGabung();
+		const escposBytes = await buildEscposFromText(text);
+		const rawData = escposBytesToString(escposBytes);
 
-		const openDrawer = "\x1B\x70\x00\x19\xFA";
-
-		const data = [text, openDrawer];
-
-		await qz.print(config, data);
+		await qz.print(config, [
+			{
+				type: "raw",
+				format: "command",
+				data: rawData,
+			},
+		]);
 
 		showNotification("Cetak via: " + printerName, "success");
 	} catch (err) {
@@ -3160,11 +3456,7 @@ function buildBillTextBillGabung() {
 	let text = "";
 
 	// ===== HEADER =====
-	text += "   RUMAH KOPI DINDA  \n";
-	text += "Jl. RS Haji NO. 45 A\n";
-	text += "MEDAN - SUMATERA UTARA\n";
-	text += "Telp: 085260207471\n";
-	text += "--------------------------------\n";
+	text += getReceiptHeaderText();
 
 	// ===== INFO TRANSAKSI =====
 	text += `Tanggal : ${bill_date_gabungan.innerText}\n`;

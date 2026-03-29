@@ -227,4 +227,10 @@ class ThermalPrinter {
 }
 
 
-module.exports = { PrintBitmapData, ThermalPrinter };
+if (typeof module !== "undefined" && module.exports) {
+	module.exports = { ThermalPrinter };
+}
+
+if (typeof window !== "undefined") {
+	window.ThermalPrinter = ThermalPrinter;
+}
